@@ -1,0 +1,93 @@
+name: hamikisan
+description: Lightweight Agricultural Platform for Nepalese Farmers - HamiKisan (Together Farmers)
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Core UI & Navigation
+  cupertino_icons: ^1.0.6
+  
+  # Database & Storage
+  sqflite: ^2.3.0
+  sqflite_common_ffi_web: ^0.4.0+1
+  path_provider: ^2.1.1
+  path: ^1.8.3
+  
+  # AI & Camera
+  image_picker: ^1.0.4
+  
+  # Real-time Chat
+  socket_io_client: ^2.0.3
+  
+  # HTTP & Networking
+  http: ^1.1.0
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # UI Components
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.0
+  
+  # Utilities
+  shared_preferences: ^2.2.2
+  intl: ^0.20.2
+  permission_handler: ^11.1.0
+  crypto: ^3.0.3
+
+  # Firebase (TEMPORARILY DISABLED FOR WEB COMPATIBILITY)
+  # firebase_core: ^2.32.0
+  # firebase_auth: ^4.16.0
+  # cloud_firestore: ^4.17.5
+  
+  # JavaScript Interop for Web
+  js: ^0.6.7
+  
+  # JSON Serialization
+  json_annotation: ^4.8.1
+  
+  # Localization
+  flutter_localizations:
+    sdk: flutter
+  
+  # Localization & Formatting
+  nepali_date_converter:
+  google_fonts: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.2
+  json_serializable: ^6.7.1
+  build_runner: ^2.4.7
+  json_annotation: ^4.8.1
+
+flutter:
+  uses-material-design: true
+  
+  # Asset Structure (Lightweight & Optimized)
+  assets:
+    # Logo Assets (User will add custom images)
+    - assets/logo/
+    
+    # Background Images (User will add custom images)
+    - assets/background/
+    
+    # System Icons (Lightweight SVG)
+    - assets/icons/
+    
+    # Placeholder Images
+    - assets/placeholder/
+    
+    # AI Models (Optimized)
+    - assets/models/
+    
+  # Fonts: Using system fonts (Roboto available by default)

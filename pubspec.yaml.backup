@@ -1,0 +1,79 @@
+name: hamikisan
+description: Lightweight Agricultural Platform for Nepalese Farmers - HamiKisan (Together Farmers)
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Core UI & Navigation (Lightweight)
+  cupertino_icons: ^1.0.6
+  
+  # Offline Storage (Essential)
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  
+  # AI & Camera (Optimized)
+  camera: ^0.10.5+5
+  image_picker: ^1.0.4
+  tflite_flutter: ^0.10.1
+  
+  # Real-time Chat (Efficient)
+  socket_io_client: ^2.0.3
+  
+  # HTTP & Networking (Minimal)
+  http: ^1.1.0
+  
+  # State Management (Lightweight)
+  provider: ^6.0.5
+  
+  # UI Components (Optimized)
+  flutter_svg: ^2.0.7
+  cached_network_image: ^3.3.0
+  
+  # Utilities
+  shared_preferences: ^2.2.2
+  intl: ^0.18.1
+  permission_handler: ^11.0.1
+  
+  # Localization
+  flutter_localizations:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  # Asset Structure (Lightweight & Optimized)
+  assets:
+    # Logo Assets (User will add custom images)
+    - assets/logo/
+    
+    # Background Images (User will add custom images)
+    - assets/background/
+    
+    # System Icons (Lightweight SVG)
+    - assets/icons/
+    
+    # Placeholder Images
+    - assets/placeholder/
+    
+    # AI Models (Optimized)
+    - assets/models/
+    
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: fonts/Roboto-Regular.ttf
+        - asset: fonts/Roboto-Bold.ttf
+          weight: 700

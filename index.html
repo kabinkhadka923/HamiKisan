@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HamiKisan - Agricultural Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .logo::before {
+            content: "🌾";
+            font-size: 60px;
+        }
+
+        h1 {
+            color: #4CAF50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .status {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .status h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .feature-list {
+            text-align: left;
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .feature-list li::before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+            top: 8px;
+        }
+
+        .flutter-info {
+            background: linear-gradient(45deg, #0175C2, #13B9FD);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .flutter-info h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .tech-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .warning h4 {
+            margin-bottom: 8px;
+            color: #856404;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .logo::before {
+                font-size: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"></div>
+        
+        <h1>HamiKisan</h1>
+        <p class="subtitle">Smart Farming for Nepal</p>
+        
+        <div class="status">
+            <h3>✅ Application Status</h3>
+            <p><strong>Framework:</strong> Flutter 3.38.1 (Stable Channel)</p>
+            <p><strong>Platform:</strong> Web, Android, iOS, Windows</p>
+            <p><strong>Status:</strong> Ready for Development</p>
+        </div>
+
+        <div class="flutter-info">
+            <h4>🌱 Agricultural Platform Features</h4>
+            <div class="tech-stack">
+                <span class="tech-badge">AI Crop Analysis</span>
+                <span class="tech-badge">Weather Integration</span>
+                <span class="tech-badge">Market Prices</span>
+                <span class="tech-badge">Farmer Community</span>
+                <span class="tech-badge">Offline Support</span>
+                <span class="tech-badge">Multi-language</span>
+            </div>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Development Note</h4>
+            <p>The Flutter SDK is experiencing compilation issues in this environment. This web demo shows the intended design and functionality of the HamiKisan application.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="#" class="button" onclick="showFeatures()">View Features</a>
+            <a href="#" class="button" onclick="showAbout()">About App</a>
+        </div>
+
+        <ul class="feature-list" id="features" style="display: none;">
+            <li>🌾 Crop Disease Detection using AI</li>
+            <li>📊 Farm Analytics & Reporting</li>
+            <li>💰 Market Price Information</li>
+            <li>🌤️ Weather Forecast Integration</li>
+            <li>📱 Offline Data Synchronization</li>
+            <li>🌐 Multi-language Support (Nepali/English)</li>
+            <li>🤝 Farmer Community Network</li>
+            <li>📷 Image-based Crop Analysis</li>
+        </ul>
+
+        <div id="about" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h4>🌾 About HamiKisan</h4>
+            <p style="text-align: left; line-height: 1.6;">
+                HamiKisan (हामी किसान - "Together Farmers") is a lightweight agricultural platform 
+                designed specifically for Nepalese farmers. The app combines modern technology with 
+                traditional farming knowledge to help farmers improve crop yields, access market information, 
+                and connect with agricultural experts.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function showFeatures() {
+            const features = document.getElementById('features');
+            const about = document.getElementById('about');
+            
+            if (features.style.display === 'none') {
+                features.style.display = 'block';
+                about.style.display = 'none';
+            } else {
+                features.style.display = 'none';
+            }
+        }
+
+        function showAbout() {
+            const features = document.getElementById('features');
+            const about = document.getElementById('about');
+            
+            if (about.style.display === 'none') {
+                about.style.display = 'block';
+                features.style.display = 'none';
+            } else {
+                about.style.display = 'none';
+            }
+        }
+
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const logo = document.querySelector('.logo');
+            
+            logo.addEventListener('click', function() {
+                this.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 200);
+            });
+        });
+    </script>
+</body>
