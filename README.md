@@ -219,7 +219,7 @@ setup_android.bat
 
 Clone and enhance this agricultural revolution:
 ```bash
-git clone https://github.com/rojinat75/demo.git
+git clone https://github.com/kabinkhadka923/HamiKisan.git
 ```
 
 **Built for Nepal's farmers with ❤️ by technology✨**
