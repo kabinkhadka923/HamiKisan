@@ -154,7 +154,6 @@ class WeatherService {
           timestamp: DateTime.now(),
           isUrgent: true,
         ));
-        break;
       }
     }
 
