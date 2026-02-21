@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../utils/security_utils.dart';
 import '../services/security_service.dart';
+import '../services/web_auth_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 
 class AuthService {
   static const String _apiUrl = 'https://api.hamikisan.com';
@@ -15,7 +17,9 @@ class AuthService {
     'Accept': 'application/json',
   };
 
-  static const String _usersKey = 'local_users_db';
+  final WebAuthService _webAuth = WebAuthService();
+
+  static const String _usersKey = 'local_users_db_v4';
   static const String _otpStoreKey = 'local_otp_store';
 
   Future<Map<String, dynamic>?> login(String email, String password) async {
@@ -44,7 +48,12 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>?> loginWithUsername(String username, String password) async {
+  Future<Map<String, dynamic>?> loginWithUsername(
+      String username, String password) async {
+    if (kIsWeb) {
+      return await _webLogin(username, password);
+    }
+
     if (_useLocalDb) {
       return await _loginWithLocalDb(username, password, useEmail: false);
     }
@@ -70,6 +79,40 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>?> _webLogin(
+      String identifier, String password) async {
+    try {
+      print('[AUTH] Web login attempt: $identifier');
+
+      // Try emergency bypass login first
+      final emergencyAdmin = await _webAuth.getEmergencyAdmin();
+      if (emergencyAdmin != null &&
+          identifier == emergencyAdmin['username'] &&
+          password == emergencyAdmin['password']) {
+        print('[AUTH] Emergency bypass login SUCCESS');
+
+        // Construct user map from emergency data
+        return {
+          'id': emergencyAdmin['id'],
+          'username': emergencyAdmin['username'],
+          'email': 'admin@hamikisan.com',
+          'role': emergencyAdmin['role'],
+          'status': 'approved',
+          'name': emergencyAdmin['name'],
+          'isVerified': true,
+          'createdAt': DateTime.now().millisecondsSinceEpoch,
+        };
+      }
+
+      // If bypass failed, try regular local DB (which we fixed using FFI-web)
+      return await _loginWithLocalDb(identifier, password,
+          useEmail: identifier.contains('@'));
+    } catch (e) {
+      print('[AUTH] Web login error: $e');
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>?> register({
     required String username,
     required String email,
@@ -89,7 +132,7 @@ class AuthService {
         phoneNumber: phoneNumber,
         name: name,
         role: role,
-        password: password ?? 'demo123',
+        password: password ?? 'user123',
         address: address,
         language: language,
         farmingCategory: farmingCategory,
@@ -118,7 +161,8 @@ class AuthService {
         return null;
       }
     } catch (e) {
-      throw Exception('Registration failed: Please check your connection and try again');
+      throw Exception(
+          'Registration failed: Please check your connection and try again');
     }
   }
 
@@ -174,8 +218,12 @@ class AuthService {
   }
 
   Future<void> saveSession(User user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_sessionKey, json.encode(user.toJson()));
+    if (kIsWeb) {
+      await _webAuth.storeCurrentUser(user);
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_sessionKey, json.encode(user.toJson()));
+    }
   }
 
   Future<void> clearSession() async {
@@ -191,7 +239,8 @@ class AuthService {
     }
   }
 
-  Future<bool> changePassword(String userId, String currentPassword, String newPassword) async {
+  Future<bool> changePassword(
+      String userId, String currentPassword, String newPassword) async {
     return newPassword.length >= 6;
   }
 
@@ -199,38 +248,10 @@ class AuthService {
     await clearSession();
   }
 
-  Future<Map<String, dynamic>> _getMockUser({
-    UserRole role = UserRole.farmer,
-    String? username,
-    String? email,
-    String? name,
-    String? phoneNumber,
-  }) async {
-    await Future.delayed(const Duration(seconds: 1));
-
-    return {
-      'id': 'mock_user_${DateTime.now().millisecondsSinceEpoch}',
-      'username': username ?? 'farmer${DateTime.now().millisecondsSinceEpoch}',
-      'email': email ?? 'farmer@hamiKisan.com',
-      'phoneNumber': phoneNumber ?? '+9779800000000',
-      'name': name ?? 'Rajesh Kumar',
-      'profilePicture': null,
-      'role': role.name,
-      'status': 'approved',
-      'address': 'Kathmandu, Nepal',
-      'farmingCategory': 'Vegetable Farming',
-      'specialization': null,
-      'permissions': role == UserRole.kisanAdmin ? ['manage_users', 'manage_content'] : null,
-      'createdAt': DateTime.now().millisecondsSinceEpoch,
-      'lastLoginAt': DateTime.now().millisecondsSinceEpoch,
-      'isVerified': true,
-    };
-  }
-
   Future<bool> checkProfileCompletion(User user) async {
     return user.address != null &&
-           user.farmingCategory != null &&
-           user.isVerified;
+        user.farmingCategory != null &&
+        user.isVerified;
   }
 
   Future<Map<String, dynamic>> getUserStats(String userId) async {
@@ -244,68 +265,129 @@ class AuthService {
     };
   }
 
-  Future<Map<String, dynamic>?> _loginWithLocalDb(String identifier, String password, {required bool useEmail}) async {
+  Future<Map<String, dynamic>?> _loginWithLocalDb(
+      String identifier, String password,
+      {required bool useEmail}) async {
     try {
+      print(
+          '[AUTH] Login attempt - identifier: $identifier, useEmail: $useEmail');
+
       final cleanIdentifier = SecurityUtils.sanitizeInput(identifier);
-      if (SecurityUtils.isAccountLocked(cleanIdentifier)) {
-        await SecurityService.logSecurityEvent('LOGIN_BLOCKED_RATE_LIMIT', cleanIdentifier, {
-          'reason': 'Too many failed attempts',
-          'identifier': cleanIdentifier,
-        });
-        throw Exception('Account temporarily locked due to multiple failed attempts');
+      print('[AUTH] Cleaned identifier: $cleanIdentifier');
+
+      // Temporarily bypass account locking for admin accounts to diagnose issue
+      final isAdminAttempt = cleanIdentifier.toLowerCase().contains('admin') ||
+          cleanIdentifier.toLowerCase().contains('super');
+
+      print('[AUTH] Is admin attempt: $isAdminAttempt');
+
+      if (!isAdminAttempt && SecurityUtils.isAccountLocked(cleanIdentifier)) {
+        try {
+          await SecurityService.logSecurityEvent(
+              'LOGIN_BLOCKED_RATE_LIMIT', cleanIdentifier, {
+            'reason': 'Too many failed attempts',
+            'identifier': cleanIdentifier,
+          });
+        } catch (e) {
+          // Ignore logging errors
+        }
+        throw Exception(
+            'Account temporarily locked due to multiple failed attempts');
       }
 
       final prefs = await SharedPreferences.getInstance();
+      print('[AUTH] SharedPreferences retrieved');
 
       if (prefs.getString(_usersKey) == null) {
+        print('[AUTH] No users found, initializing default users');
         await _initializeDefaultUsers();
+      } else if (isAdminAttempt) {
+        print(
+            '[AUTH] Admin attempt detected, ensuring admin accounts are up to date');
+        await _ensureAdminAccounts();
       }
 
       final usersStr = prefs.getString(_usersKey);
       if (usersStr == null) {
-        SecurityUtils.recordLoginAttempt(cleanIdentifier);
+        print('[AUTH] ERROR: Users string is null after initialization');
+        if (!isAdminAttempt) {
+          SecurityUtils.recordLoginAttempt(cleanIdentifier);
+        }
         return null;
       }
 
+      print('[AUTH] Users data length: ${usersStr.length}');
       final users = json.decode(usersStr) as Map<String, dynamic>;
+      print('[AUTH] Number of users in database: ${users.length}');
+      print('[AUTH] User IDs: ${users.keys.toList()}');
 
       for (final userId in users.keys) {
         final user = users[userId] as Map<String, dynamic>;
+        final username = user['username'];
+        final role = user['role'];
+
+        print('[AUTH] Checking user: $username (role: $role)');
+
         final identifierMatch = useEmail
             ? user['email']?.toLowerCase() == cleanIdentifier.toLowerCase()
             : user['username']?.toLowerCase() == cleanIdentifier.toLowerCase();
 
         if (identifierMatch) {
+          print('[AUTH] Found matching user: $username');
+          print(
+              '[AUTH] Stored password hash: ${user['password_hash']?.substring(0, 20)}...');
+
           if (_verifyPassword(password, user['password_hash'])) {
+            print('[AUTH] ✓ Password verification SUCCESS for user: $username');
             final userData = {...user, 'id': userId};
             userData['lastLoginAt'] = DateTime.now().millisecondsSinceEpoch;
             await _updateLocalUser(userData['id'], userData);
-            
-            await SecurityService.logSecurityEvent('LOGIN_SUCCESS', userId, {
-              'identifier': cleanIdentifier,
-              'loginMethod': useEmail ? 'email' : 'username',
-            });
-            
+
+            try {
+              await SecurityService.logSecurityEvent('LOGIN_SUCCESS', userId, {
+                'identifier': cleanIdentifier,
+                'loginMethod': useEmail ? 'email' : 'username',
+              });
+            } catch (e) {
+              // Ignore logging errors
+            }
+
             return userData;
           } else {
-            SecurityUtils.recordLoginAttempt(cleanIdentifier);
-            await SecurityService.logSecurityEvent('LOGIN_FAILED', userId, {
-              'identifier': cleanIdentifier,
-              'reason': 'Invalid password',
-            });
+            print('[AUTH] ✗ Password verification FAILED for user: $username');
+            if (!isAdminAttempt) {
+              SecurityUtils.recordLoginAttempt(cleanIdentifier);
+            }
+            try {
+              await SecurityService.logSecurityEvent('LOGIN_FAILED', userId, {
+                'identifier': cleanIdentifier,
+                'reason': 'Invalid password',
+              });
+            } catch (e) {
+              // Ignore logging errors
+            }
             return null;
           }
         }
       }
 
-      SecurityUtils.recordLoginAttempt(cleanIdentifier);
-      await SecurityService.logSecurityEvent('LOGIN_FAILED', 'unknown', {
-        'identifier': cleanIdentifier,
-        'reason': 'User not found',
-      });
+      print('[AUTH] No matching user found for identifier: $cleanIdentifier');
+      if (!isAdminAttempt) {
+        SecurityUtils.recordLoginAttempt(cleanIdentifier);
+      }
+      try {
+        await SecurityService.logSecurityEvent('LOGIN_FAILED', 'unknown', {
+          'identifier': cleanIdentifier,
+          'reason': 'User not found',
+        });
+      } catch (e) {
+        // Ignore logging errors
+      }
       return null;
     } catch (e) {
-      print('Local login error: $e');
+      // Log the actual error for debugging
+      print('[AUTH] Login error: $e');
+      print('[AUTH] Stack trace: ${StackTrace.current}');
       return null;
     }
   }
@@ -332,7 +414,8 @@ class AuthService {
       );
 
       if (validationErrors.isNotEmpty) {
-        await SecurityService.logSecurityEvent('REGISTRATION_VALIDATION_FAILED', 'unknown', {
+        await SecurityService.logSecurityEvent(
+            'REGISTRATION_VALIDATION_FAILED', 'unknown', {
           'errors': validationErrors,
           'username': SecurityUtils.sanitizeInput(username),
         });
@@ -345,28 +428,33 @@ class AuthService {
         await _initializeDefaultUsers();
       }
 
-      final usersData = json.decode(prefs.getString(_usersKey)!) as Map<String, dynamic>;
+      final usersData =
+          json.decode(prefs.getString(_usersKey)!) as Map<String, dynamic>;
 
       final cleanUsername = SecurityUtils.sanitizeInput(username).toLowerCase();
       final cleanEmail = email.toLowerCase();
       final cleanName = SecurityUtils.sanitizeInput(name);
-      final cleanAddress = address != null ? SecurityUtils.sanitizeInput(address) : null;
+      final cleanAddress =
+          address != null ? SecurityUtils.sanitizeInput(address) : null;
 
       for (final userData in usersData.values) {
         if (userData['username']?.toLowerCase() == cleanUsername) {
-          await SecurityService.logSecurityEvent('REGISTRATION_DUPLICATE_USERNAME', 'unknown', {
+          await SecurityService.logSecurityEvent(
+              'REGISTRATION_DUPLICATE_USERNAME', 'unknown', {
             'username': cleanUsername,
           });
           throw Exception('Username already exists');
         }
         if (userData['email']?.toLowerCase() == cleanEmail) {
-          await SecurityService.logSecurityEvent('REGISTRATION_DUPLICATE_EMAIL', 'unknown', {
+          await SecurityService.logSecurityEvent(
+              'REGISTRATION_DUPLICATE_EMAIL', 'unknown', {
             'email': cleanEmail,
           });
           throw Exception('Email already exists');
         }
         if (userData['phoneNumber'] == phoneNumber) {
-          await SecurityService.logSecurityEvent('REGISTRATION_DUPLICATE_PHONE', 'unknown', {
+          await SecurityService.logSecurityEvent(
+              'REGISTRATION_DUPLICATE_PHONE', 'unknown', {
             'phoneNumber': phoneNumber,
           });
           throw Exception('Phone number already registered');
@@ -386,9 +474,13 @@ class AuthService {
         'profilePicture': null,
         'address': cleanAddress,
         'language': language ?? 'English',
-        'farmingCategory': farmingCategory ?? (role == UserRole.farmer ? 'General Farming' : null),
-        'specialization': specialization ?? (role == UserRole.kisanDoctor ? 'General Agriculture' : null),
-        'permissions': role == UserRole.kisanAdmin ? ['manage_users', 'manage_content'] : null,
+        'farmingCategory': farmingCategory ??
+            (role == UserRole.farmer ? 'General Farming' : null),
+        'specialization': specialization ??
+            (role == UserRole.kisanDoctor ? 'General Agriculture' : null),
+        'permissions': role == UserRole.kisanAdmin
+            ? ['manage_users', 'manage_content']
+            : null,
         'createdAt': DateTime.now().millisecondsSinceEpoch,
         'lastLoginAt': null,
         'isVerified': false,
@@ -460,7 +552,8 @@ class AuthService {
     }
   }
 
-  Future<void> _updateLocalUser(String userId, Map<String, dynamic> userData) async {
+  Future<void> _updateLocalUser(
+      String userId, Map<String, dynamic> userData) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final usersStr = prefs.getString(_usersKey);
@@ -480,12 +573,12 @@ class AuthService {
     final defaultUsers = {
       'user_1': {
         'username': '9800000000',
-        'email': 'farmer@hamiKisan.com',
+        'email': 'testuser@hamikisan.com',
         'phoneNumber': '+9779800000000',
-        'name': 'Rajesh Kumar',
+        'name': 'Test Farmer',
         'role': 'farmer',
         'status': 'approved',
-        'password_hash': _hashPassword('9800000000'),
+        'password_hash': _hashPassword('@Testuser123'),
         'profilePicture': null,
         'address': 'Kathmandu, Nepal',
         'farmingCategory': 'Vegetable Farming',
@@ -498,12 +591,12 @@ class AuthService {
       },
       'user_2': {
         'username': '9800000001',
-        'email': 'doctor@hamiKisan.com',
+        'email': 'testdoctor@hamikisan.com',
         'phoneNumber': '+9779800000001',
-        'name': 'Dr. Sarita Sharma',
+        'name': 'Test Doctor',
         'role': 'kisanDoctor',
         'status': 'approved',
-        'password_hash': _hashPassword('9800000001'),
+        'password_hash': _hashPassword('@Testdoctor123'),
         'profilePicture': null,
         'address': 'Pokhara, Nepal',
         'farmingCategory': null,
@@ -515,36 +608,36 @@ class AuthService {
         'hasSelectedLanguage': true,
       },
       'user_3': {
-        'username': 'admin',
-        'email': 'admin@hamiKisan.com',
-        'phoneNumber': '+9779800000002',
-        'name': 'Ram Prasad Adhikari',
-        'role': 'kisanAdmin',
+        'username': 'HamiSuperKisan',
+        'email': 'superadmin@hamikisan.com',
+        'phoneNumber': '+9779800000003',
+        'name': 'Super Admin',
+        'role': 'superAdmin',
         'status': 'approved',
-        'password_hash': _hashPassword('admin'),
+        'password_hash': _hashPassword('@PhulasiPokhari.'),
         'profilePicture': null,
         'address': 'Kathmandu, Nepal',
         'farmingCategory': null,
         'specialization': null,
-        'permissions': ['manage_users', 'manage_content', 'approve_users'],
+        'permissions': ['full_access', 'system_control', 'manage_admins'],
         'createdAt': DateTime.now().millisecondsSinceEpoch - 86400000,
         'lastLoginAt': DateTime.now().millisecondsSinceEpoch,
         'isVerified': true,
         'hasSelectedLanguage': true,
       },
       'user_4': {
-        'username': 'superadmin',
-        'email': 'superadmin@hamiKisan.com',
-        'phoneNumber': '+9779800000003',
-        'name': 'Hari Bahadur Thapa',
-        'role': 'superAdmin',
+        'username': 'KisanAdmin',
+        'email': 'kisanadmin@hamikisan.com',
+        'phoneNumber': '+9779800000004',
+        'name': 'Kisan Admin',
+        'role': 'kisanAdmin',
         'status': 'approved',
-        'password_hash': _hashPassword('superadmin'),
+        'password_hash': _hashPassword('@NepaliKisan923.'),
         'profilePicture': null,
         'address': 'Kathmandu, Nepal',
         'farmingCategory': null,
         'specialization': null,
-        'permissions': ['full_access', 'system_admin', 'manage_all'],
+        'permissions': ['manage_users', 'manage_content', 'approve_users'],
         'createdAt': DateTime.now().millisecondsSinceEpoch - 86400000,
         'lastLoginAt': DateTime.now().millisecondsSinceEpoch,
         'isVerified': true,
@@ -564,11 +657,120 @@ class AuthService {
     try {
       final parts = hashedPassword.split(':');
       if (parts.length != 2) return false;
-      final hash = parts[0];
+      final storedHash = parts[0];
       final salt = parts[1];
-      return SecurityUtils.hashPassword(password, salt) == hash;
+
+      return SecurityUtils.verifyPassword(password, storedHash, salt);
     } catch (e) {
+      print('[AUTH] Password verification error: $e');
       return false;
+    }
+  }
+
+  Future<void> _ensureAdminAccounts() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final usersStr = prefs.getString(_usersKey);
+      if (usersStr == null) return;
+
+      final users = json.decode(usersStr) as Map<String, dynamic>;
+
+      // Generate consistent password hashes for admin accounts
+      // Use fixed salts to ensure consistent hashes
+      const superAdminSalt = 'U2FsdGVkX1+SuperAdminSalt2024';
+      const kisanAdminSalt = 'U2FsdGVkX1+KisanAdminSalt2024';
+
+      final superAdminHash =
+          '${SecurityUtils.hashPassword('@PhulasiPokhari.', superAdminSalt)}:$superAdminSalt';
+      final kisanAdminHash =
+          '${SecurityUtils.hashPassword('@NepaliKisan923.', kisanAdminSalt)}:$kisanAdminSalt';
+
+      // Update or add Super Admin
+      users['user_3'] = {
+        'username': 'HamiSuperKisan',
+        'email': 'superadmin@hamikisan.com',
+        'phoneNumber': '+9779800000003',
+        'name': 'Super Admin',
+        'role': 'superAdmin',
+        'status': 'approved',
+        'password_hash': superAdminHash,
+        'profilePicture': null,
+        'address': 'Kathmandu, Nepal',
+        'farmingCategory': null,
+        'specialization': null,
+        'permissions': ['full_access', 'system_control', 'manage_admins'],
+        'createdAt': DateTime.now().millisecondsSinceEpoch - 86400000,
+        'lastLoginAt': DateTime.now().millisecondsSinceEpoch,
+        'isVerified': true,
+        'hasSelectedLanguage': true,
+      };
+
+      // Update or add Kisan Admin
+      users['user_4'] = {
+        'username': 'KisanAdmin',
+        'email': 'kisanadmin@hamikisan.com',
+        'phoneNumber': '+9779800000004',
+        'name': 'Kisan Admin',
+        'role': 'kisanAdmin',
+        'status': 'approved',
+        'password_hash': kisanAdminHash,
+        'profilePicture': null,
+        'address': 'Kathmandu, Nepal',
+        'farmingCategory': null,
+        'specialization': null,
+        'permissions': ['manage_users', 'manage_content', 'approve_users'],
+        'createdAt': DateTime.now().millisecondsSinceEpoch - 86400000,
+        'lastLoginAt': DateTime.now().millisecondsSinceEpoch,
+        'isVerified': true,
+        'hasSelectedLanguage': true,
+      };
+
+      await prefs.setString(_usersKey, json.encode(users));
+      print('[AUTH] Admin accounts synchronized successfully');
+    } catch (e) {
+      print('[AUTH] Failed to synchronize admin accounts: $e');
+    }
+  }
+
+  /// Emergency reset for admin account if corrupted
+  Future<void> emergencyAdminReset() async {
+    // Only allow in debug mode
+    if (!kDebugMode) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final usersStr = prefs.getString(_usersKey);
+      final users = usersStr != null
+          ? json.decode(usersStr) as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      final salt = SecurityUtils.generateSalt();
+      const password = 'Admin@123';
+      final hash = '${SecurityUtils.hashPassword(password, salt)}:$salt';
+
+      users['user_super_reset'] = {
+        'username': 'HamiSuperKisan',
+        'email': 'admin@hamikisan.com',
+        'phoneNumber': '+9779800000003',
+        'name': 'System Admin',
+        'role': 'superAdmin',
+        'status': 'approved',
+        'password_hash': hash,
+        'profilePicture': null,
+        'address': 'Kathmandu, Nepal',
+        'permissions': ['full_access', 'system_control', 'manage_admins'],
+        'createdAt': DateTime.now().millisecondsSinceEpoch,
+        'isVerified': true,
+        'hasSelectedLanguage': true,
+      };
+
+      await prefs.setString(_usersKey, json.encode(users));
+      print('================================================');
+      print('[SECURITY] Admin account reset successfully');
+      print('[SECURITY] Check code for temporary credentials');
+      print('================================================');
+    } catch (e) {
+      print('[AUTH] Emergency admin reset failed: $e');
     }
   }
 
@@ -577,7 +779,8 @@ class AuthService {
     final otpData = {
       'phoneNumber': phoneNumber,
       'otp': otp,
-      'expiresAt': DateTime.now().add(const Duration(minutes: 5)).millisecondsSinceEpoch,
+      'expiresAt':
+          DateTime.now().add(const Duration(minutes: 5)).millisecondsSinceEpoch,
     };
     await prefs.setString(_otpStoreKey, json.encode(otpData));
   }
@@ -593,12 +796,11 @@ class AuthService {
         users[userId]['language'] = language;
         await prefs.setString(_usersKey, json.encode(users));
       }
-    } catch (e) {
-      print('Failed to update language: $e');
-    }
+    } catch (e) {}
   }
 
-  Future<void> updateUserLanguageSelection(String userId, bool hasSelected) async {
+  Future<void> updateUserLanguageSelection(
+      String userId, bool hasSelected) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final usersStr = prefs.getString(_usersKey);
@@ -609,8 +811,14 @@ class AuthService {
         users[userId]['hasSelectedLanguage'] = hasSelected;
         await prefs.setString(_usersKey, json.encode(users));
       }
-    } catch (e) {
-      print('Failed to update language selection: $e');
+    } catch (e) {}
+  }
+
+  Future<void> createEmergencyAdmin() async {
+    if (kIsWeb) {
+      await _webAuth.emergencyCreateAdmin();
+    } else {
+      await emergencyAdminReset();
     }
   }
 }

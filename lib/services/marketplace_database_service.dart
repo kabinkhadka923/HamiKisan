@@ -10,17 +10,16 @@ class MarketplaceDatabaseService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final productsJson = prefs.getString(_productsKey);
-      
+
       if (productsJson == null) {
         // Initialize with sample products
         await _initializeSampleProducts();
         return getAllProducts();
       }
-      
+
       final productsList = json.decode(productsJson) as List;
       return productsList.map((json) => Product.fromJson(json)).toList();
     } catch (e) {
-      print('Error loading products: $e');
       return [];
     }
   }
@@ -29,12 +28,12 @@ class MarketplaceDatabaseService {
     try {
       final products = await getAllProducts();
       products.add(product);
-      
+
       final prefs = await SharedPreferences.getInstance();
-      final productsJson = json.encode(products.map((p) => p.toJson()).toList());
+      final productsJson =
+          json.encode(products.map((p) => p.toJson()).toList());
       await prefs.setString(_productsKey, productsJson);
     } catch (e) {
-      print('Error inserting product: $e');
     }
   }
 
@@ -42,16 +41,16 @@ class MarketplaceDatabaseService {
     try {
       final products = await getAllProducts();
       final index = products.indexWhere((p) => p.id == product.id);
-      
+
       if (index != -1) {
         products[index] = product;
-        
+
         final prefs = await SharedPreferences.getInstance();
-        final productsJson = json.encode(products.map((p) => p.toJson()).toList());
+        final productsJson =
+            json.encode(products.map((p) => p.toJson()).toList());
         await prefs.setString(_productsKey, productsJson);
       }
     } catch (e) {
-      print('Error updating product: $e');
     }
   }
 
@@ -59,17 +58,17 @@ class MarketplaceDatabaseService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final ordersJson = prefs.getString(_ordersKey);
-      
+
       if (ordersJson == null) return [];
-      
+
       final ordersList = json.decode(ordersJson) as List;
       final allOrders = ordersList.map((json) => Order.fromJson(json)).toList();
-      
-      return allOrders.where((order) => 
-        order.buyerId == userId || order.sellerId == userId
-      ).toList();
+
+      return allOrders
+          .where((order) => order.buyerId == userId || order.sellerId == userId)
+          .toList();
     } catch (e) {
-      print('Error loading orders: $e');
+
       return [];
     }
   }
@@ -78,12 +77,12 @@ class MarketplaceDatabaseService {
     try {
       final orders = await _getAllOrders();
       orders.add(order);
-      
+
       final prefs = await SharedPreferences.getInstance();
       final ordersJson = json.encode(orders.map((o) => o.toJson()).toList());
       await prefs.setString(_ordersKey, ordersJson);
     } catch (e) {
-      print('Error inserting order: $e');
+
     }
   }
 
@@ -91,13 +90,13 @@ class MarketplaceDatabaseService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final ordersJson = prefs.getString(_ordersKey);
-      
+
       if (ordersJson == null) return [];
-      
+
       final ordersList = json.decode(ordersJson) as List;
       return ordersList.map((json) => Order.fromJson(json)).toList();
     } catch (e) {
-      print('Error loading all orders: $e');
+
       return [];
     }
   }
@@ -107,55 +106,71 @@ class MarketplaceDatabaseService {
       Product(
         id: 'product_1',
         sellerId: 'user_farmer_demo',
-        name: 'Premium Rice',
+        sellerName: 'Demo Farmer',
+        title: 'Premium Rice',
         category: 'Crops',
+        subCategory: 'Rice',
         description: 'High quality organic rice from Kavre district',
         price: 85.0,
         unit: 'kg',
-        quantityAvailable: 500.0,
-        minOrderQuantity: 10.0,
+        unitSymbol: 'kg',
+        quantity: 500.0,
         location: 'Kathmandu',
-        images: ['🌾'],
-        status: ProductStatus.active,
+        district: 'Kavre',
+        imageUrls: ['https://example.com/rice.jpg'],
+        status: 'active',
+        isVerified: true,
+        isOrganic: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
       Product(
         id: 'product_2',
         sellerId: 'user_farmer_demo',
-        name: 'Organic Tomatoes',
+        sellerName: 'Demo Farmer',
+        title: 'Organic Tomatoes',
         category: 'Crops',
+        subCategory: 'Vegetables',
         description: 'Fresh organic tomatoes, pesticide-free',
         price: 120.0,
         unit: 'kg',
-        quantityAvailable: 200.0,
-        minOrderQuantity: 5.0,
+        unitSymbol: 'kg',
+        quantity: 200.0,
         location: 'Pokhara',
-        images: ['🍅'],
-        status: ProductStatus.active,
+        district: 'Kaski',
+        imageUrls: ['https://example.com/tomatoes.jpg'],
+        status: 'active',
+        isVerified: true,
+        isOrganic: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
       Product(
         id: 'product_3',
         sellerId: 'user_farmer_demo',
-        name: 'NPK Fertilizer',
+        sellerName: 'Demo Farmer',
+        title: 'NPK Fertilizer',
         category: 'Fertilizer',
+        subCategory: 'Fertilizer',
         description: 'Balanced NPK fertilizer for all crops',
         price: 45.0,
         unit: 'kg',
-        quantityAvailable: 1000.0,
-        minOrderQuantity: 25.0,
+        unitSymbol: 'kg',
+        quantity: 1000.0,
         location: 'Biratnagar',
-        images: ['🧪'],
-        status: ProductStatus.active,
+        district: 'Morang',
+        imageUrls: ['https://example.com/fertilizer.jpg'],
+        status: 'active',
+        isVerified: false,
+        isOrganic: false,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
     ];
 
     final prefs = await SharedPreferences.getInstance();
-    final productsJson = json.encode(sampleProducts.map((p) => p.toJson()).toList());
+    final productsJson =
+        json.encode(sampleProducts.map((p) => p.toJson()).toList());
     await prefs.setString(_productsKey, productsJson);
   }
 }

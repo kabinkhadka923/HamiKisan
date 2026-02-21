@@ -19,6 +19,19 @@ class AppConstants {
   static const double defaultPadding = 16.0;
   static const double smallPadding = 8.0;
   static const double largePadding = 24.0;
+
+  static const double spacingS = 8.0;
+  static const double spacingM = 16.0;
+  static const double spacingL = 24.0;
+
+  static const double borderRadiusS = 8.0;
+  static const double borderRadiusM = 12.0;
+  static const double borderRadiusL = 16.0;
+
+  static const double elevationLow = 2.0;
+  static const double elevationMedium = 4.0;
+  static const double elevationHigh = 8.0;
+
   static const double borderRadius = 12.0;
   static const double cardElevation = 4.0;
 
@@ -94,10 +107,12 @@ class AppConstants {
   static const String notificationTypePrice = 'price';
 
   // Error Messages
-  static const String networkError = 'Network error. Please check your connection.';
+  static const String networkError =
+      'Network error. Please check your connection.';
   static const String serverError = 'Server error. Please try again later.';
   static const String unknownError = 'An unknown error occurred.';
-  static const String validationError = 'Please check your input and try again.';
+  static const String validationError =
+      'Please check your input and try again.';
 
   // Success Messages
   static const String loginSuccess = 'Login successful!';
@@ -133,61 +148,4 @@ class AppConstants {
     'moderate': Colors.orange,
     'severe': Colors.red,
   };
-}
-
-class AppTheme {
-  static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppConstants.primaryGreen,
-        brightness: Brightness.light,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppConstants.primaryGreen,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppConstants.primaryGreen,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          ),
-          elevation: AppConstants.cardElevation,
-        ),
-      ),
-      cardTheme: CardThemeData(
-        elevation: AppConstants.cardElevation,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        ),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-      ),
-    );
-  }
-
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppConstants.primaryGreen,
-        brightness: Brightness.dark,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppConstants.darkGreen,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
-    );
-  }
 }

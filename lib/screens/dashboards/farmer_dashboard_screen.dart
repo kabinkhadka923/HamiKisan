@@ -12,6 +12,7 @@ import '../../models/weather_models.dart';
 import '../../models/post_model.dart';
 import '../../screens/post_detail_screen.dart';
 import '../../screens/profile_screen.dart';
+import '../consultation_contacts_screen.dart';
 
 class FarmerDashboardScreen extends StatefulWidget {
   const FarmerDashboardScreen({super.key});
@@ -156,9 +157,9 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -246,7 +247,7 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Column(
@@ -470,15 +471,13 @@ class _HomeContentState extends State<_HomeContent>
         .toList()
       ..sort((a, b) => b.priceChangePercent.compareTo(a.priceChangePercent));
 
-    final priceAlerts = _marketService.generatePriceAlerts(_marketPrices);
-
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
           image: const AssetImage('assets/background/bg.jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.white.withOpacity(0.3),
+            Colors.white.withValues(alpha: 0.3),
             BlendMode.darken,
           ),
           onError: (exception, stackTrace) {},
@@ -507,24 +506,19 @@ class _HomeContentState extends State<_HomeContent>
   Widget _buildWeatherWithStatsAndMarket(
       WeatherData weather, List<MarketPrice> kalimatiItems) {
     IconData weatherIcon;
-    Color iconColor;
     switch (weather.weatherType.toLowerCase()) {
       case 'sunny':
         weatherIcon = Icons.wb_sunny;
-        iconColor = Colors.orange;
         break;
       case 'rainy':
         weatherIcon = Icons.water_drop;
-        iconColor = Colors.blue;
         break;
       case 'cloudy':
       case 'partly cloudy':
         weatherIcon = Icons.cloud;
-        iconColor = Colors.grey;
         break;
       default:
         weatherIcon = Icons.wb_cloudy;
-        iconColor = Colors.blueGrey;
     }
 
     return Card(
@@ -604,7 +598,7 @@ class _HomeContentState extends State<_HomeContent>
                 Container(
                     width: 1,
                     height: 160,
-                    color: Colors.white.withOpacity(0.3)),
+                    color: Colors.white.withValues(alpha: 0.3)),
                 Expanded(
                   flex: 3,
                   child: Padding(
@@ -726,7 +720,7 @@ class _HomeContentState extends State<_HomeContent>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: suitabilityColor.withOpacity(0.1),
+              color: suitabilityColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: suitabilityColor, width: 1.5),
             ),
@@ -812,7 +806,7 @@ class _HomeContentState extends State<_HomeContent>
   ) {
     return Card(
       elevation: 2,
-      color: Colors.white.withOpacity(0.85),
+      color: Colors.white.withValues(alpha: 0.85),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -821,7 +815,7 @@ class _HomeContentState extends State<_HomeContent>
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: iconColor.withOpacity(0.1),
+                  backgroundColor: iconColor.withValues(alpha: 0.1),
                   child: Icon(icon, color: iconColor, size: 20),
                 ),
                 const SizedBox(width: 12),
@@ -1039,6 +1033,7 @@ class _MarketContentState extends State<_MarketContent> {
                   phone: phoneController.text,
                   timestamp: DateTime.now(),
                 ));
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text('Product listed successfully!')));
@@ -1072,7 +1067,7 @@ class _MarketContentState extends State<_MarketContent> {
               image: const AssetImage('assets/background/bg.jpg'),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
-                Colors.white.withOpacity(0.3),
+                Colors.white.withValues(alpha: 0.3),
                 BlendMode.darken,
               ),
               onError: (exception, stackTrace) {},
@@ -1193,7 +1188,7 @@ class _MarketContentState extends State<_MarketContent> {
                     children: [
                       if (_filteredPrices.isEmpty) ...[
                         Card(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           child: Padding(
                             padding: const EdgeInsets.all(24),
                             child: Column(
@@ -1217,7 +1212,7 @@ class _MarketContentState extends State<_MarketContent> {
                       ],
                       if (hotDeals.isNotEmpty) ...[
                         Card(
-                          color: Colors.orange.withOpacity(0.9),
+                          color: Colors.orange.withValues(alpha: 0.9),
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: Column(
@@ -1281,12 +1276,13 @@ class _MarketContentState extends State<_MarketContent> {
                             item.productName.contains('(by ');
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: isFarmerListing
-                                  ? Colors.blue.withOpacity(0.1)
-                                  : const Color(0xFF4CAF50).withOpacity(0.1),
+                                  ? Colors.blue.withValues(alpha: 0.1)
+                                  : const Color(0xFF4CAF50)
+                                      .withValues(alpha: 0.1),
                               child: Icon(
                                 isFarmerListing
                                     ? Icons.person
@@ -1434,7 +1430,6 @@ class _CommunityContentState extends State<_CommunityContent> {
   void _createPost() {
     final contentController = TextEditingController();
     String postType = 'General';
-    File? selectedImage;
 
     showDialog(
       context: context,
@@ -1491,15 +1486,14 @@ class _CommunityContentState extends State<_CommunityContent> {
                       district: district,
                     );
 
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(success
-                            ? 'Post created successfully!'
-                            : 'Failed to create post')),
-                  );
-                }
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(success
+                          ? 'Post created successfully!'
+                          : 'Failed to create post')),
+                );
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4CAF50)),
@@ -1563,7 +1557,8 @@ class _CommunityContentState extends State<_CommunityContent> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)
                 ],
               ),
               child: Row(
@@ -1599,7 +1594,7 @@ class _CommunityContentState extends State<_CommunityContent> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -1618,48 +1613,6 @@ class _CommunityContentState extends State<_CommunityContent> {
     );
   }
 
-  Widget _buildComment(String name, String comment, String time) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const CircleAvatar(radius: 16, child: Icon(Icons.person, size: 16)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 13)),
-                      const SizedBox(height: 4),
-                      Text(comment, style: const TextStyle(fontSize: 13)),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 12, top: 4),
-                  child: Text(time,
-                      style: TextStyle(fontSize: 11, color: Colors.grey[600])),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final postProvider = context.watch<PostProvider>();
@@ -1671,7 +1624,7 @@ class _CommunityContentState extends State<_CommunityContent> {
           image: const AssetImage('assets/background/bg.jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.white.withOpacity(0.3),
+            Colors.white.withValues(alpha: 0.3),
             BlendMode.darken,
           ),
           onError: (exception, stackTrace) {},
@@ -1736,7 +1689,7 @@ class _CommunityContentState extends State<_CommunityContent> {
               ),
             ),
           Container(
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
@@ -1798,7 +1751,7 @@ class _CommunityContentState extends State<_CommunityContent> {
                           return Card(
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
-                            color: Colors.white.withOpacity(0.95),
+                            color: Colors.white.withValues(alpha: 0.95),
                             child: InkWell(
                               onTap: () =>
                                   Navigator.of(context).push(MaterialPageRoute(
@@ -1814,7 +1767,7 @@ class _CommunityContentState extends State<_CommunityContent> {
                                       children: [
                                         CircleAvatar(
                                           backgroundColor:
-                                              iconColor.withOpacity(0.1),
+                                              iconColor.withValues(alpha: 0.1),
                                           child: Icon(icon,
                                               color: iconColor, size: 20),
                                         ),
@@ -2066,6 +2019,7 @@ class _AddContentState extends State<_AddContent> {
                       district: district,
                     );
 
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -2181,6 +2135,7 @@ class _AddContentState extends State<_AddContent> {
                   timestamp: DateTime.now(),
                 ));
 
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Product listed successfully!')),
@@ -2204,7 +2159,7 @@ class _AddContentState extends State<_AddContent> {
           image: const AssetImage('assets/background/bg.jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.white.withOpacity(0.3),
+            Colors.white.withValues(alpha: 0.3),
             BlendMode.darken,
           ),
           onError: (exception, stackTrace) {},
@@ -2243,7 +2198,14 @@ class _AddContentState extends State<_AddContent> {
                 title: 'Ask Doctor',
                 subtitle: 'Get expert advice on crop issues',
                 color: Colors.orange,
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ConsultationContactsScreen(),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -2261,7 +2223,7 @@ class _AddContentState extends State<_AddContent> {
   }) {
     return Card(
       elevation: 4,
-      color: Colors.white.withOpacity(0.95),
+      color: Colors.white.withValues(alpha: 0.95),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -2272,7 +2234,7 @@ class _AddContentState extends State<_AddContent> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 32),

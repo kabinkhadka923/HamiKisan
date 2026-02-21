@@ -1,0 +1,4 @@
+Assets listed in pubspec: 7
+Missing on disk: 0
+
+Duplicates in pubspec: 0

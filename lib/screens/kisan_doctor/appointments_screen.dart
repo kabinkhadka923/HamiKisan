@@ -92,7 +92,7 @@ class AppointmentsScreen extends StatelessWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.2),
+                    color: AppColors.primaryGreen.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.person, color: AppColors.primaryGreen),
@@ -147,7 +147,7 @@ class AppointmentsScreen extends StatelessWidget {
             else
               Chip(
                 label: const Text('Accepted'),
-                backgroundColor: AppColors.primaryGreen.withOpacity(0.2),
+                backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.2),
               ),
           ],
         ),

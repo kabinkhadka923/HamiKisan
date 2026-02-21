@@ -52,7 +52,6 @@ class _LoginScreenState extends State<LoginScreen>
   int _loginAttempts = 0;
   Timer? _cooldownTimer;
   String? _verificationPhoneNumber;
-  final bool _isBlocked = false;
   bool _rememberMe = false;
 
   late AnimationController _fadeController;
@@ -225,13 +224,6 @@ class _LoginScreenState extends State<LoginScreen>
     return null;
   }
 
-  String? _validateOtp(String? value) {
-    if (value == null || value.isEmpty) return context.tr('required_field');
-    if (value.length != 6)
-      return 'OTP must be 6 digits'; // TODO: Add to l10n if strict needed, or just use general error
-    return null;
-  }
-
   String? _validateName(String? value) {
     if (value == null || value.isEmpty) return context.tr('required_field');
     final cleanName = SecurityUtils.sanitizeInput(value);
@@ -364,7 +356,7 @@ class _LoginScreenState extends State<LoginScreen>
               Shadow(
                 offset: const Offset(1, 1),
                 blurRadius: 3,
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -408,7 +400,7 @@ class _LoginScreenState extends State<LoginScreen>
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: isSelected ? role['color'].withOpacity(0.1) : Colors.white,
+          color: isSelected ? role['color'].withValues(alpha: 0.1) : Colors.white,
           border: Border.all(
             color: isSelected ? role['color']! : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -416,14 +408,14 @@ class _LoginScreenState extends State<LoginScreen>
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: role['color'].withOpacity(0.2),
+                    color: role['color'].withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   )
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
@@ -439,7 +431,7 @@ class _LoginScreenState extends State<LoginScreen>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? role['color']
-                      : role['color'].withOpacity(0.1),
+                      : role['color'].withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -546,9 +538,9 @@ class _LoginScreenState extends State<LoginScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF3DA35D).withOpacity(0.1),
+            color: const Color(0xFF3DA35D).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF3DA35D).withOpacity(0.3)),
+            border: Border.all(color: const Color(0xFF3DA35D).withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
@@ -556,17 +548,17 @@ class _LoginScreenState extends State<LoginScreen>
                 'assets/icons/icons.png',
                 width: 20,
                 height: 20,
-                color: Colors.grey.shade600,
+                color: Colors.white,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.person_outline,
-                      color: Colors.grey.shade600);
+                  return const Icon(Icons.person_outline,
+                      color: Colors.white);
                 },
               ),
               const SizedBox(width: 12),
               Text(
-                '${context.tr('login_as')} ',
-                style: TextStyle(
-                    color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+                '${context.tr('login_as')} ' ,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w500),
               ),
               DropdownButton<UserRole>(
                 value: _selectedRole,
@@ -665,7 +657,10 @@ class _LoginScreenState extends State<LoginScreen>
                   setState(() => _rememberMe = value ?? false),
               activeColor: const Color(0xFF3DA35D),
             ),
-            Text(context.tr('remember_me')),
+            Text(
+              context.tr('remember_me'),
+              style: const TextStyle(color: Colors.white),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -678,7 +673,10 @@ class _LoginScreenState extends State<LoginScreen>
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF3DA35D),
             ),
-            child: Text(context.tr('forgot_password')),
+            child: Text(
+              context.tr('forgot_password'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ),
 
@@ -788,7 +786,7 @@ class _LoginScreenState extends State<LoginScreen>
 
         // Province Dropdown (Mock Data for now as model doesn't have unique province list efficiently)
         DropdownButtonFormField<String>(
-          value: _selectedProvince,
+          initialValue: _selectedProvince,
           decoration: _buildInputDecoration(context.tr('province'), Icons.map),
           items: [
             'Province 1',
@@ -806,7 +804,7 @@ class _LoginScreenState extends State<LoginScreen>
 
         // District Dropdown
         DropdownButtonFormField<String>(
-          value: _selectedDistrict,
+          initialValue: _selectedDistrict,
           decoration:
               _buildInputDecoration(context.tr('district'), Icons.location_on),
           items: NepalDistricts.all
@@ -1124,15 +1122,15 @@ class _LoginScreenState extends State<LoginScreen>
         const SizedBox(height: 24),
         Row(
           children: [
-            Expanded(child: Divider(color: Colors.grey.shade300)),
+            const Expanded(child: Divider(color: Colors.white)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 context.tr('or_continue_with'),
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ),
-            Expanded(child: Divider(color: Colors.grey.shade300)),
+            const Expanded(child: Divider(color: Colors.white)),
           ],
         ),
         const SizedBox(height: 20),
@@ -1190,7 +1188,7 @@ class _LoginScreenState extends State<LoginScreen>
               _isLogin
                   ? "${context.tr('dont_have_account')} "
                   : "${context.tr('already_have_account')} ",
-              style: TextStyle(color: Colors.grey.shade600),
+              style: const TextStyle(color: Colors.white),
             ),
             GestureDetector(
               onTap: _toggleMode,
@@ -1205,44 +1203,6 @@ class _LoginScreenState extends State<LoginScreen>
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildDemoAccountsInfo() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.shade100),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.blue.shade700),
-              const SizedBox(width: 4),
-              Text(
-                context.tr('demo_accounts'),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            context.tr('demo_accounts_info'),
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.blue.shade600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

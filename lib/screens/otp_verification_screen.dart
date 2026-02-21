@@ -24,7 +24,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Future<void> _verifyOtp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     //Implement actual OTP verification logic with AuthService
     // For now, simulate success
     bool otpVerified = _otpController.text == '123456'; // Dummy OTP

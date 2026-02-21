@@ -30,14 +30,14 @@ class PostProvider with ChangeNotifier {
 
   Future<bool> createPost(String userId, String userName, String userRole, String content, String? imageUrl, {String postType = 'General', String? district}) async {
     try {
-      print('Creating post: userId=$userId, userName=$userName, userRole=$userRole, postType=$postType, district=$district');
+
       final post = await _postService.createPost(userId, userName, userRole, content, imageUrl, postType: postType, district: district);
       _posts.insert(0, post);
       notifyListeners();
-      print('Post created successfully');
+
       return true;
     } catch (e) {
-      print('Error in createPost: $e');
+
       _error = e.toString();
       notifyListeners();
       return false;

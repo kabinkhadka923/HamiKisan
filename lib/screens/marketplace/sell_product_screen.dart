@@ -5,9 +5,8 @@ import 'dart:io';
 
 import '../../providers/marketplace_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/marketplace_models.dart';
+import '../../models/marketplace_constants.dart';
 import '../../widgets/custom_button.dart';
-import '../../services/marketplace_database_service.dart'; // For constants
 
 class SellProductScreen extends StatefulWidget {
   const SellProductScreen({super.key});
@@ -53,7 +52,10 @@ class _SellProductScreenState extends State<SellProductScreen> {
             children: [
               Text(
                 'Product Information',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
 
@@ -61,7 +63,9 @@ class _SellProductScreenState extends State<SellProductScreen> {
                 label: 'Product Title',
                 hint: 'e.g., Fresh Organic Tomatoes',
                 onSaved: (value) => _title = value,
-                validator: (value) => value == null || value.isEmpty ? 'Please enter a title' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter a title'
+                    : null,
               ),
               const SizedBox(height: 16),
 
@@ -70,7 +74,9 @@ class _SellProductScreenState extends State<SellProductScreen> {
                 hint: 'Provide a detailed description of your product',
                 maxLines: 3,
                 onSaved: (value) => _description = value,
-                validator: (value) => value == null || value.isEmpty ? 'Please enter a description' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter a description'
+                    : null,
               ),
               const SizedBox(height: 16),
 
@@ -96,7 +102,8 @@ class _SellProductScreenState extends State<SellProductScreen> {
                     _subCategory = null; // Reset subcategory on category change
                   });
                 },
-                validator: (value) => value == null ? 'Please select a category' : null,
+                validator: (value) =>
+                    value == null ? 'Please select a category' : null,
               ),
               const SizedBox(height: 16),
 
@@ -113,14 +120,16 @@ class _SellProductScreenState extends State<SellProductScreen> {
                   items: MarketplaceCategory.allCategories
                       .firstWhere((cat) => cat.id == _category!)
                       .subcategories
-                      .map((sub) => DropdownMenuItem(value: sub, child: Text(sub)))
+                      .map((sub) =>
+                          DropdownMenuItem(value: sub, child: Text(sub)))
                       .toList(),
                   onChanged: (value) {
                     setState(() {
                       _subCategory = value;
                     });
                   },
-                  validator: (value) => value == null ? 'Please select a sub-category' : null,
+                  validator: (value) =>
+                      value == null ? 'Please select a sub-category' : null,
                 ),
               const SizedBox(height: 16),
 
@@ -134,7 +143,10 @@ class _SellProductScreenState extends State<SellProductScreen> {
                       hint: 'Price per unit',
                       keyboardType: TextInputType.number,
                       onSaved: (value) => _price = double.tryParse(value ?? ''),
-                      validator: (value) => value == null || double.tryParse(value) == null ? 'Enter valid price' : null,
+                      validator: (value) =>
+                          value == null || double.tryParse(value) == null
+                              ? 'Enter valid price'
+                              : null,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -153,7 +165,8 @@ class _SellProductScreenState extends State<SellProductScreen> {
                         return DropdownMenuItem(value: unit, child: Text(unit));
                       }).toList(),
                       onChanged: (value) => setState(() => _unit = value),
-                      validator: (value) => value == null ? 'Select unit' : null,
+                      validator: (value) =>
+                          value == null ? 'Select unit' : null,
                     ),
                   ),
                 ],
@@ -165,7 +178,10 @@ class _SellProductScreenState extends State<SellProductScreen> {
                 hint: 'Available quantity',
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _quantity = double.tryParse(value ?? ''),
-                validator: (value) => value == null || double.tryParse(value) == null ? 'Enter valid quantity' : null,
+                validator: (value) =>
+                    value == null || double.tryParse(value) == null
+                        ? 'Enter valid quantity'
+                        : null,
               ),
               const SizedBox(height: 16),
 
@@ -174,7 +190,9 @@ class _SellProductScreenState extends State<SellProductScreen> {
                 label: 'Your Location',
                 hint: 'e.g., Kathmandu, Thamel',
                 onSaved: (value) => _location = value,
-                validator: (value) => value == null || value.isEmpty ? 'Please enter your location' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter your location'
+                    : null,
               ),
               const SizedBox(height: 16),
 
@@ -188,10 +206,12 @@ class _SellProductScreenState extends State<SellProductScreen> {
                 ),
                 hint: const Text('Select District'),
                 items: MarketplaceConstants.nepaliDistricts.map((district) {
-                  return DropdownMenuItem(value: district, child: Text(district));
+                  return DropdownMenuItem(
+                      value: district, child: Text(district));
                 }).toList(),
                 onChanged: (value) => setState(() => _district = value),
-                validator: (value) => value == null ? 'Please select a district' : null,
+                validator: (value) =>
+                    value == null ? 'Please select a district' : null,
               ),
               const SizedBox(height: 16),
 
@@ -217,14 +237,18 @@ class _SellProductScreenState extends State<SellProductScreen> {
                   return DropdownMenuItem(value: grade, child: Text(grade));
                 }).toList(),
                 onChanged: (value) => setState(() => _qualityGrade = value),
-                validator: (value) => value == null ? 'Please select a quality grade' : null,
+                validator: (value) =>
+                    value == null ? 'Please select a quality grade' : null,
               ),
               const SizedBox(height: 16),
 
               // Product Images
               Text(
                 'Product Images',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               _buildImagePicker(),
@@ -236,7 +260,8 @@ class _SellProductScreenState extends State<SellProductScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : CustomButton(
                       text: 'Submit Product for Approval',
-                      onPressed: () => _submitProduct(context, marketplaceProvider, authProvider),
+                      onPressed: () => _submitProduct(
+                          context, marketplaceProvider, authProvider),
                       isEnabled: true,
                     ),
               const SizedBox(height: 24),
@@ -348,8 +373,8 @@ class _SellProductScreenState extends State<SellProductScreen> {
   }
 
   Future<void> _submitProduct(
-    BuildContext context, 
-    MarketplaceProvider marketplaceProvider, 
+    BuildContext context,
+    MarketplaceProvider marketplaceProvider,
     AuthProvider authProvider,
   ) async {
     if (!_formKey.currentState!.validate()) {
@@ -359,7 +384,8 @@ class _SellProductScreenState extends State<SellProductScreen> {
 
     if (authProvider.currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to sell a product.')),
+        const SnackBar(
+            content: Text('You must be logged in to sell a product.')),
       );
       return;
     }
@@ -371,7 +397,9 @@ class _SellProductScreenState extends State<SellProductScreen> {
       return;
     }
 
-    List<String> imageUrls = _images.map((file) => file.path).toList(); // In a real app, upload to storage and get URLs
+    List<String> imageUrls = _images
+        .map((file) => file.path)
+        .toList(); // In a real app, upload to storage and get URLs
 
     final success = await marketplaceProvider.addProduct(
       sellerId: authProvider.currentUser!.id,
@@ -398,7 +426,9 @@ class _SellProductScreenState extends State<SellProductScreen> {
         Navigator.of(context).pop(); // Go back to marketplace home
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit product: ${marketplaceProvider.error}')),
+          SnackBar(
+              content: Text(
+                  'Failed to submit product: ${marketplaceProvider.error}')),
         );
       }
     }

@@ -37,7 +37,7 @@ class ProfileScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: LocalizedText('profile'),
+        title: const LocalizedText('profile'),
         backgroundColor: const Color(0xFF4CAF50),
         actions: [
           IconButton(

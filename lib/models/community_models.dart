@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 /// Represents a community group based on geographic location
 class CommunityGroup {

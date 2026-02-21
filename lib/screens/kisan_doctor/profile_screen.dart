@@ -58,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.2),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(50),
                 ),
                 child: widget.doctor.profilePicture != null

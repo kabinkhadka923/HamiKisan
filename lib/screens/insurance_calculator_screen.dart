@@ -29,7 +29,7 @@ class _InsuranceCalculatorScreenState extends State<InsuranceCalculatorScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       final cropValue = double.parse(_cropValueController.text);
       final landArea = double.parse(_landAreaController.text);
-      final productionCost = double.parse(_productionCostController.text);
+      final _ = double.parse(_productionCostController.text);
 
       setState(() {
         _coverageAmount = cropValue * landArea;

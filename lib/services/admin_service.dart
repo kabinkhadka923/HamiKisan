@@ -1,4 +1,3 @@
-import 'dart:convert';
 import '../models/admin_models.dart';
 import 'database.dart';
 
@@ -12,182 +11,338 @@ class AdminService {
 
   AdminService._internal();
 
-  // Farmers Management
+  // Compatibility methods
   Future<List<FarmerProfile>> getAllFarmers() async {
+    final result = await getFarmers();
+    return result.data;
+  }
+
+  Future<List<KisanDoctorProfile>> getAllDoctors() async {
+    final result = await getDoctors();
+    return result.data;
+  }
+
+  Future<void> updateProductPrice(String productId, double newPrice) async {
+    await _db.update('products', {'price': newPrice},
+        where: 'id = ?', whereArgs: [productId]);
+  }
+
+  // Farmers Management
+  Future<PaginatedResult<FarmerProfile>> getFarmers({
+    int page = 1,
+    int pageSize = 20,
+    Map<String, dynamic>? filters,
+  }) async {
     try {
-      final users = await _db.query('users', where: 'role = ?', whereArgs: ['farmer']);
+      final offset = (page - 1) * pageSize;
+      String whereClause = 'role = ?';
+      List<dynamic> whereArgs = ['farmer'];
+
+      if (filters != null) {
+        if (filters['status'] != null) {
+          whereClause += ' AND status = ?';
+          whereArgs.add(filters['status']);
+        }
+        if (filters['district'] != null) {
+          whereClause += ' AND address LIKE ?';
+          whereArgs.add('%${filters['district']}%');
+        }
+      }
+
+      final farmersCount = await _db.query('users',
+          columns: ['COUNT(*) as count'],
+          where: whereClause,
+          whereArgs: whereArgs);
+      final totalItems = farmersCount.first['count'] as int;
+      final totalPages = (totalItems / pageSize).ceil();
+
+      final users = await _db.query(
+        'users',
+        where: whereClause,
+        whereArgs: whereArgs,
+        limit: pageSize,
+        offset: offset,
+        orderBy: 'created_at DESC',
+      );
+
       List<FarmerProfile> profiles = [];
-      
       for (var user in users) {
-        final products = await _db.query('products', where: 'farmer_id = ?', whereArgs: [user['id']]);
+        final products = await _db
+            .query('products', where: 'farmer_id = ?', whereArgs: [user['id']]);
         profiles.add(FarmerProfile(
           id: user['id'],
           name: user['name'],
           phone: user['phone_number'] ?? '',
+          email: user['email'] ?? '',
           district: _extractDistrict(user['address']),
-          crops: _parseList(user['farming_category']), // Using category as crops for now
-          lastLogin: DateTime.fromMillisecondsSinceEpoch(user['last_login_at'] ?? 0),
+          province: _extractProvince(user['address']),
+          crops: _parseList(user['farming_category']),
+          farmingCategories: _parseList(user['farming_category']),
+          lastLogin:
+              DateTime.fromMillisecondsSinceEpoch(user['last_login_at'] ?? 0),
+          registeredAt:
+              DateTime.fromMillisecondsSinceEpoch(user['created_at'] ?? 0),
+          status: FarmerStatus.fromString(user['status'] ?? 'pending'),
           isVerified: (user['is_verified'] ?? 0) == 1,
-          accountStatus: user['status'],
           productsPosted: products.map((p) => p['id'] as String).toList(),
-          complaintsSubmitted: [], // TODO: Add complaints table
+          complaintsSubmitted: [],
+          totalPosts: 0,
+          totalProducts: products.length,
+          rating: (user['rating'] as num?)?.toDouble(),
+          profileImage: user['profile_image'],
+          address: user['address'],
         ));
       }
-      return profiles;
-    } catch (e) {
-      print('Error getting farmers: $e');
-      return [];
-    }
-  }
 
-  Future<FarmerProfile?> getFarmerById(String farmerId) async {
-    try {
-      final users = await _db.query('users', where: 'id = ?', whereArgs: [farmerId]);
-      if (users.isEmpty) return null;
-      
-      final user = users.first;
-      final products = await _db.query('products', where: 'farmer_id = ?', whereArgs: [farmerId]);
-      
-      return FarmerProfile(
-        id: user['id'],
-        name: user['name'],
-        phone: user['phone_number'] ?? '',
-        district: _extractDistrict(user['address']),
-        crops: _parseList(user['farming_category']),
-        lastLogin: DateTime.fromMillisecondsSinceEpoch(user['last_login_at'] ?? 0),
-        isVerified: (user['is_verified'] ?? 0) == 1,
-        accountStatus: user['status'],
-        productsPosted: products.map((p) => p['id'] as String).toList(),
-        complaintsSubmitted: [],
+      return PaginatedResult(
+        data: profiles,
+        currentPage: page,
+        totalPages: totalPages,
+        hasMore: page < totalPages,
       );
     } catch (e) {
-      print('Error getting farmer: $e');
-      return null;
+      throw Exception('Failed to get farmers: $e');
     }
   }
 
   Future<void> approveFarmer(String farmerId) async {
-    await _updateUserStatus(farmerId, 'approved');
-    await logAdminAction(
-      adminId: 'current_admin', // TODO: Get actual admin ID
-      action: 'APPROVE_FARMER',
-      ipAddress: '127.0.0.1',
-      details: 'Approved farmer $farmerId'
+    await _db.update(
+      'users',
+      {
+        'status': FarmerStatus.approved.databaseValue,
+        'approved_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [farmerId],
     );
   }
 
-  Future<void> rejectFarmer(String farmerId) async {
-    await _updateUserStatus(farmerId, 'rejected');
-  }
-
-  Future<void> banFarmer(String farmerId) async {
-    await _updateUserStatus(farmerId, 'banned');
-  }
-
-  Future<void> resetFarmerPassword(String farmerId) async {
-    // In a real app, this would generate a token. For local, we set to default.
-    // This requires DatabaseService to expose password update, which we'll skip for safety now
-    // or implement a simple update.
-    await _db.update('users', 
-      {'password_hash': 'RESET_HASH'}, // Placeholder
-      where: 'id = ?', 
-      whereArgs: [farmerId]
+  Future<void> rejectFarmer(String farmerId, {String? reason}) async {
+    await _db.update(
+      'users',
+      {
+        'status': FarmerStatus.rejected.databaseValue,
+        'rejection_reason': reason,
+      },
+      where: 'id = ?',
+      whereArgs: [farmerId],
     );
+  }
+
+  Future<void> banFarmer(String farmerId,
+      {String? reason, Duration? duration}) async {
+    final bannedUntil = duration != null
+        ? DateTime.now().add(duration).millisecondsSinceEpoch
+        : null;
+    await _db.update(
+      'users',
+      {
+        'status': FarmerStatus.banned.databaseValue,
+        'ban_reason': reason,
+        'banned_until': bannedUntil,
+      },
+      where: 'id = ?',
+      whereArgs: [farmerId],
+    );
+  }
+
+  Future<void> batchApproveFarmers(List<String> farmerIds) async {
+    for (final id in farmerIds) {
+      await approveFarmer(id);
+    }
   }
 
   // Kisan Doctors Management
-  Future<List<KisanDoctorProfile>> getAllDoctors() async {
+  Future<PaginatedResult<KisanDoctorProfile>> getDoctors({
+    int page = 1,
+    int pageSize = 20,
+    Map<String, dynamic>? filters,
+  }) async {
     try {
-      final users = await _db.query('users', where: 'role = ?', whereArgs: ['kisanDoctor']);
-      return users.map((user) => KisanDoctorProfile(
-        id: user['id'],
-        name: user['name'],
-        qualification: 'Certified', // Placeholder
-        expertise: user['specialization'] ?? 'General',
-        assignedDistricts: [user['address'] ?? 'All'],
-        languages: ['Nepali', 'English'],
-        isOnline: false,
-        rating: 4.5, // Placeholder
-        answersGiven: 0,
-        farmerSatisfactionScore: 90,
-        pendingReplies: 0,
-      )).toList();
+      final offset = (page - 1) * pageSize;
+      String whereClause = 'role = ?';
+      List<dynamic> whereArgs = ['kisanDoctor'];
+
+      final doctorsCount = await _db.query('users',
+          columns: ['COUNT(*) as count'],
+          where: whereClause,
+          whereArgs: whereArgs);
+      final totalItems = doctorsCount.first['count'] as int;
+      final totalPages = (totalItems / pageSize).ceil();
+
+      final users = await _db.query(
+        'users',
+        where: whereClause,
+        whereArgs: whereArgs,
+        limit: pageSize,
+        offset: offset,
+      );
+
+      List<KisanDoctorProfile> profiles = users
+          .map((user) => KisanDoctorProfile(
+                id: user['id'],
+                name: user['name'],
+                email: user['email'] ?? '',
+                phone: user['phone_number'] ?? '',
+                qualification: 'Certified',
+                expertise: user['specialization'] ?? 'General',
+                specializations: _parseList(user['specialization']),
+                assignedDistricts: [user['address'] ?? 'All'],
+                languages: ['Nepali', 'English'],
+                isOnline: false,
+                rating: (user['rating'] as num?)?.toDouble() ?? 4.5,
+                answersGiven: 0,
+                farmerSatisfactionScore: 90,
+                pendingReplies: 0,
+                lastActive: DateTime.fromMillisecondsSinceEpoch(
+                    user['last_login_at'] ?? 0),
+                registeredAt: DateTime.fromMillisecondsSinceEpoch(
+                    user['created_at'] ?? 0),
+                isVerified: (user['is_verified'] ?? 0) == 1,
+              ))
+          .toList();
+
+      return PaginatedResult(
+        data: profiles,
+        currentPage: page,
+        totalPages: totalPages,
+        hasMore: page < totalPages,
+      );
     } catch (e) {
-      print('Error getting doctors: $e');
-      return [];
+      throw Exception('Failed to get doctors: $e');
     }
   }
 
   Future<void> approveDoctorRegistration(String doctorId) async {
-    await _updateUserStatus(doctorId, 'approved');
+    await _db.update(
+      'users',
+      {'is_verified': 1, 'status': 'approved'},
+      where: 'id = ?',
+      whereArgs: [doctorId],
+    );
   }
 
-  Future<void> assignDistrictToDoctor(String doctorId, List<String> districts) async {
-    // Store in user address or separate table. For now, update address.
-    if (districts.isNotEmpty) {
-      await _db.update('users', {'address': districts.first}, where: 'id = ?', whereArgs: [doctorId]);
-    }
+  Future<void> assignDistrictToDoctor(
+      String doctorId, List<String> districts) async {
+    await _db.update(
+      'users',
+      {'assigned_districts': districts.join(',')},
+      where: 'id = ?',
+      whereArgs: [doctorId],
+    );
   }
 
-  Future<void> suspendDoctor(String doctorId) async {
-    await _updateUserStatus(doctorId, 'suspended');
+  Future<void> suspendDoctor(String doctorId,
+      {String? reason, Duration? duration}) async {
+    final suspendedUntil = duration != null
+        ? DateTime.now().add(duration).millisecondsSinceEpoch
+        : null;
+    await _db.update(
+      'users',
+      {
+        'status': 'suspended',
+        'suspension_reason': reason,
+        'suspended_until': suspendedUntil,
+      },
+      where: 'id = ?',
+      whereArgs: [doctorId],
+    );
   }
 
   // Marketplace Management
-  Future<List<MarketplaceProduct>> getPendingProducts() async {
+  Future<PaginatedResult<MarketplaceProduct>> getPendingProducts({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     try {
-      final products = await _db.query('products', where: 'status = ?', whereArgs: ['pending']);
-      return products.map((p) => _mapToProduct(p)).toList();
+      final offset = (page - 1) * pageSize;
+      const whereClause = 'status = ?';
+      const whereArgs = ['pending'];
+
+      final productsCount = await _db.query('products',
+          columns: ['COUNT(*) as count'],
+          where: whereClause,
+          whereArgs: whereArgs);
+      final totalItems = productsCount.first['count'] as int;
+      final totalPages = (totalItems / pageSize).ceil();
+
+      final products = await _db.query(
+        'products',
+        where: whereClause,
+        whereArgs: whereArgs,
+        limit: pageSize,
+        offset: offset,
+        orderBy: 'posted_date DESC',
+      );
+
+      final productList = products
+          .map((p) => MarketplaceProduct(
+                id: p['id'],
+                title: p['title'] ?? 'Unnamed',
+                description: p['description'] ?? '',
+                category: p['category'] ?? 'General',
+                price: (p['price'] as num).toDouble(),
+                unit: p['unit'] ?? 'unit',
+                image: p['image'] ?? '',
+                status: p['status'] ?? 'pending',
+                postedDate:
+                    DateTime.fromMillisecondsSinceEpoch(p['posted_date'] ?? 0),
+                farmerId: p['farmer_id'] ?? '',
+                farmerName: p['farmer_name'] ?? 'Unknown',
+                isVerified: (p['is_verified'] ?? 0) == 1,
+              ))
+          .toList();
+
+      return PaginatedResult(
+        data: productList,
+        currentPage: page,
+        totalPages: totalPages,
+        hasMore: page < totalPages,
+      );
     } catch (e) {
-      return [];
+      throw Exception('Failed to get pending products: $e');
     }
   }
 
   Future<void> approveProduct(String productId) async {
-    await _db.update('products', {'status': 'approved'}, where: 'id = ?', whereArgs: [productId]);
+    await _db.update('products', {'status': 'approved'},
+        where: 'id = ?', whereArgs: [productId]);
   }
 
-  Future<void> rejectProduct(String productId, String reason) async {
-    await _db.update('products', {'status': 'rejected'}, where: 'id = ?', whereArgs: [productId]);
-  }
-
-  Future<void> updateProductPrice(String productId, double newPrice) async {
-    await _db.update('products', {'price': newPrice}, where: 'id = ?', whereArgs: [productId]);
+  Future<void> rejectProduct(String productId, {String? reason}) async {
+    await _db.update(
+      'products',
+      {'status': 'rejected', 'rejection_reason': reason},
+      where: 'id = ?',
+      whereArgs: [productId],
+    );
   }
 
   // Market Prices Management
   Future<List<MarketPrice>> getTodaysPrices() async {
     try {
       final prices = await _db.query('market_prices');
-      return prices.map((p) => MarketPrice(
-        item: p['item'],
-        todayPrice: p['today_price'],
-        previousWeekPrice: p['previous_week_price'],
-        trend: p['trend'],
-        district: p['district'],
-      )).toList();
+      return prices.map((p) => MarketPrice.fromMap(p)).toList();
     } catch (e) {
       return [];
     }
   }
 
-  Future<void> updateMarketPrice(String item, double price, String district) async {
-    // Check if exists
-    final existing = await _db.query('market_prices', 
-      where: 'item = ? AND district = ?', 
-      whereArgs: [item, district]
-    );
+  Future<void> updateMarketPrice(
+      String item, double price, String district) async {
+    final existing = await _db.query('market_prices',
+        where: 'item = ? AND district = ?', whereArgs: [item, district]);
 
     if (existing.isNotEmpty) {
-      await _db.update('market_prices', 
-        {
-          'previous_week_price': existing.first['today_price'],
-          'today_price': price,
-          'updated_at': DateTime.now().millisecondsSinceEpoch
-        },
-        where: 'id = ?',
-        whereArgs: [existing.first['id']]
-      );
+      await _db.update(
+          'market_prices',
+          {
+            'previous_week_price': existing.first['today_price'],
+            'today_price': price,
+            'updated_at': DateTime.now().millisecondsSinceEpoch
+          },
+          where: 'id = ?',
+          whereArgs: [existing.first['id']]);
     } else {
       await _db.insert('market_prices', {
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -214,7 +369,7 @@ class AdminService {
       'title': title,
       'body': body,
       'date': DateTime.now().millisecondsSinceEpoch,
-      'receiver_id': receiverId ?? (toAll ? 'ALL' : district),
+      'receiver_id': receiverId ?? (toAll ? 'all' : district),
       'is_read': 0,
       'type': 'info'
     });
@@ -223,15 +378,7 @@ class AdminService {
   Future<List<AdminNotification>> getNotifications() async {
     try {
       final notifs = await _db.query('notifications', orderBy: 'date DESC');
-      return notifs.map((n) => AdminNotification(
-        id: n['id'],
-        title: n['title'],
-        body: n['body'],
-        date: DateTime.fromMillisecondsSinceEpoch(n['date']),
-        receiverId: n['receiver_id'] ?? '',
-        isRead: (n['is_read'] ?? 0) == 1,
-        type: _parseNotificationType(n['type']),
-      )).toList();
+      return notifs.map((n) => AdminNotification.fromMap(n)).toList();
     } catch (e) {
       return [];
     }
@@ -239,46 +386,31 @@ class AdminService {
 
   // Community Posts Management
   Future<List<CommunityPost>> getPendingPosts() async {
-    // Assuming 'posts' table has a status field. If not, we might need to add it or assume all are approved.
-    // database.dart schema for posts didn't have status. I should have added it.
-    // For now, return all posts.
     try {
-      final posts = await _db.query('posts');
-      return posts.map((p) => CommunityPost(
-        id: p['id'],
-        farmerId: p['user_id'],
-        content: p['content'],
-        images: p['image_url'] != null ? [p['image_url']] : [],
-        postedDate: DateTime.fromMillisecondsSinceEpoch(p['created_at']),
-        likes: p['likes'] ?? 0,
-        comments: p['comments'] ?? 0,
-        status: 'approved', // Default
-      )).toList();
+      final posts =
+          await _db.query('posts', where: 'status = ?', whereArgs: ['pending']);
+      return posts.map((p) => CommunityPost.fromMap(p)).toList();
     } catch (e) {
-      return [];
+      final posts = await _db.query('posts');
+      return posts.map((p) => CommunityPost.fromMap(p)).toList();
     }
   }
 
   Future<void> approvePost(String postId) async {
-    // No-op if no status field
+    await _db.update('posts', {'status': 'approved'},
+        where: 'id = ?', whereArgs: [postId]);
   }
 
-  Future<void> deletePost(String postId) async {
+  Future<void> deletePost(String postId, {String? reason}) async {
     await _db.delete('posts', where: 'id = ?', whereArgs: [postId]);
   }
 
   // Security & Logs
   Future<List<SecurityLog>> getSecurityLogs({int limit = 100}) async {
     try {
-      final logs = await _db.query('security_logs', orderBy: 'timestamp DESC', limit: limit);
-      return logs.map((l) => SecurityLog(
-        id: l['id'],
-        adminId: l['admin_id'],
-        action: l['action'],
-        ipAddress: l['ip_address'],
-        timestamp: DateTime.fromMillisecondsSinceEpoch(l['timestamp']),
-        details: l['details'],
-      )).toList();
+      final logs = await _db.query('security_logs',
+          orderBy: 'timestamp DESC', limit: limit);
+      return logs.map((l) => SecurityLog.fromMap(l)).toList();
     } catch (e) {
       return [];
     }
@@ -303,24 +435,34 @@ class AdminService {
   // Dashboard Metrics
   Future<AdminDashboardMetrics> getDashboardMetrics() async {
     try {
-      final farmers = await _db.query('users', where: 'role = ?', whereArgs: ['farmer']);
-      final doctors = await _db.query('users', where: 'role = ?', whereArgs: ['kisanDoctor']);
+      final farmers =
+          await _db.query('users', where: 'role = ?', whereArgs: ['farmer']);
+      final doctors = await _db
+          .query('users', where: 'role = ?', whereArgs: ['kisanDoctor']);
       final products = await _db.query('products');
-      
-      // Simple logic for active today
+
       final now = DateTime.now();
-      final startOfDay = DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
-      final activeFarmers = farmers.where((f) => (f['last_login_at'] ?? 0) >= startOfDay).length;
+      final startOfDay =
+          DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
+      final activeFarmers =
+          farmers.where((f) => (f['last_login_at'] ?? 0) >= startOfDay).length;
 
       return AdminDashboardMetrics(
         totalFarmers: farmers.length,
         activeFarmersToday: activeFarmers,
         registeredDoctors: doctors.length,
-        submittedProblems: 0, // Need complaints table
+        submittedProblems: 0,
         marketplaceListings: products.length,
-        soldItemsToday: products.where((p) => p['status'] == 'sold' && (p['posted_date'] ?? 0) >= startOfDay).length,
+        soldItemsToday: products
+            .where((p) =>
+                p['status'] == 'sold' && (p['updated_at'] ?? 0) >= startOfDay)
+            .length,
+        pendingApprovals:
+            products.where((p) => p['status'] == 'pending').length,
+        revenueToday: 0.0,
         weatherApiStatus: 'Connected',
         systemHealthStatus: 'Healthy',
+        lastUpdated: DateTime.now(),
       );
     } catch (e) {
       return AdminDashboardMetrics(
@@ -330,80 +472,51 @@ class AdminService {
         submittedProblems: 0,
         marketplaceListings: 0,
         soldItemsToday: 0,
+        pendingApprovals: 0,
+        revenueToday: 0.0,
         weatherApiStatus: 'Error',
         systemHealthStatus: 'Error',
+        lastUpdated: DateTime.now(),
       );
     }
   }
 
-  // Role Management (Super Admin only)
-  Future<void> createAdminRole({
-    required String adminId,
-    required String name,
-    required List<String> permissions,
-  }) async {
-    // Implement if needed
+  Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
-  Future<void> updateAdminPermissions(String adminId, List<String> permissions) async {
-    await _db.update('users', 
-      {'permissions': json.encode(permissions)}, 
-      where: 'id = ?', 
-      whereArgs: [adminId]
-    );
-  }
-
-  // System Control (Super Admin only)
+  // System Control
   Future<void> performSystemBackup() async {
-    // Mock backup
     await Future.delayed(const Duration(seconds: 2));
   }
 
-  Future<void> clearCache() async {
-    // Mock clear cache
-  }
+  Future<void> clearCache() async {}
 
-  Future<void> toggleMaintenanceMode(bool enable) async {
-    // Mock maintenance mode
-  }
+  Future<void> toggleMaintenanceMode(bool enable) async {}
 
   // Helpers
-  Future<void> _updateUserStatus(String userId, String status) async {
-    await _db.update('users', {'status': status}, where: 'id = ?', whereArgs: [userId]);
+  String _extractDistrict(String? address) {
+    if (address == null || address.isEmpty) return 'Unknown';
+    final parts = address.split(',').map((part) => part.trim()).toList();
+    if (parts.length > 1) return parts.last;
+    return address;
   }
 
-  String _extractDistrict(String? address) {
-    if (address == null) return 'Unknown';
-    // Simple logic: assume address format "City, District" or just "District"
-    final parts = address.split(',');
-    return parts.last.trim();
+  String _extractProvince(String? address) {
+    return 'Unknown';
   }
 
   List<String> _parseList(String? input) {
-    if (input == null) return [];
-    return [input]; // Treat as single item list for now
-  }
-
-  MarketplaceProduct _mapToProduct(Map<String, dynamic> p) {
-    return MarketplaceProduct(
-      id: p['id'],
-      title: p['title'],
-      category: p['category'],
-      price: p['price'],
-      location: p['location'],
-      image: p['image'],
-      status: p['status'],
-      postedDate: DateTime.fromMillisecondsSinceEpoch(p['posted_date']),
-      farmerId: p['farmer_id'],
-    );
-  }
-
-  NotificationType _parseNotificationType(String type) {
-    switch (type) {
-      case 'alert': return NotificationType.alert;
-      case 'warning': return NotificationType.warning;
-      case 'success': return NotificationType.success;
-      default: return NotificationType.info;
-    }
+    if (input == null || input.isEmpty) return [];
+    return input
+        .split(',')
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toList();
   }
 }

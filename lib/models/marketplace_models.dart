@@ -1,67 +1,105 @@
 class Product {
   final String id;
-  final String name;
+  final String title;
   final String description;
   final double price;
   final String unit;
   final String category;
+  final String subCategory;
   final String sellerId;
   final String sellerName;
-  final String? imageUrl;
-  final int quantity;
-  final bool isAvailable;
-  final DateTime createdAt;
+  final List<String> imageUrls;
+  final double quantity;
+  final String unitSymbol;
   final String location;
+  final String district;
+  final bool isVerified;
+  final String qualityGrade;
+  final bool isOrganic;
+  final String status;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
 
   const Product({
     required this.id,
-    required this.name,
+    required this.title,
     required this.description,
     required this.price,
     required this.unit,
     required this.category,
+    required this.subCategory,
     required this.sellerId,
     required this.sellerName,
-    this.imageUrl,
+    required this.imageUrls,
     required this.quantity,
-    this.isAvailable = true,
-    required this.createdAt,
+    required this.unitSymbol,
     required this.location,
+    required this.district,
+    this.isVerified = false,
+    this.qualityGrade = 'B',
+    this.isOrganic = false,
+    this.status = 'pending',
+    required this.createdAt,
+    this.updatedAt,
   });
+
+  // Alias for backward compatibility if needed
+  String get name => title;
+  String get imageUrl => imageUrls.isNotEmpty ? imageUrls.first : '';
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      price: (json['price'] as num).toDouble(),
-      unit: json['unit'] as String,
-      category: json['category'] as String,
-      sellerId: json['sellerId'] as String,
-      sellerName: json['sellerName'] as String,
-      imageUrl: json['imageUrl'] as String?,
-      quantity: json['quantity'] as int,
-      isAvailable: json['isAvailable'] as bool? ?? true,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(json['createdAt'] as int),
-      location: json['location'] as String,
+      title: json['title'] ?? json['name'] as String? ?? 'Unnamed Product',
+      description: json['description'] as String? ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      unit: json['unit'] as String? ?? 'unit',
+      category: json['category'] as String? ?? 'General',
+      subCategory: json['subCategory'] ?? json['category'] ?? 'General',
+      sellerId: json['sellerId'] as String? ?? '',
+      sellerName: json['sellerName'] ?? 'Unknown Seller',
+      imageUrls: json['imageUrls'] != null
+          ? List<String>.from(json['imageUrls'])
+          : (json['imageUrl'] != null ? [json['imageUrl']] : []),
+      quantity:
+          (json['quantity'] ?? json['quantityAvailable'] ?? 0.0).toDouble(),
+      unitSymbol: json['unitSymbol'] ?? json['unit'] ?? 'unit',
+      location: json['location'] as String? ?? 'Unknown',
+      district: json['district'] ?? 'Unknown',
+      isVerified: json['isVerified'] as bool? ?? false,
+      qualityGrade: json['qualityGrade'] ?? 'B',
+      isOrganic: json['isOrganic'] as bool? ?? false,
+      status: json['status'] as String? ?? 'pending',
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+          json['createdAt'] as int? ?? DateTime.now().millisecondsSinceEpoch),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(json['updatedAt'] as int)
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
+      'title': title,
       'description': description,
       'price': price,
       'unit': unit,
       'category': category,
+      'subCategory': subCategory,
       'sellerId': sellerId,
       'sellerName': sellerName,
-      'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
       'quantity': quantity,
-      'isAvailable': isAvailable,
-      'createdAt': createdAt.millisecondsSinceEpoch,
+      'unitSymbol': unitSymbol,
       'location': location,
+      'district': district,
+      'isVerified': isVerified,
+      'qualityGrade': qualityGrade,
+      'isOrganic': isOrganic,
+      'status': status,
+      'createdAt': createdAt.millisecondsSinceEpoch,
+      'updatedAt': updatedAt?.millisecondsSinceEpoch,
     };
   }
 }

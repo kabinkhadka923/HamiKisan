@@ -94,10 +94,10 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
             width: 2,
           ),
         ),

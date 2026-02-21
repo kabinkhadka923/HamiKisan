@@ -39,7 +39,7 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
       farmingCategory: json['farmingCategory'] as String?,
       specialization: json['specialization'] as String?,
       permissions: (json['permissions'] as List<dynamic>?)?.cast<String>(),
-      createdAt: json['createdAt'] != null 
+      createdAt: json['createdAt'] != null
           ? DateTime.fromMillisecondsSinceEpoch(json['createdAt'] as int)
           : DateTime.now(),
       lastLoginAt: json['lastLoginAt'] == null
@@ -52,11 +52,11 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
 enum UserRole {
   @JsonValue('farmer')
   farmer,
-  @JsonValue('kisan_doctor')
+  @JsonValue('kisanDoctor')
   kisanDoctor,
-  @JsonValue('kisan_admin')
+  @JsonValue('kisanAdmin')
   kisanAdmin,
-  @JsonValue('super_admin')
+  @JsonValue('superAdmin')
   superAdmin,
 }
 
@@ -113,8 +113,10 @@ class User {
   Map<String, dynamic> toJson() => _$UserToJson(this);
 
   // Utility methods
-  bool get canAccessAdminFeatures => role == UserRole.kisanAdmin || role == UserRole.superAdmin;
-  bool get canAccessDoctorFeatures => role == UserRole.kisanDoctor || role == UserRole.superAdmin;
+  bool get canAccessAdminFeatures =>
+      role == UserRole.kisanAdmin || role == UserRole.superAdmin;
+  bool get canAccessDoctorFeatures =>
+      role == UserRole.kisanDoctor || role == UserRole.superAdmin;
   bool get isFarmer => role == UserRole.farmer;
   bool get isActive => status == UserStatus.approved;
 

@@ -1,0 +1,3676 @@
+{
+  "generated_at": "2026-02-03T23:40:35+0545",
+  "issues": [
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\core\\cleanup\\security_audit.dart",
+      "line": 4,
+      "col": 8,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "depend_on_referenced_packages",
+      "message": "The imported package 'yaml' isn't a dependency of the importing package.",
+      "correction": "Try adding a dependency for 'yaml' in the 'pubspec.yaml' file."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\core\\cleanup\\simple_security_audit.dart",
+      "line": 155,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 12,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 13,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 14,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 15,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 21,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 22,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 23,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 24,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 31,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 32,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 33,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 34,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 35,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 36,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 37,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 39,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 43,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 44,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 45,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 54,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 55,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 56,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 57,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 58,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 68,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 69,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 70,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 71,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 72,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 81,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 82,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 83,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\debug_credentials.dart",
+      "line": 84,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\main.dart",
+      "line": 175,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\main.dart",
+      "line": 198,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 136,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 141,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 144,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 149,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 157,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 164,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 176,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 433,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\auth_provider.dart",
+      "line": 440,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\community_provider.dart",
+      "line": 344,
+      "col": 8,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement admin-level group fetching",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\community_provider.dart",
+      "line": 352,
+      "col": 10,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement group creation",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\community_provider.dart",
+      "line": 365,
+      "col": 10,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement leader assignment",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\community_provider.dart",
+      "line": 378,
+      "col": 10,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement group deactivation",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\community_provider.dart",
+      "line": 391,
+      "col": 10,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement system-wide feedback fetching",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\community_provider.dart",
+      "line": 402,
+      "col": 10,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement system-wide statistics",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\system_health_provider.dart",
+      "line": 91,
+      "col": 30,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "curly_braces_in_flow_control_structures",
+      "message": "Statements in an if should be enclosed in a block.",
+      "correction": "Try wrapping the statement in a block."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\system_health_provider.dart",
+      "line": 402,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\system_health_provider.dart",
+      "line": 432,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\system_health_provider.dart",
+      "line": 453,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\providers\\system_health_provider.dart",
+      "line": 464,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin\\admin_dashboard_screen.dart",
+      "line": 370,
+      "col": 49,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin\\admin_dashboard_screen.dart",
+      "line": 467,
+      "col": 49,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin\\admin_dashboard_screen.dart",
+      "line": 680,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin\\admin_dashboard_screen.dart",
+      "line": 855,
+      "col": 44,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin\\farmer_listings_screen.dart",
+      "line": 75,
+      "col": 64,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 62,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 67,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 68,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 69,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 71,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 74,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 76,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 91,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 152,
+      "col": 48,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 157,
+      "col": 52,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 165,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 211,
+      "col": 31,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 213,
+      "col": 50,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 248,
+      "col": 27,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 250,
+      "col": 46,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 274,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 282,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 332,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 346,
+      "col": 58,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 348,
+      "col": 60,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 354,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 357,
+      "col": 62,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 386,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 401,
+      "col": 58,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 403,
+      "col": 58,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 407,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 417,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 420,
+      "col": 62,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 458,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 460,
+      "col": 54,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 497,
+      "col": 54,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 526,
+      "col": 49,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 557,
+      "col": 32,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 559,
+      "col": 51,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 583,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 606,
+      "col": 57,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 614,
+      "col": 45,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 617,
+      "col": 43,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 635,
+      "col": 43,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 678,
+      "col": 56,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 697,
+      "col": 56,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 716,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 718,
+      "col": 52,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 725,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 733,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 754,
+      "col": 28,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 771,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 799,
+      "col": 13,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 829,
+      "col": 30,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 885,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 909,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 917,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 971,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 1014,
+      "col": 38,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 1016,
+      "col": 57,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 1083,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\admin_login_screen.dart",
+      "line": 1125,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\community_screen.dart",
+      "line": 132,
+      "col": 40,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\community_screen.dart",
+      "line": 272,
+      "col": 64,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\create_post_screen.dart",
+      "line": 86,
+      "col": 60,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\create_post_screen.dart",
+      "line": 197,
+      "col": 36,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\doctor_dashboard_screen.dart",
+      "line": 651,
+      "col": 67,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 159,
+      "col": 22,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 161,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 249,
+      "col": 51,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 479,
+      "col": 26,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 600,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 722,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 808,
+      "col": 27,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 817,
+      "col": 46,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1035,
+      "col": 31,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1036,
+      "col": 38,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1068,
+      "col": 30,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1189,
+      "col": 47,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1213,
+      "col": 48,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1277,
+      "col": 47,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1281,
+      "col": 49,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1282,
+      "col": 61,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1487,
+      "col": 33,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check.",
+      "correction": "Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1488,
+      "col": 40,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check.",
+      "correction": "Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1558,
+      "col": 49,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1594,
+      "col": 29,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1624,
+      "col": 26,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1689,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1751,
+      "col": 49,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 1767,
+      "col": 57,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 2019,
+      "col": 31,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 2021,
+      "col": 40,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 2025,
+      "col": 40,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 2134,
+      "col": 31,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 2135,
+      "col": 38,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "use_build_context_synchronously",
+      "message": "Don't use 'BuildContext's across async gaps.",
+      "correction": "Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 2157,
+      "col": 26,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 2214,
+      "col": 27,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\farmer_dashboard_screen.dart",
+      "line": 2225,
+      "col": 32,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\kisan_admin_dashboard_screen.dart",
+      "line": 99,
+      "col": 52,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\kisan_admin_dashboard_screen.dart",
+      "line": 220,
+      "col": 70,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\kisan_admin_dashboard_screen.dart",
+      "line": 220,
+      "col": 103,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\kisan_admin_dashboard_screen.dart",
+      "line": 383,
+      "col": 52,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 168,
+      "col": 68,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 168,
+      "col": 99,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 181,
+      "col": 68,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 181,
+      "col": 99,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 315,
+      "col": 52,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 332,
+      "col": 52,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 509,
+      "col": 40,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 613,
+      "col": 40,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 613,
+      "col": 55,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 617,
+      "col": 40,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 617,
+      "col": 55,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 621,
+      "col": 40,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 621,
+      "col": 55,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 1009,
+      "col": 42,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 1011,
+      "col": 61,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\dashboards\\real_admin_dashboard_screen.dart",
+      "line": 1054,
+      "col": 57,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\diagnosis_result_screen.dart",
+      "line": 148,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\doctor_screen.dart",
+      "line": 807,
+      "col": 48,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\doctor_screen.dart",
+      "line": 825,
+      "col": 38,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_admin_secure_panel.dart",
+      "line": 236,
+      "col": 58,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_admin_secure_panel.dart",
+      "line": 646,
+      "col": 28,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_doctor\\appointments_screen.dart",
+      "line": 95,
+      "col": 51,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_doctor\\appointments_screen.dart",
+      "line": 150,
+      "col": 57,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_doctor\\consultation_screen.dart",
+      "line": 56,
+      "col": 55,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_doctor\\kisan_doctor_dashboard_screen.dart",
+      "line": 213,
+      "col": 43,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_doctor\\notifications_screen.dart",
+      "line": 81,
+      "col": 48,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_doctor\\notifications_screen.dart",
+      "line": 87,
+      "col": 61,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\kisan_doctor\\profile_screen.dart",
+      "line": 61,
+      "col": 49,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\language_selection_screen.dart",
+      "line": 97,
+      "col": 59,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\language_selection_screen.dart",
+      "line": 100,
+      "col": 61,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\login_screen.dart",
+      "line": 359,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\login_screen.dart",
+      "line": 418,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\login_screen.dart",
+      "line": 541,
+      "col": 44,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\login_screen.dart",
+      "line": 543,
+      "col": 63,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 246,
+      "col": 46,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 382,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 459,
+      "col": 24,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 461,
+      "col": 43,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 468,
+      "col": 30,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 490,
+      "col": 36,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 511,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 634,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 805,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 1086,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 1139,
+      "col": 47,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 1142,
+      "col": 62,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 1274,
+      "col": 44,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 1275,
+      "col": 44,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 1805,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\market_prices_screen.dart",
+      "line": 1813,
+      "col": 45,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\marketplace\\marketplace_screen.dart",
+      "line": 141,
+      "col": 56,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\marketplace\\sell_product_screen.dart",
+      "line": 418,
+      "col": 20,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Add tag input",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\my_posts_screen.dart",
+      "line": 39,
+      "col": 8,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Fetch actual posts from database",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\notifications_screen.dart",
+      "line": 242,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\notifications_screen.dart",
+      "line": 359,
+      "col": 70,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\notifications_screen.dart",
+      "line": 476,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\otp_verification_screen.dart",
+      "line": 123,
+      "col": 22,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement resend OTP logic",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\post_detail_screen.dart",
+      "line": 187,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\profile_screen.dart",
+      "line": 219,
+      "col": 19,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\profile_screen.dart",
+      "line": 220,
+      "col": 19,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\profile_screen.dart",
+      "line": 233,
+      "col": 19,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\profile_screen.dart",
+      "line": 234,
+      "col": 19,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\register_screen.dart",
+      "line": 208,
+      "col": 61,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\register_screen.dart",
+      "line": 347,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\register_screen.dart",
+      "line": 356,
+      "col": 34,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\settings_screen.dart",
+      "line": 108,
+      "col": 12,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement notification toggle",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\settings_screen.dart",
+      "line": 131,
+      "col": 12,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Show privacy policy",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\settings_screen.dart",
+      "line": 171,
+      "col": 17,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\settings_screen.dart",
+      "line": 172,
+      "col": 17,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\settings_screen.dart",
+      "line": 182,
+      "col": 17,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\settings_screen.dart",
+      "line": 183,
+      "col": 17,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\settings_screen.dart",
+      "line": 251,
+      "col": 20,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement password change",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\splash_screen.dart",
+      "line": 79,
+      "col": 43,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\splash_screen.dart",
+      "line": 110,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\splash_screen.dart",
+      "line": 131,
+      "col": 39,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\super_admin_secure_panel.dart",
+      "line": 302,
+      "col": 66,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\super_admin_secure_panel.dart",
+      "line": 805,
+      "col": 26,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\super_admin_secure_panel.dart",
+      "line": 1009,
+      "col": 26,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\system_health_screen.dart",
+      "line": 13,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "library_private_types_in_public_api",
+      "message": "Invalid use of a private type in a public API.",
+      "correction": "Try making the private type public, or making the API that uses the private type also be private."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\system_health_screen.dart",
+      "line": 83,
+      "col": 44,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\system_health_screen.dart",
+      "line": 135,
+      "col": 47,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\tools_screen.dart",
+      "line": 435,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\video_call_screen.dart",
+      "line": 97,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\video_call_screen.dart",
+      "line": 156,
+      "col": 27,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\video_call_screen.dart",
+      "line": 282,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\video_call_screen.dart",
+      "line": 290,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\video_call_screen.dart",
+      "line": 388,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\video_call_screen.dart",
+      "line": 438,
+      "col": 34,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\video_call_screen.dart",
+      "line": 439,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\screens\\video_call_screen.dart",
+      "line": 482,
+      "col": 35,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 76,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 78,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 149,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 182,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 203,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 217,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 229,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 245,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 295,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 309,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 326,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 359,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 373,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 392,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 408,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 421,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 495,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\audio_service.dart",
+      "line": 512,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 85,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 92,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 111,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 272,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 276,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 282,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 299,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 302,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 305,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 312,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 319,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 321,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 322,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 329,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 336,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 337,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 341,
+      "col": 13,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 357,
+      "col": 13,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 374,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 389,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 390,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 665,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 729,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 731,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 768,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 769,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 770,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 771,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 773,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 799,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\auth_service.dart",
+      "line": 814,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\call_state_manager.dart",
+      "line": 18,
+      "col": 20,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "prefer_final_fields",
+      "message": "The private field _callHistory could be 'final'.",
+      "correction": "Try making the field 'final'."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\call_state_manager.dart",
+      "line": 51,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\call_state_manager.dart",
+      "line": 61,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\call_state_manager.dart",
+      "line": 92,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\call_state_manager.dart",
+      "line": 93,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\call_state_manager.dart",
+      "line": 94,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 56,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 66,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 98,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 109,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 114,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 130,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 147,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 156,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 168,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 193,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 214,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\call\\kisan_video_call_service.dart",
+      "line": 220,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\chat_service.dart",
+      "line": 1,
+      "col": 60,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "library_prefixes",
+      "message": "The prefix 'IO' isn't a lower_case_with_underscores identifier.",
+      "correction": "Try changing the prefix to follow the lower_case_with_underscores style."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\database.dart",
+      "line": 31,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\database.dart",
+      "line": 71,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\market_service.dart",
+      "line": 77,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\market_service.dart",
+      "line": 101,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\market_service.dart",
+      "line": 208,
+      "col": 19,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\marketplace_database_service.dart",
+      "line": 36,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\marketplace_database_service.dart",
+      "line": 53,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\marketplace_database_service.dart",
+      "line": 84,
+      "col": 17,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "empty_catches",
+      "message": "Empty catch block.",
+      "correction": "Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\weather_service.dart",
+      "line": 41,
+      "col": 10,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Replace with actual API call",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\weather_service.dart",
+      "line": 63,
+      "col": 10,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Replace with actual API call",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\weather_service.dart",
+      "line": 412,
+      "col": 10,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement actual GPS/network location",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\weather_service.dart",
+      "line": 425,
+      "col": 8,
+      "severity": "INFO",
+      "type": "TODO",
+      "code": "todo",
+      "message": "TODO: Implement reverse geocoding",
+      "correction": null
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 19,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 21,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 34,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 44,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 67,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 68,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 69,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 70,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\services\\web_auth_service.dart",
+      "line": 72,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\utils\\url_strategy_web.dart",
+      "line": 1,
+      "col": 8,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "depend_on_referenced_packages",
+      "message": "The imported package 'flutter_web_plugins' isn't a dependency of the importing package.",
+      "correction": "Try adding a dependency for 'flutter_web_plugins' in the 'pubspec.yaml' file."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\admin_shield.dart",
+      "line": 23,
+      "col": 44,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\admin_shield.dart",
+      "line": 24,
+      "col": 44,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\admin_shield.dart",
+      "line": 39,
+      "col": 55,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\admin_shield.dart",
+      "line": 52,
+      "col": 55,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\admin_shield.dart",
+      "line": 63,
+      "col": 53,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\admin_shield.dart",
+      "line": 96,
+      "col": 23,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\animated_logo.dart",
+      "line": 58,
+      "col": 46,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\animated_logo.dart",
+      "line": 74,
+      "col": 43,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\loading_overlay.dart",
+      "line": 23,
+      "col": 33,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\loading_overlay.dart",
+      "line": 34,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\role_selection_card.dart",
+      "line": 31,
+      "col": 37,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\role_selection_card.dart",
+      "line": 39,
+      "col": 34,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\role_selection_card.dart",
+      "line": 46,
+      "col": 41,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\role_selection_card.dart",
+      "line": 60,
+      "col": 53,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\system_health_log_viewer.dart",
+      "line": 81,
+      "col": 52,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\system_health_service_card.dart",
+      "line": 52,
+      "col": 47,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\system_health_service_card.dart",
+      "line": 184,
+      "col": 32,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\system_health_service_card.dart",
+      "line": 194,
+      "col": 46,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\system_health_service_card.dart",
+      "line": 195,
+      "col": 47,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\lib\\widgets\\system_health_service_card.dart",
+      "line": 196,
+      "col": 23,
+      "severity": "INFO",
+      "type": "HINT",
+      "code": "deprecated_member_use",
+      "message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.",
+      "correction": "Try replacing the use of the deprecated member with the replacement."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\test_enhanced_security_audit.dart",
+      "line": 8,
+      "col": 3,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\test_enhanced_security_audit.dart",
+      "line": 18,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\test_enhanced_security_audit.dart",
+      "line": 24,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\test_enhanced_security_audit.dart",
+      "line": 27,
+      "col": 11,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\test_enhanced_security_audit.dart",
+      "line": 35,
+      "col": 7,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\test_enhanced_security_audit.dart",
+      "line": 38,
+      "col": 9,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    },
+    {
+      "file": "C:\\Users\\user\\Gorkha\\HamiKisan\\test_enhanced_security_audit.dart",
+      "line": 43,
+      "col": 5,
+      "severity": "INFO",
+      "type": "LINT",
+      "code": "avoid_print",
+      "message": "Don't invoke 'print' in production code.",
+      "correction": "Try using a logging framework."
+    }
+  ],
+  "stderr": ""
+}

@@ -96,7 +96,7 @@ class SecurityService {
   }) {
     final errors = <String, String>{};
 
-    print('DEBUG - Phone validation: phoneNumber="$phoneNumber"');
+
     
     // Email validation
     if (!SecurityUtils.isValidEmail(email)) {
@@ -111,7 +111,7 @@ class SecurityService {
       cleanPhone = cleanPhone.substring(3);
     }
     
-    print('DEBUG - Cleaned phone: "$cleanPhone", length: ${cleanPhone.length}, starts with 9: ${cleanPhone.startsWith('9')}');
+
     
     if (cleanPhone.length != 10 || !cleanPhone.startsWith('9')) {
       errors['phoneNumber'] = 'Invalid Nepal phone number (got: $cleanPhone)';

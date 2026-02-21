@@ -8,8 +8,6 @@ class GovernmentSchemesScreen extends StatefulWidget {
 }
 
 class _GovernmentSchemesScreenState extends State<GovernmentSchemesScreen> {
-  final List<GovernmentScheme> _schemes = [];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

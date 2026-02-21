@@ -96,7 +96,7 @@ class KisanAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: color.withOpacity(0.2),
+                            backgroundColor: color.withValues(alpha: 0.2),
                             child: Icon(Icons.person, color: color),
                           ),
                           title: Text('Farmer ${index + 1}'),
@@ -217,7 +217,7 @@ class KisanAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: verified ? Colors.green.withOpacity(0.2) : Colors.orange.withOpacity(0.2),
+                            backgroundColor: verified ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
                             child: Icon(Icons.medical_services, color: verified ? Colors.green : Colors.orange),
                           ),
                           title: Text('Dr. Doctor ${index + 1}'),
@@ -380,7 +380,7 @@ class KisanAdminDashboardScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: color.withOpacity(0.2),
+                                      color: color.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(status, style: TextStyle(color: color, fontSize: 11)),
@@ -603,125 +603,6 @@ class KisanAdminDashboardScreen extends StatelessWidget {
         leading: Icon(icon, color: color),
         title: Text(title),
         trailing: Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
-      ),
-    );
-  }
-
-  void _showDesignDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('App Design Settings'),
-        content: SizedBox(
-          width: 400,
-          height: 350,
-          child: ListView(
-            children: [
-              const Text('Primary Color', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: [
-                  _buildColorButton(Colors.green, context),
-                  _buildColorButton(Colors.blue, context),
-                  _buildColorButton(Colors.orange, context),
-                  _buildColorButton(Colors.purple, context),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Text('Button Style', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              ListTile(
-                title: const Text('Rounded'),
-                leading: Radio(value: 1, groupValue: 1, onChanged: (v) {}),
-              ),
-              ListTile(
-                title: const Text('Square'),
-                leading: Radio(value: 2, groupValue: 1, onChanged: (v) {}),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.save),
-                label: const Text('Save Changes'),
-                onPressed: () {
-                  Navigator.pop(context);
-                  _showSnackbar(context, 'Design settings saved');
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
-      ),
-    );
-  }
-
-  Widget _buildColorButton(Color color, BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showSnackbar(context, 'Color changed to ${color.toString()}'),
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey),
-        ),
-      ),
-    );
-  }
-
-  void _showMediaDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Media Assets'),
-        content: SizedBox(
-          width: 400,
-          height: 350,
-          child: ListView(
-            children: [
-              _buildMediaItem('App Logo', 'logo.png', Icons.image, context),
-              _buildMediaItem('Background Image', 'bg.jpg', Icons.wallpaper, context),
-              _buildMediaItem('App Icon', 'icon.png', Icons.apps, context),
-              _buildMediaItem('Splash Screen', 'splash.png', Icons.phone_android, context),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.upload),
-                label: const Text('Upload New Asset'),
-                onPressed: () {
-                  Navigator.pop(context);
-                  _showSnackbar(context, 'Upload functionality');
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
-      ),
-    );
-  }
-
-  Widget _buildMediaItem(String title, String filename, IconData icon, BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.blue),
-        title: Text(title),
-        subtitle: Text(filename),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, size: 20),
-              onPressed: () => _showSnackbar(context, 'Edit $title'),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, size: 20, color: Colors.red),
-              onPressed: () => _showSnackbar(context, 'Delete $title'),
-            ),
-          ],
-        ),
       ),
     );
   }

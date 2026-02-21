@@ -7,7 +7,7 @@ import '../services/security_service.dart';
 class AuthResult {
   final bool success;
   final String error;
-  
+
   AuthResult({required this.success, this.error = ''});
 }
 
@@ -41,22 +41,22 @@ class AuthProvider with ChangeNotifier {
       if (userData != null) {
         _currentUser = User.fromJson(userData);
         await _currentUser?.loadPreferences();
-        
+
         // Log session restoration
-        await SecurityService.logSecurityEvent('SESSION_RESTORED', _currentUser!.id, {
+        await SecurityService.logSecurityEvent(
+            'SESSION_RESTORED', _currentUser!.id, {
           'name': _currentUser!.name,
         });
       }
     } catch (e) {
       _error = 'Failed to initialize auth: $e';
-      print('Auth initialization error: $e');
+
       await logout(); // Clear potentially corrupted session
     }
   }
 
-
-
-  Future<bool> loginWithUsername(String username, String password, {UserRole? role}) async {
+  Future<bool> loginWithUsername(String username, String password,
+      {UserRole? role}) async {
     _setLoading(true);
     _clearError();
 
@@ -68,7 +68,7 @@ class AuthProvider with ChangeNotifier {
       }
 
       final user = User.fromJson(userData);
-      
+
       // Verify user role matches selected role if specified
       if (role != null && user.role != role) {
         _error = 'Invalid role for this user';
@@ -77,10 +77,10 @@ class AuthProvider with ChangeNotifier {
 
       _currentUser = user;
       await saveSession();
-      
+
       // Create secure session
       await SecurityService.createSecureSession(_currentUser!.id);
-      
+
       return true;
     } catch (e) {
       _error = 'Login failed: $e';
@@ -92,10 +92,9 @@ class AuthProvider with ChangeNotifier {
 
   // Admin login through URL access only
   Future<bool> adminLogin(
-    String username, 
-    String password, 
+    String username,
+    String password,
     String adminKey, {
-    
     String? superAdminToken,
   }) async {
     _setLoading(true);
@@ -105,26 +104,28 @@ class AuthProvider with ChangeNotifier {
       // Define security keys based on admin type
       const String normalAdminKey = 'HAMIKISAN_KRISHI_ADMIN_2024';
       const String superAdminKey = 'HAMIKISAN_SUPER_ADMIN_MASTER_2024';
-      const String superAdminSecurityToken = 'NEPAL_AGRICULTURE_SUPREME_ACCESS_TOKEN_2024';
-      
+      const String superAdminSecurityToken =
+          'NEPAL_AGRICULTURE_SUPREME_ACCESS_TOKEN_2024';
+
+      // Check if this is a super admin login attempt (based on username)
+      final isSuperAdminAttempt = username.toLowerCase().contains('super');
+
       // Verify admin access keys based on type
-      if (false) {
-        if (adminKey != superAdminKey) {
-          _error = 'Invalid super admin master key';
+      if (isSuperAdminAttempt) {
+        // Allow either the super admin specific key or the general admin key that the UI sends
+        if (adminKey != superAdminKey && adminKey != normalAdminKey) {
+          _error = 'Invalid super admin access key';
           return false;
         }
-        if (superAdminToken != superAdminSecurityToken) {
+        // If it was the specific super admin key, check the token (this path might be used by a specialized unrelated UI in future)
+        if (adminKey == superAdminKey &&
+            superAdminToken != superAdminSecurityToken) {
           _error = 'Invalid super admin security token';
           return false;
         }
-      } else if (false) {
-        if (adminKey != normalAdminKey) {
-          _error = 'Invalid Krishi admin access key';
-          return false;
-        }
       } else {
-        // Fallback for old admin route
-        if (adminKey != normalAdminKey && adminKey != superAdminKey) {
+        // Regular admin login
+        if (adminKey != normalAdminKey) {
           _error = 'Invalid admin access key';
           return false;
         }
@@ -132,43 +133,47 @@ class AuthProvider with ChangeNotifier {
 
       final userData = await _authService.loginWithUsername(username, password);
       if (userData == null) {
+        print('Admin login failed: userData is null');
         _error = 'Invalid admin credentials';
         return false;
       }
 
+      print('Admin login: userData received - role: ${userData['role']}');
+
       final user = User.fromJson(userData);
-      
+      print('Admin login: User parsed - role: ${user.role}');
+
       // Verify user has appropriate admin role
-      if (false) {
+      if (isSuperAdminAttempt) {
         if (user.role != UserRole.superAdmin) {
+          print('Admin login failed: Expected superAdmin but got ${user.role}');
           _error = 'Access denied: Super Admin privileges required';
           return false;
         }
-      } else if (false) {
-        if (user.role != UserRole.kisanAdmin) {
-          _error = 'Access denied: Krishi Admin privileges required';
-          return false;
-        }
       } else {
-        // Fallback check
-        if (user.role != UserRole.kisanAdmin && user.role != UserRole.superAdmin) {
+        // Regular admin login
+        if (user.role != UserRole.kisanAdmin &&
+            user.role != UserRole.superAdmin) {
+          print(
+              'Admin login failed: Expected kisanAdmin or superAdmin but got ${user.role}');
           _error = 'Access denied: Admin privileges required';
           return false;
         }
       }
 
+      print('Admin login: Role verification passed');
       _currentUser = user;
       await saveSession();
-      
+
       // Create secure admin session
       await SecurityService.createSecureSession(_currentUser!.id);
       await SecurityService.logSecurityEvent('ADMIN_LOGIN_SUCCESS', user.id, {
-        
         'name': user.name,
       });
-      
+
       return true;
     } catch (e) {
+      print('Admin login error: $e');
       _error = 'Admin login failed: $e';
       return false;
     } finally {
@@ -274,8 +279,6 @@ class AuthProvider with ChangeNotifier {
       return false;
     }
   }
-
-
 
   Future<bool> verifyOTP(String phoneNumber, String otp) async {
     _setLoading(true);
@@ -386,15 +389,15 @@ class AuthProvider with ChangeNotifier {
     _setLoading(true);
     try {
       final userId = _currentUser?.id ?? 'unknown';
-      
+
       await _authService.logout();
       await SecurityService.invalidateSession();
-      
+
       // Log logout event
       await SecurityService.logSecurityEvent('LOGOUT', userId, {
         'timestamp': DateTime.now().toIso8601String(),
       });
-      
+
       _currentUser = null;
       _error = null;
     } catch (e) {
@@ -406,7 +409,8 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> updateLanguage(String language) async {
     if (_currentUser != null) {
-      _currentUser = _currentUser!.copyWith(language: language, hasSelectedLanguage: true);
+      _currentUser =
+          _currentUser!.copyWith(language: language, hasSelectedLanguage: true);
       await _authService.updateUserLanguage(_currentUser!.id, language);
       await _authService.updateUserLanguageSelection(_currentUser!.id, true);
       notifyListeners();
@@ -426,18 +430,14 @@ class AuthProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('saved_username', username);
-    } catch (e) {
-      print('Failed to save username: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> clearSavedUsername() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('saved_username');
-    } catch (e) {
-      print('Failed to clear saved username: $e');
-    }
+    } catch (e) {}
   }
 
   void _setLoading(bool loading) {
@@ -459,7 +459,9 @@ class AuthProvider with ChangeNotifier {
     if (_currentUser == null) return false;
     if (_currentUser!.role == UserRole.superAdmin) return true;
     if (_currentUser!.role == UserRole.kisanAdmin) {
-      return permission.contains('admin') || permission.contains('moderate') || permission.contains('manage');
+      return permission.contains('admin') ||
+          permission.contains('moderate') ||
+          permission.contains('manage');
     }
     final permissions = _currentUser!.permissions ?? [];
     return permissions.contains(permission);

@@ -102,7 +102,8 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> assignDistrictToDoctor(String doctorId, List<String> districts) async {
+  Future<void> assignDistrictToDoctor(
+      String doctorId, List<String> districts) async {
     try {
       await _adminService.assignDistrictToDoctor(doctorId, districts);
       notifyListeners();
@@ -126,7 +127,8 @@ class AdminProvider extends ChangeNotifier {
   Future<void> loadPendingProducts() async {
     _setLoading(true);
     try {
-      _products = await _adminService.getPendingProducts();
+      final result = await _adminService.getPendingProducts();
+      _products = result.data;
       _error = null;
       notifyListeners();
     } catch (e) {
@@ -150,7 +152,7 @@ class AdminProvider extends ChangeNotifier {
 
   Future<void> rejectProduct(String productId, String reason) async {
     try {
-      await _adminService.rejectProduct(productId, reason);
+      await _adminService.rejectProduct(productId, reason: reason);
       _products.removeWhere((p) => p.id == productId);
       notifyListeners();
     } catch (e) {
@@ -184,7 +186,8 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateMarketPrice(String item, double price, String district) async {
+  Future<void> updateMarketPrice(
+      String item, double price, String district) async {
     try {
       await _adminService.updateMarketPrice(item, price, district);
       notifyListeners();

@@ -8,8 +8,6 @@ class LearningScreen extends StatefulWidget {
 }
 
 class _LearningScreenState extends State<LearningScreen> {
-  final List<LearningModule> _modules = [];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

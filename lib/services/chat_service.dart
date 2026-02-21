@@ -1,232 +1,311 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/user.dart';
-import 'database.dart';
 
 class ChatService {
   static final ChatService _instance = ChatService._internal();
   factory ChatService() => _instance;
   ChatService._internal();
 
-  IO.Socket? _socket;
-  bool _isConnected = false;
+  static const String _usersKey = 'local_users_db_v4';
+  static const String _messagesKey = 'hami_kisan_chat_messages_v1';
+
   String? _currentUserId;
-  
-  // Event listeners
+  bool _isConnected = false;
+
+  final StreamController<ChatMessage> _messageStreamController =
+      StreamController<ChatMessage>.broadcast();
+  Stream<ChatMessage> get messageStream => _messageStreamController.stream;
+
   Function(List<ChatMessage>)? onMessagesReceived;
   Function(ChatMessage)? onNewMessage;
   Function(String)? onConnectionStatusChanged;
   Function(List<User>)? onDoctorsListReceived;
 
-  // Initialize Socket.IO connection
   Future<void> initialize(String userId) async {
     _currentUserId = userId;
-    
-    try {
-      // For demo purposes, we'll simulate real-time chat
-      // In production, replace with actual Socket.IO server
-      print('Initializing chat service for user: $userId');
-      _isConnected = true;
-      onConnectionStatusChanged?.call('connected');
-      
-      // Load existing conversations from database
-      await _loadConversations();
-      
-      // Emit user online event
-      _emitEvent('user_online', {'userId': userId});
-      
-    } catch (e) {
-      print('Chat initialization failed: $e');
-      _isConnected = false;
-      onConnectionStatusChanged?.call('disconnected');
-    }
+    _isConnected = true;
+    onConnectionStatusChanged?.call('connected');
+
+    final messages = await _getMessagesForCurrentUser();
+    onMessagesReceived?.call(messages);
+    final doctors = await getAvailableDoctors();
+    onDoctorsListReceived?.call(doctors);
   }
 
-  // Get available doctors
   Future<List<User>> getAvailableDoctors() async {
-    final db = await DatabaseService().database;
-    
-    final doctors = await db.query(
-      'users',
-      where: 'role = ? AND status = ?',
-      whereArgs: ['kisan_doctor', 'approved'],
-    );
-
-    return doctors.map((doctor) => User(
-      id: doctor['id'] as String,
-      email: doctor['email'] as String,
-      phoneNumber: doctor['phone_number'] as String?,
-      name: doctor['name'] as String,
-      profilePicture: doctor['profile_picture'] as String?,
-      role: UserRole.kisanDoctor,
-      status: UserStatus.approved,
-      specialization: doctor['specialization'] as String?,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(doctor['created_at'] as int),
-      lastLoginAt: doctor['last_login_at'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(doctor['last_login_at'] as int)
-          : null,
-      isVerified: (doctor['is_verified'] as int) == 1,
-    )).toList();
+    return _getUsersByRole(UserRole.kisanDoctor);
   }
 
-  // Send message to doctor
+  Future<List<User>> getAvailableFarmers() async {
+    return _getUsersByRole(UserRole.farmer);
+  }
+
+  Future<List<User>> _getUsersByRole(UserRole role) async {
+    final users = await _loadUsers();
+    final current = _currentUserId;
+    final result = <User>[];
+
+    users.forEach((id, raw) {
+      if (id == current) return;
+
+      final roleValue = (raw['role'] ?? '').toString();
+      final mappedRole = UserRole.values.firstWhere(
+        (value) => value.name.toLowerCase() == roleValue.toLowerCase(),
+        orElse: () => UserRole.farmer,
+      );
+
+      if (mappedRole != role) return;
+
+      final statusValue = (raw['status'] ?? 'approved').toString();
+      final isApproved = statusValue.toLowerCase().contains('approved');
+      if (!isApproved) return;
+
+      result.add(_mapUser(id, raw));
+    });
+
+    result.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return result;
+  }
+
   Future<bool> sendMessage({
     required String doctorId,
     required String message,
     required String messageType,
     String? imagePath,
   }) async {
-    if (!_isConnected) {
+    return sendMessageToUser(
+      receiverId: doctorId,
+      message: message,
+      messageType: messageType,
+      imagePath: imagePath,
+    );
+  }
+
+  Future<bool> sendMessageToUser({
+    required String receiverId,
+    required String message,
+    String messageType = 'text',
+    String? imagePath,
+  }) async {
+    if (!_isConnected || _currentUserId == null) {
       throw Exception('Chat service not connected');
     }
 
-    try {
-      final chatMessage = ChatMessage(
-        id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-        senderId: _currentUserId!,
-        receiverId: doctorId,
-        message: message,
-        messageType: ChatMessageType.values.firstWhere(
-          (type) => type.name == messageType,
-        ),
-        imagePath: imagePath,
-        timestamp: DateTime.now(),
-        status: MessageStatus.sent,
-      );
+    final cleanedMessage = message.trim();
+    if (cleanedMessage.isEmpty) return false;
 
-      // Save to database
-      await _saveMessageToDatabase(chatMessage);
+    final msgType = ChatMessageType.values.firstWhere(
+      (type) => type.name == messageType,
+      orElse: () => ChatMessageType.text,
+    );
 
-      // Emit message event
-      _emitEvent('send_message', {
-        'message': chatMessage.toJson(),
-      });
+    final chatMessage = ChatMessage(
+      id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+      senderId: _currentUserId!,
+      receiverId: receiverId,
+      message: cleanedMessage,
+      messageType: msgType,
+      imagePath: imagePath,
+      timestamp: DateTime.now(),
+      status: MessageStatus.sent,
+    );
 
-      // Simulate doctor response
-      _simulateDoctorResponse(doctorId, message);
-      
-      return true;
-    } catch (e) {
-      print('Failed to send message: $e');
-      return false;
-    }
+    final messages = await _loadAllMessages();
+    messages.add(chatMessage);
+    await _saveAllMessages(messages);
+
+    _messageStreamController.add(chatMessage);
+    onNewMessage?.call(chatMessage);
+    return true;
   }
 
-  // Get conversation with a specific doctor
   Future<List<ChatMessage>> getConversation(String doctorId) async {
-    final db = await DatabaseService().database;
-    
-    final messages = await db.query(
-      'doctor_conversations',
-      where: '(farmer_id = ? AND doctor_id = ?) OR (farmer_id = ? AND doctor_id = ?)',
-      whereArgs: [_currentUserId, doctorId, doctorId, _currentUserId],
-      orderBy: 'created_at ASC',
-    );
-
-    return messages.map((msg) => ChatMessage.fromJson(msg)).toList();
+    return getConversationWithUser(doctorId);
   }
 
-  // Mark message as read
+  Future<List<ChatMessage>> getConversationWithUser(String otherUserId) async {
+    if (_currentUserId == null) return [];
+
+    final currentUserId = _currentUserId!;
+    final messages = await _loadAllMessages();
+
+    final conversation = messages.where((message) {
+      final isForward = message.senderId == currentUserId &&
+          message.receiverId == otherUserId;
+      final isBackward = message.senderId == otherUserId &&
+          message.receiverId == currentUserId;
+      return isForward || isBackward;
+    }).toList();
+
+    conversation.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    return conversation;
+  }
+
   Future<void> markAsRead(String messageId) async {
-    final db = await DatabaseService().database;
-    
-    await db.update(
-      'doctor_conversations',
-      {'status': 'read'},
-      where: 'id = ?',
-      whereArgs: [messageId],
-    );
+    if (_currentUserId == null) return;
 
-    _emitEvent('message_read', {'messageId': messageId});
-  }
+    final messages = await _loadAllMessages();
+    var changed = false;
 
-  // Load conversations from database
-  Future<void> _loadConversations() async {
-    final db = await DatabaseService().database;
-    
-    final conversations = await db.query(
-      'doctor_conversations',
-      where: 'farmer_id = ?',
-      orderBy: 'created_at DESC',
-      limit: 50,
-    );
+    for (var i = 0; i < messages.length; i++) {
+      final message = messages[i];
+      if (message.id == messageId &&
+          message.receiverId == _currentUserId &&
+          message.status != MessageStatus.read) {
+        messages[i] = message.copyWith(status: MessageStatus.read);
+        changed = true;
+      }
+    }
 
-    final messages = conversations.map((conv) => ChatMessage.fromJson(conv)).toList();
-    onMessagesReceived?.call(messages);
-  }
-
-  // Save message to database
-  Future<void> _saveMessageToDatabase(ChatMessage message) async {
-    final db = await DatabaseService().database;
-    
-    await db.insert('doctor_conversations', {
-      'id': message.id,
-      'farmer_id': message.senderId,
-      'doctor_id': message.receiverId,
-      'message': message.message,
-      'is_from_farmer': message.isFromFarmer ? 1 : 0,
-      'message_type': message.messageType.name,
-      'image_path': message.imagePath,
-      'status': message.status.name,
-      'created_at': message.timestamp.millisecondsSinceEpoch,
-    });
-
-    // Notify UI of new message
-    onNewMessage?.call(message);
-  }
-
-  // Simulate doctor response (for demo)
-  void _simulateDoctorResponse(String doctorId, String farmerMessage) {
-    // Simulate response delay
-    Future.delayed(const Duration(seconds: 2), () async {
-      if (!_isConnected) return;
-
-      final responses = [
-        'धन्यवाद! मैले तपाईंको प्रश्न देखें। केही समयपछि जवाफ दिन्छु।',
-        'Thank you for your message. I will review your question and provide guidance soon.',
-        'बालीको अवस्था बुझ्न कृपया थप विवरण दिनुहोस्।',
-        'Please provide more details about the crop condition.',
-        'यो समस्या सामान्य छ। उपचारको लागि सुझाव दिन्छु।',
-        'This is a common issue. I will suggest treatment options.',
-      ];
-
-      final randomResponse = responses[
-        DateTime.now().millisecondsSinceEpoch % responses.length];
-
-      final responseMessage = ChatMessage(
-        id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-        senderId: doctorId,
-        receiverId: _currentUserId!,
-        message: randomResponse,
-        messageType: ChatMessageType.text,
-        timestamp: DateTime.now(),
-        status: MessageStatus.delivered,
-      );
-
-      await _saveMessageToDatabase(responseMessage);
-    });
-  }
-
-  // Emit socket event
-  void _emitEvent(String event, Map<String, dynamic> data) {
-    if (_socket != null && _isConnected) {
-      _socket!.emit(event, data);
+    if (changed) {
+      await _saveAllMessages(messages);
     }
   }
 
-  // Disconnect
+  Future<List<ChatMessage>> _getMessagesForCurrentUser() async {
+    if (_currentUserId == null) return [];
+    final all = await _loadAllMessages();
+    final mine = all.where((message) {
+      return message.senderId == _currentUserId ||
+          message.receiverId == _currentUserId;
+    }).toList();
+    mine.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return mine;
+  }
+
+  Future<Map<String, Map<String, dynamic>>> _loadUsers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final usersRaw = prefs.getString(_usersKey);
+    if (usersRaw == null || usersRaw.isEmpty) return {};
+
+    final decoded = json.decode(usersRaw);
+    if (decoded is! Map<String, dynamic>) return {};
+
+    final users = <String, Map<String, dynamic>>{};
+    decoded.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        users[key] = value;
+      } else if (value is Map) {
+        users[key] = Map<String, dynamic>.from(value);
+      }
+    });
+    return users;
+  }
+
+  User _mapUser(String id, Map<String, dynamic> raw) {
+    final role = UserRole.values.firstWhere(
+      (value) =>
+          value.name.toLowerCase() ==
+          (raw['role'] ?? UserRole.farmer.name).toString().toLowerCase(),
+      orElse: () => UserRole.farmer,
+    );
+
+    final statusRaw = (raw['status'] ?? 'pending').toString();
+    final status = UserStatus.values.firstWhere(
+      (value) => value.name.toLowerCase() == statusRaw.toLowerCase(),
+      orElse: () => statusRaw.toLowerCase().contains('approved')
+          ? UserStatus.approved
+          : UserStatus.pending,
+    );
+
+    final createdAtMillis =
+        _asInt(raw['createdAt']) ?? _asInt(raw['created_at']) ?? 0;
+    final lastLoginMillis =
+        _asInt(raw['lastLoginAt']) ?? _asInt(raw['last_login_at']);
+
+    final permissionsRaw = raw['permissions'];
+    List<String>? permissions;
+    if (permissionsRaw is List) {
+      permissions = permissionsRaw.map((e) => e.toString()).toList();
+    } else if (permissionsRaw is String && permissionsRaw.isNotEmpty) {
+      try {
+        final decoded = json.decode(permissionsRaw);
+        if (decoded is List) {
+          permissions = decoded.map((e) => e.toString()).toList();
+        }
+      } catch (_) {}
+    }
+
+    return User(
+      id: id,
+      email: (raw['email'] ?? '').toString(),
+      phoneNumber: (raw['phoneNumber'] ?? raw['phone_number'])?.toString(),
+      name: (raw['name'] ?? '').toString(),
+      profilePicture:
+          (raw['profilePicture'] ?? raw['profile_picture'])?.toString(),
+      role: role,
+      status: status,
+      address: raw['address']?.toString(),
+      language: raw['language']?.toString(),
+      farmingCategory: raw['farmingCategory']?.toString(),
+      specialization: raw['specialization']?.toString(),
+      permissions: permissions,
+      createdAt: createdAtMillis > 0
+          ? DateTime.fromMillisecondsSinceEpoch(createdAtMillis)
+          : DateTime.now(),
+      lastLoginAt: lastLoginMillis != null
+          ? DateTime.fromMillisecondsSinceEpoch(lastLoginMillis)
+          : null,
+      isVerified:
+          _asBool(raw['isVerified']) ?? _asBool(raw['is_verified']) ?? false,
+      hasSelectedLanguage: _asBool(raw['hasSelectedLanguage']) ??
+          _asBool(raw['has_selected_language']) ??
+          false,
+    );
+  }
+
+  int? _asInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    return int.tryParse(value.toString());
+  }
+
+  bool? _asBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    final text = value.toString().toLowerCase();
+    if (text == 'true' || text == '1') return true;
+    if (text == 'false' || text == '0') return false;
+    return null;
+  }
+
+  Future<List<ChatMessage>> _loadAllMessages() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_messagesKey);
+    if (raw == null || raw.isEmpty) return [];
+
+    final decoded = json.decode(raw);
+    if (decoded is! List) return [];
+
+    final messages = <ChatMessage>[];
+    for (final item in decoded) {
+      if (item is Map<String, dynamic>) {
+        messages.add(ChatMessage.fromJson(item));
+      } else if (item is Map) {
+        messages.add(ChatMessage.fromJson(Map<String, dynamic>.from(item)));
+      }
+    }
+    return messages;
+  }
+
+  Future<void> _saveAllMessages(List<ChatMessage> messages) async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = messages.map((m) => m.toJson()).toList();
+    await prefs.setString(_messagesKey, json.encode(encoded));
+  }
+
   void disconnect() {
-    if (_socket != null) {
-      _socket!.disconnect();
-      _socket = null;
-    }
     _isConnected = false;
     onConnectionStatusChanged?.call('disconnected');
   }
 
-  // Get connection status
   bool get isConnected => _isConnected;
 
-  // Cleanup
   void dispose() {
     disconnect();
     onMessagesReceived = null;
@@ -236,7 +315,6 @@ class ChatService {
   }
 }
 
-// Chat message model
 class ChatMessage {
   final String id;
   final String senderId;
@@ -258,34 +336,66 @@ class ChatMessage {
     required this.status,
   });
 
-  bool get isFromFarmer => messageType == ChatMessageType.text || 
-                           messageType == ChatMessageType.image;
+  bool get isFromFarmer => senderId.toLowerCase().contains('farmer');
 
-  factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
-    id: json['id'] as String,
-    senderId: json['sender_id'] as String,
-    receiverId: json['receiver_id'] as String,
-    message: json['message'] as String,
-    messageType: ChatMessageType.values.firstWhere(
-      (type) => type.name == json['message_type'],
-    ),
-    imagePath: json['image_path'] as String?,
-    timestamp: DateTime.fromMillisecondsSinceEpoch(json['timestamp'] as int),
-    status: MessageStatus.values.firstWhere(
-      (status) => status.name == json['status'],
-    ),
-  );
+  ChatMessage copyWith({
+    MessageStatus? status,
+  }) {
+    return ChatMessage(
+      id: id,
+      senderId: senderId,
+      receiverId: receiverId,
+      message: message,
+      messageType: messageType,
+      imagePath: imagePath,
+      timestamp: timestamp,
+      status: status ?? this.status,
+    );
+  }
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    final rawMessageType =
+        (json['messageType'] ?? json['message_type'] ?? 'text').toString();
+    final rawStatus = (json['status'] ?? 'sent').toString();
+    final rawTimestamp = json['timestamp'] ?? json['created_at'];
+
+    int timestampMillis = 0;
+    if (rawTimestamp is int) {
+      timestampMillis = rawTimestamp;
+    } else if (rawTimestamp != null) {
+      timestampMillis = int.tryParse(rawTimestamp.toString()) ?? 0;
+    }
+
+    return ChatMessage(
+      id: (json['id'] ?? '').toString(),
+      senderId: (json['senderId'] ?? json['sender_id'] ?? '').toString(),
+      receiverId: (json['receiverId'] ?? json['receiver_id'] ?? '').toString(),
+      message: (json['message'] ?? '').toString(),
+      messageType: ChatMessageType.values.firstWhere(
+        (type) => type.name == rawMessageType,
+        orElse: () => ChatMessageType.text,
+      ),
+      imagePath: (json['imagePath'] ?? json['image_path'])?.toString(),
+      timestamp: timestampMillis > 0
+          ? DateTime.fromMillisecondsSinceEpoch(timestampMillis)
+          : DateTime.now(),
+      status: MessageStatus.values.firstWhere(
+        (value) => value.name == rawStatus,
+        orElse: () => MessageStatus.sent,
+      ),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'sender_id': senderId,
-    'receiver_id': receiverId,
-    'message': message,
-    'message_type': messageType.name,
-    'image_path': imagePath,
-    'timestamp': timestamp.millisecondsSinceEpoch,
-    'status': status.name,
-  };
+        'id': id,
+        'senderId': senderId,
+        'receiverId': receiverId,
+        'message': message,
+        'messageType': messageType.name,
+        'imagePath': imagePath,
+        'timestamp': timestamp.millisecondsSinceEpoch,
+        'status': status.name,
+      };
 }
 
 enum ChatMessageType {
@@ -300,15 +410,14 @@ enum MessageStatus {
   read,
 }
 
-// Chat conversation model for UI
 class ChatConversation {
-  final User doctor;
+  final User user;
   final ChatMessage? lastMessage;
   final int unreadCount;
   final DateTime lastActivity;
 
   ChatConversation({
-    required this.doctor,
+    required this.user,
     this.lastMessage,
     required this.unreadCount,
     required this.lastActivity,

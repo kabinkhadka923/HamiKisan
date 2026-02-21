@@ -123,11 +123,11 @@ Make the HamiKisan application fully workable by:
 
 **Nepali Translations:**
 ```dart
-'kisan_doctor': 'किसान डाक्टर'
+'kisan_doctor': 'किसान डक्टर'
 'consult': 'परामर्श'
 'ai_diagnosis': 'AI निदान'
 'history': 'इतिहास'
-'find_doctor': 'डाक्टर खोज्नुहोस्'
+'find_doctor': 'डक्टर खोज्नुहोस्'
 'my_chats': 'मेरा कुराकानी'
 'available': 'उपलब्ध'
 'consultations': 'परामर्शहरू'

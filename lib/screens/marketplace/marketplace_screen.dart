@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../providers/marketplace_provider.dart';
 import '../../models/marketplace_models.dart';
 import '../../widgets/localized_text.dart';
-import '../../providers/localization_provider.dart';
 
 class MarketplaceScreen extends StatefulWidget {
   const MarketplaceScreen({super.key});
@@ -139,7 +138,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                 label: Text(category),
                 selected: isSelected,
                 onSelected: (_) => provider.setCategory(category),
-                selectedColor: const Color(0xFF4CAF50).withOpacity(0.2),
+                selectedColor: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                 checkmarkColor: const Color(0xFF4CAF50),
               ),
             );
@@ -169,15 +168,12 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                     top: Radius.circular(12),
                   ),
                 ),
-                child: product.imageUrl != null
-                    ? Image.network(
-                        product.imageUrl!,
+                child: Image.network(
+                        product.imageUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) =>
                             const Icon(Icons.image, size: 50),
-                      )
-                    : const Icon(Icons.agriculture,
-                        size: 50, color: Colors.grey),
+                      ),
               ),
             ),
             Expanded(
@@ -271,7 +267,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                 children: [
                   Text(
                     context.tr('shopping_cart'),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -313,7 +309,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   children: [
                     Text(
                       context.tr('total'),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),

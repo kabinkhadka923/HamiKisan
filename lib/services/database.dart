@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -11,29 +12,65 @@ class DatabaseService {
   DatabaseService._internal();
 
   static const String _databaseName = 'hamikisan_secure.db';
+  static const String _webDatabaseName = 'hamikisan_web.db';
   static const int _databaseVersion = 3;
   Database? _database;
-  bool _isInitialized = false;
+
+  static SharedPreferences? _prefs;
+  static Future<SharedPreferences> get sharedPreferences async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!;
+  }
 
   Future<Database> get database async {
-    if (_database != null && _database!.isOpen) return _database!;
-    _database = await _initDatabase();
-    return _database!;
+    try {
+      if (_database != null && _database!.isOpen) return _database!;
+      _database = await _initDatabase();
+      return _database!;
+    } catch (e) {
+      print('[DB] Error getting database: $e');
+      rethrow;
+    }
   }
 
   Future<Database> _initDatabase() async {
-    final dbPath = kIsWeb ? 'hamikisan_web' : await getDatabasesPath();
-    final path = kIsWeb ? _databaseName : join(dbPath, _databaseName);
+    try {
+      Database db;
 
-    final db = await openDatabase(
-      path,
-      version: _databaseVersion,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
-    );
-    _isInitialized = true;
-    await _initializeDefaultData(db);
-    return db;
+      if (kIsWeb) {
+        if (kDebugMode) print('[DB] Opening Web database...');
+
+        db = await openDatabase(
+          _webDatabaseName,
+          version: _databaseVersion,
+          onCreate: _onCreate,
+          onUpgrade: _onUpgrade,
+        );
+        if (kDebugMode) print('[DB] Web database initialized successfully');
+      } else {
+        if (kDebugMode) {
+          print('[DB] Initializing for Mobile/Desktop platform...');
+        }
+
+        final dbPath = await getDatabasesPath();
+        final path = join(dbPath, _databaseName);
+
+        if (kDebugMode) print('[DB] Opening database at: $path');
+
+        db = await openDatabase(
+          path,
+          version: _databaseVersion,
+          onCreate: _onCreate,
+          onUpgrade: _onUpgrade,
+        );
+      }
+
+      await _initializeDefaultData(db);
+      return db;
+    } catch (e) {
+      print('[DB] Initialization failed: $e');
+      rethrow;
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -147,6 +184,16 @@ class DatabaseService {
         ip_address TEXT NOT NULL,
         timestamp INTEGER NOT NULL,
         details TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE admin_locks (
+        id TEXT PRIMARY KEY,
+        username TEXT NOT NULL,
+        lock_until INTEGER NOT NULL,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (username) REFERENCES users (username)
       )
     ''');
   }
@@ -336,20 +383,22 @@ class DatabaseService {
   }
 
   Future<void> _initializeDefaultData(Database db) async {
+    await _ensureAdminAccounts(db);
+
     final count =
         Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM users'));
-    if (count != null && count > 0) return;
+    if (count != null && count > 2) return; // More than just admin accounts
 
     final salt = _generateSalt();
     final now = DateTime.now().millisecondsSinceEpoch;
 
     await db.insert('users', {
-      'id': 'user_farmer_demo',
-      'username': 'farmer',
-      'email': 'farmer@hamikisan.com',
+      'id': 'user_farmer_test',
+      'username': '9800000000',
+      'email': 'testuser@hamikisan.com',
       'phone_number': '9800000000',
-      'name': 'Rajesh Kumar',
-      'password_hash': _hashPassword('demo123', salt),
+      'name': 'Test Farmer',
+      'password_hash': _hashPassword('@Testuser123', salt),
       'password_salt': salt,
       'role': 'farmer',
       'status': 'approved',
@@ -363,12 +412,12 @@ class DatabaseService {
     });
 
     await db.insert('users', {
-      'id': 'user_doctor_demo',
-      'username': 'doctor',
-      'email': 'doctor@hamikisan.com',
+      'id': 'user_doctor_test',
+      'username': '9800000001',
+      'email': 'testdoctor@hamikisan.com',
       'phone_number': '9800000001',
-      'name': 'Dr. Sarita Sharma',
-      'password_hash': _hashPassword('demo123', salt),
+      'name': 'Test Doctor',
+      'password_hash': _hashPassword('@Testdoctor123', salt),
       'password_salt': salt,
       'role': 'kisanDoctor',
       'status': 'approved',
@@ -382,32 +431,12 @@ class DatabaseService {
     });
 
     await db.insert('users', {
-      'id': 'user_admin_demo',
-      'username': 'admin',
-      'email': 'kabinkhadka@gmail.com',
-      'phone_number': '9800000002',
-      'name': 'Kabin Khadka',
-      'password_hash': _hashPassword('admin123', salt),
-      'password_salt': salt,
-      'role': 'kisanAdmin',
-      'status': 'approved',
-      'address': 'Kathmandu, Nepal',
-      'permissions':
-          json.encode(['manage_users', 'manage_content', 'approve_users']),
-      'created_at': now,
-      'last_login_at': now,
-      'is_verified': 1,
-      'has_selected_language': 1,
-      'language': 'en',
-    });
-
-    await db.insert('users', {
-      'id': 'user_superadmin_demo',
-      'username': 'superadmin',
+      'id': 'user_superadmin',
+      'username': 'HamiSuperKisan',
       'email': 'superadmin@hamikisan.com',
       'phone_number': '9800000003',
       'name': 'Super Admin',
-      'password_hash': _hashPassword('super123', salt),
+      'password_hash': _hashPassword('@PhulasiPokhari.', salt),
       'password_salt': salt,
       'role': 'superAdmin',
       'status': 'approved',
@@ -420,6 +449,79 @@ class DatabaseService {
       'has_selected_language': 1,
       'language': 'en',
     });
+
+    await db.insert('users', {
+      'id': 'user_kisan_admin',
+      'username': 'KisanAdmin',
+      'email': 'kisanadmin@hamikisan.com',
+      'phone_number': '9800000004',
+      'name': 'Kisan Admin',
+      'password_hash': _hashPassword('@NepaliKisan923.', salt),
+      'password_salt': salt,
+      'role': 'kisanAdmin',
+      'status': 'approved',
+      'address': 'Kathmandu, Nepal',
+      'permissions':
+          json.encode(['manage_users', 'manage_content', 'approve_users']),
+      'created_at': now,
+      'last_login_at': now,
+      'is_verified': 1,
+      'has_selected_language': 1,
+      'language': 'en',
+    });
+  }
+
+  Future<void> _ensureAdminAccounts(Database db) async {
+    final salt = _generateSalt();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    // Ensure Super Admin
+    await db.insert(
+        'users',
+        {
+          'id': 'user_superadmin',
+          'username': 'HamiSuperKisan',
+          'email': 'superadmin@hamikisan.com',
+          'phone_number': '9800000003',
+          'name': 'Super Admin',
+          'password_hash': _hashPassword('@PhulasiPokhari.', salt),
+          'password_salt': salt,
+          'role': 'superAdmin',
+          'status': 'approved',
+          'address': 'Kathmandu, Nepal',
+          'permissions':
+              json.encode(['full_access', 'system_control', 'manage_admins']),
+          'created_at': now,
+          'last_login_at': now,
+          'is_verified': 1,
+          'has_selected_language': 1,
+          'language': 'en',
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
+
+    // Ensure Kisan Admin
+    await db.insert(
+        'users',
+        {
+          'id': 'user_kisan_admin',
+          'username': 'KisanAdmin',
+          'email': 'kisanadmin@hamikisan.com',
+          'phone_number': '9800000004',
+          'name': 'Kisan Admin',
+          'password_hash': _hashPassword('@NepaliKisan923.', salt),
+          'password_salt': salt,
+          'role': 'kisanAdmin',
+          'status': 'approved',
+          'address': 'Kathmandu, Nepal',
+          'permissions':
+              json.encode(['manage_users', 'manage_content', 'approve_users']),
+          'created_at': now,
+          'last_login_at': now,
+          'is_verified': 1,
+          'has_selected_language': 1,
+          'language': 'en',
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   String _hashPassword(String password, String salt) {
@@ -439,18 +541,22 @@ class DatabaseService {
 
   Future<List<Map<String, dynamic>>> query(
     String table, {
+    List<String>? columns,
     String? where,
     List<Object?>? whereArgs,
     String? orderBy,
     int? limit,
+    int? offset,
   }) async {
     final db = await database;
     return await db.query(
       table,
+      columns: columns,
       where: where,
       whereArgs: whereArgs,
       orderBy: orderBy,
       limit: limit,
+      offset: offset,
     );
   }
 
@@ -479,7 +585,6 @@ class DatabaseService {
     if (_database != null) {
       await _database!.close();
       _database = null;
-      _isInitialized = false;
     }
   }
 
@@ -530,12 +635,11 @@ class DatabaseService {
   Future<int> createPost(Map<String, dynamic> postData) async {
     try {
       postData['created_at'] = DateTime.now().millisecondsSinceEpoch;
-      print('Inserting post into database: $postData');
+
       final result = await insert('posts', postData);
-      print('Post inserted successfully: $result');
+
       return result;
     } catch (e) {
-      print('Error in createPost database: $e');
       rethrow;
     }
   }
@@ -551,5 +655,51 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [postId],
     );
+  }
+
+  Future<void> logPasswordResetRequest(String email, String token) async {
+    final db = await database;
+    await db.insert(
+        'password_reset_logs',
+        {
+          'email': email,
+          'token': token,
+          'requested_at': DateTime.now().millisecondsSinceEpoch,
+          'used': 0,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<DateTime?> getAdminLockTime(String username) async {
+    final db = await database;
+    final results = await db.query(
+      'admin_locks',
+      where: 'username = ? AND lock_until > ?',
+      whereArgs: [username, DateTime.now().millisecondsSinceEpoch],
+      limit: 1,
+    );
+    if (results.isNotEmpty) {
+      return DateTime.fromMillisecondsSinceEpoch(
+          results.first['lock_until'] as int);
+    }
+    return null;
+  }
+
+  Future<void> lockAdminAccount(String username, DateTime lockUntil) async {
+    final db = await database;
+    await db.insert(
+        'admin_locks',
+        {
+          'username': username,
+          'lock_until': lockUntil.millisecondsSinceEpoch,
+          'created_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<void> resetAdminLock(String username) async {
+    final db = await database;
+    await db
+        .delete('admin_locks', where: 'username = ?', whereArgs: [username]);
   }
 }

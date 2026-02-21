@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'video_call_screen.dart';
 
 class DoctorScreen extends StatefulWidget {
   const DoctorScreen({super.key});
@@ -7,12 +8,11 @@ class DoctorScreen extends StatefulWidget {
   State<DoctorScreen> createState() => _DoctorScreenState();
 }
 
-class _DoctorScreenState extends State<DoctorScreen> 
+class _DoctorScreenState extends State<DoctorScreen>
     with TickerProviderStateMixin {
-  
   late TabController _tabController;
   final TextEditingController _messageController = TextEditingController();
-  
+
   final List<Map<String, dynamic>> _doctors = [
     {
       'id': '1',
@@ -69,7 +69,8 @@ class _DoctorScreenState extends State<DoctorScreen>
       'id': '1',
       'doctorId': '1',
       'doctorName': 'Dr. Ram Sharma',
-      'lastMessage': 'Apply copper fungicide immediately. Take photo in 3 days.',
+      'lastMessage':
+          'Apply copper fungicide immediately. Take photo in 3 days.',
       'timestamp': '2 min ago',
       'unread': 2,
       'image': '🌾',
@@ -223,7 +224,8 @@ class _DoctorScreenState extends State<DoctorScreen>
         final doctor = availableDoctors[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -267,7 +269,8 @@ class _DoctorScreenState extends State<DoctorScreen>
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.amber, size: 16),
+                              const Icon(Icons.star,
+                                  color: Colors.amber, size: 16),
                               const SizedBox(width: 4),
                               Text(doctor['rating'].toString()),
                             ],
@@ -296,7 +299,8 @@ class _DoctorScreenState extends State<DoctorScreen>
                 Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.green.shade100,
                         borderRadius: BorderRadius.circular(12),
@@ -337,7 +341,8 @@ class _DoctorScreenState extends State<DoctorScreen>
         final conversation = _conversations[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: ListTile(
             onTap: () => _openChat(conversation),
             leading: CircleAvatar(
@@ -468,7 +473,8 @@ class _DoctorScreenState extends State<DoctorScreen>
         final diagnosis = _diagnoses[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -593,7 +599,17 @@ class _DoctorScreenState extends State<DoctorScreen>
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _showMessage('Starting video consultation...');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VideoCallScreen(
+                    doctorName: doctor['name'],
+                    doctorSpecialty: doctor['specialization'],
+                    callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+                    recipientId: doctor['id'],
+                  ),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: const Text('Video Call'),
@@ -620,25 +636,46 @@ class _DoctorScreenState extends State<DoctorScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('New Consultation'),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('What type of consultation do you need?'),
-            SizedBox(height: 16),
+            const Text('What type of consultation do you need?'),
+            const SizedBox(height: 16),
             ListTile(
-              leading: Icon(Icons.chat, color: Colors.blue),
-              title: Text('Text Consultation'),
-              subtitle: Text('Chat with a doctor via text'),
+              leading: const Icon(Icons.chat, color: Colors.blue),
+              title: const Text('Text Consultation'),
+              subtitle: const Text('Chat with a doctor via text'),
+              onTap: () {
+                Navigator.pop(context);
+                _showMessage('Searching for available experts...');
+              },
             ),
             ListTile(
-              leading: Icon(Icons.video_call, color: Colors.green),
-              title: Text('Video Consultation'),
-              subtitle: Text('Face-to-face video call'),
+              leading: const Icon(Icons.video_call, color: Colors.green),
+              title: const Text('Video Consultation'),
+              subtitle: const Text('Face-to-face video call'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const VideoCallScreen(
+                      doctorName: 'Expert Consultant',
+                      doctorSpecialty: 'Agriculture Expert',
+                      callId: 'new_request',
+                    ),
+                  ),
+                );
+              },
             ),
             ListTile(
-              leading: Icon(Icons.camera_alt, color: Colors.orange),
-              title: Text('AI Diagnosis'),
-              subtitle: Text('Upload photo for instant diagnosis'),
+              leading: const Icon(Icons.camera_alt, color: Colors.orange),
+              title: const Text('AI Diagnosis'),
+              subtitle: const Text('Upload photo for instant diagnosis'),
+              onTap: () {
+                Navigator.pop(context);
+                _tabController.animateTo(1);
+              },
             ),
           ],
         ),
@@ -646,13 +683,6 @@ class _DoctorScreenState extends State<DoctorScreen>
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showMessage('Starting consultation...');
-            },
-            child: const Text('Continue'),
           ),
         ],
       ),
@@ -689,19 +719,22 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Map<String, dynamic>> _messages = [
     {
       'id': '1',
-      'text': 'Hello! I have a question about my tomato plants. The leaves are turning yellow.',
+      'text':
+          'Hello! I have a question about my tomato plants. The leaves are turning yellow.',
       'isUser': true,
       'timestamp': '10:30 AM',
     },
     {
       'id': '2',
-      'text': 'Hi! I\'d be happy to help. Can you send me a photo of the affected leaves? Also, are the yellow leaves on the bottom or top of the plant?',
+      'text':
+          'Hi! I\'d be happy to help. Can you send me a photo of the affected leaves? Also, are the yellow leaves on the bottom or top of the plant?',
       'isUser': false,
       'timestamp': '10:31 AM',
     },
     {
       'id': '3',
-      'text': 'They are mostly on the bottom leaves. I\'ll take a photo and send it.',
+      'text':
+          'They are mostly on the bottom leaves. I\'ll take a photo and send it.',
       'isUser': true,
       'timestamp': '10:32 AM',
     },
@@ -714,6 +747,24 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Text(widget.doctorName),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.video_call),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VideoCallScreen(
+                    doctorName: widget.doctorName,
+                    doctorSpecialty: 'Specialist',
+                    callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+                    recipientId: widget.doctorId,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -724,8 +775,8 @@ class _ChatScreenState extends State<ChatScreen> {
               itemBuilder: (context, index) {
                 final message = _messages[index];
                 return Align(
-                  alignment: message['isUser'] 
-                      ? Alignment.centerRight 
+                  alignment: message['isUser']
+                      ? Alignment.centerRight
                       : Alignment.centerLeft,
                   child: Container(
                     margin: EdgeInsets.only(
@@ -735,8 +786,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: message['isUser'] 
-                          ? Colors.orange 
+                      color: message['isUser']
+                          ? Colors.orange
                           : Colors.grey.shade200,
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -746,17 +797,16 @@ class _ChatScreenState extends State<ChatScreen> {
                         Text(
                           message['text'],
                           style: TextStyle(
-                            color: message['isUser'] 
-                                ? Colors.white 
-                                : Colors.black,
+                            color:
+                                message['isUser'] ? Colors.white : Colors.black,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           message['timestamp'],
                           style: TextStyle(
-                            color: message['isUser'] 
-                                ? Colors.white.withOpacity(0.7)
+                            color: message['isUser']
+                                ? Colors.white.withValues(alpha: 0.7)
                                 : Colors.grey.shade600,
                             fontSize: 12,
                           ),
@@ -774,7 +824,7 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withValues(alpha: 0.3),
                   spreadRadius: 1,
                   blurRadius: 3,
                 ),
@@ -786,7 +836,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   icon: const Icon(Icons.attach_file),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Attachment feature coming soon')),
+                      const SnackBar(
+                          content: Text('Attachment feature coming soon')),
                     );
                   },
                 ),
@@ -822,13 +873,14 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       });
       _messageController.clear();
-      
+
       // Simulate doctor reply
       Future.delayed(const Duration(seconds: 2), () {
         setState(() {
           _messages.add({
             'id': DateTime.now().millisecondsSinceEpoch.toString(),
-            'text': 'Thank you for the information. Let me analyze this and get back to you.',
+            'text':
+                'Thank you for the information. Let me analyze this and get back to you.',
             'isUser': false,
             'timestamp': 'Now',
           });

@@ -1,0 +1,14 @@
+Running build hooks...Running build hooks...Build sqflite shared worker and fetch sqflite3.wasm.
+
+Usage: 
+  setup <options> <path>
+
+Options: 
+-f, --[no-]force          Force build
+    --[no-]verbose        Verbose output
+    --[no-]help           Help
+    --sqlite3-wasm-url    sqlite3.wasm url
+                          (defaults to "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-2.4.6/sqlite3.wasm")
+    --no-sqlite3-wasm     Don't fetch sqlite3.wasm
+    --dir                 output directory
+                          (defaults to "web")

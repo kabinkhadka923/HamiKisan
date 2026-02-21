@@ -82,18 +82,18 @@ class _CommunityScreenState extends State<CommunityScreen>
           }
 
           if (provider.userGroups.isEmpty) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.group_off, size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text(
+                  Icon(Icons.group_off, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
                     'No community groups found',
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Please contact your local administrator',
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
@@ -129,7 +129,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50).withOpacity(0.1),
+        color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
         border: Border(
           bottom: BorderSide(color: Colors.grey.shade300),
         ),
@@ -269,7 +269,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                     Chip(
                       label: Text(price.category),
-                      backgroundColor: const Color(0xFF4CAF50).withOpacity(0.2),
+                      backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                     ),
                   ],
                 ),

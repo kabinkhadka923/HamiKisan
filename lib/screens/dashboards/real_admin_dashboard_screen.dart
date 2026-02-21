@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../screens/system_health_screen.dart';
 
 class RealAdminDashboardScreen extends StatelessWidget {
   const RealAdminDashboardScreen({super.key});
@@ -79,6 +80,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
             _buildActionTile(Icons.shield, 'Access Control', Colors.deepOrange, () => _showAccessControlDialog(context)),
             _buildActionTile(Icons.people, 'All Users', Colors.blue, () => _showUsersDialog(context)),
             _buildActionTile(Icons.security, 'Security', Colors.orange, () => _showSecurityDialog(context)),
+            _buildActionTile(Icons.health_and_safety, 'System Health', Colors.red, () => _showSystemHealthDialog(context)),
             _buildActionTile(Icons.backup, 'Backup', Colors.green, () => _showBackupDialog(context)),
             _buildActionTile(Icons.settings, 'Settings', Colors.grey, () => _showSettingsDialog(context)),
             _buildActionTile(Icons.analytics, 'Analytics', Colors.purple, () => _showAnalyticsDialog(context)),
@@ -163,7 +165,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: active ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
+                            backgroundColor: active ? Colors.green.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
                             child: Icon(Icons.admin_panel_settings, color: active ? Colors.green : Colors.grey),
                           ),
                           title: Text('Admin ${index + 1}'),
@@ -176,7 +178,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: active ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
+                                      color: active ? Colors.green.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(active ? 'Active' : 'Inactive', style: TextStyle(fontSize: 10, color: active ? Colors.green : Colors.grey)),
@@ -310,7 +312,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: color.withOpacity(0.2),
+                            backgroundColor: color.withValues(alpha: 0.2),
                             child: Icon(
                               role == 'Farmer' ? Icons.agriculture : role == 'Doctor' ? Icons.medical_services : Icons.admin_panel_settings,
                               color: color,
@@ -327,7 +329,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: color.withOpacity(0.2),
+                                      color: color.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(role, style: TextStyle(fontSize: 10, color: color)),
@@ -504,7 +506,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Row(
@@ -1004,9 +1006,9 @@ class RealAdminDashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                   ),
                   child: const Row(
                     children: [
@@ -1049,7 +1051,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ExpansionTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.red.withOpacity(0.2),
+                            backgroundColor: Colors.red.withValues(alpha: 0.2),
                             child: const Icon(Icons.admin_panel_settings, color: Colors.red, size: 20),
                           ),
                           title: Text('Kisan Admin ${index + 1}'),
@@ -1190,6 +1192,15 @@ class RealAdminDashboardScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showSystemHealthDialog(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SystemHealthScreen(),
       ),
     );
   }

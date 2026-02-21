@@ -1,0 +1,39 @@
+# Security Audit Configuration
+exclude_directories:
+  - test
+  - mock
+  - generated
+  - .dart_tool
+  - build
+
+exclude_files:
+  - '*.g.dart'
+  - '*.freezed.dart'
+  - '*.gr.dart'
+
+max_file_size_mb: 10
+auto_fix_enabled: true
+generate_report: true
+report_format: markdown
+
+# Custom patterns
+custom_patterns:
+  - pattern: 'TODO.*security'
+    severity: medium
+    message: 'Security-related TODO found'
+    recommendation: 'Address security TODO comments'
+    
+  - pattern: 'FIXME.*vulnerability'
+    severity: high
+    message: 'Vulnerability fix needed'
+    recommendation: 'Fix vulnerability issues immediately'
+
+# Platform-specific checks
+android_checks:
+  - check_network_security: true
+  - check_backup_enabled: true
+  - check_debuggable: true
+
+ios_checks:
+  - check_ats: true
+  - check_privacy_descriptions: true

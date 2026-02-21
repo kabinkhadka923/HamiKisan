@@ -1,0 +1,45 @@
+warning - lib\core\cleanup\security_audit.dart:450:9 - The value of the local variable 'fixedCount' isn't used. - unused_local_variable
+warning - lib\core\cleanup\security_audit.dart:522:11 - The value of the local variable 'duration' isn't used. - unused_local_variable
+warning - lib\core\cleanup\security_audit.dart:529:11 - The value of the local variable 'highIssues' isn't used. - unused_local_variable
+warning - lib\core\cleanup\security_audit.dart:531:11 - The value of the local variable 'mediumIssues' isn't used. - unused_local_variable
+warning - lib\core\cleanup\security_audit.dart:533:11 - The value of the local variable 'lowIssues' isn't used. - unused_local_variable
+warning - lib\core\constants\app_constants.dart:811:11 - The value of the local variable 'symbol' isn't used. - unused_local_variable
+warning - lib\providers\system_health_provider.dart:5:8 - Unused import: 'package:http/http.dart'. - unused_import
+warning - lib\providers\system_health_provider.dart:218:52 - Dead code. - dead_code
+warning - lib\providers\system_health_provider.dart:220:42 - Dead code. - dead_code
+warning - lib\providers\system_health_provider.dart:263:31 - Dead code. - dead_code
+warning - lib\providers\system_health_provider.dart:287:31 - Dead code. - dead_code
+warning - lib\screens\admin_login_screen.dart:30:11 - The value of the field '_twoFactorCode' isn't used. - unused_field
+warning - lib\screens\dashboards\doctor_dashboard_screen.dart:239:31 - The value of the field '_callService' isn't used. - unused_field
+warning - lib\screens\dashboards\doctor_dashboard_screen.dart:240:26 - The value of the field '_chatService' isn't used. - unused_field
+warning - lib\screens\dashboards\doctor_dashboard_screen.dart:250:8 - The value of the field '_isCalling' isn't used. - unused_field
+warning - lib\screens\dashboards\doctor_dashboard_screen.dart:251:8 - The value of the field '_isVideoCall' isn't used. - unused_field
+warning - lib\screens\dashboards\doctor_dashboard_screen.dart:390:11 - The value of the local variable 'encryptedMessage' isn't used. - unused_local_variable
+warning - lib\screens\dashboards\doctor_dashboard_screen.dart:588:11 - The value of the local variable 'user' isn't used. - unused_local_variable
+warning - lib\screens\dashboards\farmer_dashboard_screen.dart:473:11 - The value of the local variable 'priceAlerts' isn't used. - unused_local_variable
+warning - lib\screens\dashboards\farmer_dashboard_screen.dart:510:11 - The value of the local variable 'iconColor' isn't used. - unused_local_variable
+warning - lib\screens\dashboards\farmer_dashboard_screen.dart:1437:11 - The value of the local variable 'selectedImage' isn't used. - unused_local_variable
+warning - lib\screens\dashboards\farmer_dashboard_screen.dart:1621:10 - The declaration '_buildComment' isn't referenced. - unused_element
+warning - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:610:8 - The declaration '_showDesignDialog' isn't referenced. - unused_element
+warning - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:674:8 - The declaration '_showMediaDialog' isn't referenced. - unused_element
+warning - lib\screens\government_schemes_screen.dart:11:32 - The value of the field '_schemes' isn't used. - unused_field
+warning - lib\screens\home_screen.dart:20:13 - The value of the field '_currentIndex' isn't used. - unused_field
+warning - lib\screens\home_screen.dart:58:7 - This default clause is covered by the previous cases. - unreachable_switch_default
+warning - lib\screens\insurance_calculator_screen.dart:32:13 - The value of the local variable 'productionCost' isn't used. - unused_local_variable
+warning - lib\screens\learning_screen.dart:11:30 - The value of the field '_modules' isn't used. - unused_field
+warning - lib\screens\login_screen.dart:55:14 - The value of the field '_isBlocked' isn't used. - unused_field
+warning - lib\screens\login_screen.dart:228:11 - The declaration '_validateOtp' isn't referenced. - unused_element
+warning - lib\screens\login_screen.dart:1218:10 - The declaration '_buildDemoAccountsInfo' isn't referenced. - unused_element
+warning - lib\screens\marketplace\marketplace_screen.dart:6:8 - Unused import: '../../providers/localization_provider.dart'. - unused_import
+warning - lib\screens\notifications_screen.dart:540:7 - This default clause is covered by the previous cases. - unreachable_switch_default
+warning - lib\screens\otp_verification_screen.dart:27:11 - The value of the local variable 'authProvider' isn't used. - unused_local_variable
+warning - lib\screens\super_admin_secure_panel.dart:1163:8 - The declaration '_performSystemAction' isn't referenced. - unused_element
+warning - lib\screens\video_call_screen.dart:31:22 - The value of the field '_audioService' isn't used. - unused_field
+warning - lib\services\auth_service.dart:251:32 - The declaration '_getMockUser' isn't referenced. - unused_element
+warning - lib\services\call\call_state_manager.dart:16:12 - The value of the field '_callDuration' isn't used. - unused_field
+warning - lib\services\call\kisan_video_call_service.dart:15:11 - The value of the field '_currentCallerId' isn't used. - unused_field
+warning - lib\services\database.dart:18:8 - The value of the field '_isInitialized' isn't used. - unused_field
+warning - lib\services\weather_service.dart:7:23 - The value of the field '_openWeatherMapUrl' isn't used. - unused_field
+warning - lib\services\weather_service.dart:9:23 - The value of the field '_openWeatherMapApiKey' isn't used. - unused_field
+warning - lib\utils\error_handler.dart:181:15 - The value of the field '_stackTrace' isn't used. - unused_field
+warning - lib\utils\logger.dart:92:11 - The value of the local variable 'message' isn't used. - unused_local_variable

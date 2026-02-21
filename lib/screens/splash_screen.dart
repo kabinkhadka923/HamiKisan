@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/user.dart';
+import '../core/constants/app_constants.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,8 +19,10 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
-    // Add a delay for splash screen
-    await Future.delayed(const Duration(seconds: 2));
+    // Add a delay for splash screen or skip if in debug mode/configured
+    if (!AppConstants.skipSplash) {
+      await Future.delayed(const Duration(seconds: 2));
+    }
     
     if (mounted) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -76,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -107,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 'Your Digital Farming Companion',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   letterSpacing: 0.5,
                 ),
               ),
@@ -128,7 +131,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 'Loading...',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
             ],

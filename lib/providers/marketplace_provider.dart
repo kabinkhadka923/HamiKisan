@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../models/marketplace_models.dart';
 
 class MarketplaceProvider with ChangeNotifier {
@@ -24,71 +25,88 @@ class MarketplaceProvider with ChangeNotifier {
   Future<void> loadProducts() async {
     _isLoading = true;
     _error = null;
-    notifyListeners();
+    // Use scheduleMicrotask to avoid setState() during build error
+    scheduleMicrotask(() => notifyListeners());
 
     try {
       // Simulate API call with mock data
       await Future.delayed(const Duration(seconds: 1));
-      
+
       _products = [
         Product(
           id: '1',
-          name: 'Organic Rice',
+          title: 'Organic Rice',
           description: 'Premium quality organic rice from local farmers',
           price: 85.0,
           unit: 'kg',
+          unitSymbol: 'kg',
           category: 'Crops',
+          subCategory: 'Rice',
           sellerId: 'seller1',
           sellerName: 'Ram Bahadur',
+          imageUrls: ['https://example.com/rice.jpg'],
           quantity: 100,
-          createdAt: DateTime.now(),
           location: 'Kathmandu',
+          district: 'Kathmandu',
+          createdAt: DateTime.now(),
         ),
         Product(
           id: '2',
-          name: 'Fresh Tomatoes',
+          title: 'Fresh Tomatoes',
           description: 'Farm fresh tomatoes, harvested today',
           price: 120.0,
           unit: 'kg',
+          unitSymbol: 'kg',
           category: 'Crops',
+          subCategory: 'Vegetables',
           sellerId: 'seller2',
           sellerName: 'Sita Devi',
+          imageUrls: ['https://example.com/tomatoes.jpg'],
           quantity: 50,
-          createdAt: DateTime.now(),
           location: 'Pokhara',
+          district: 'Kaski',
+          createdAt: DateTime.now(),
         ),
         Product(
           id: '3',
-          name: 'Wheat Seeds',
+          title: 'Wheat Seeds',
           description: 'High quality wheat seeds for planting',
           price: 150.0,
           unit: 'kg',
+          unitSymbol: 'kg',
           category: 'Seeds',
+          subCategory: 'Seeds',
           sellerId: 'seller3',
           sellerName: 'Hari Prasad',
+          imageUrls: ['https://example.com/wheat_seeds.jpg'],
           quantity: 25,
-          createdAt: DateTime.now(),
           location: 'Chitwan',
+          district: 'Chitwan',
+          createdAt: DateTime.now(),
         ),
         Product(
           id: '4',
-          name: 'Organic Fertilizer',
+          title: 'Organic Fertilizer',
           description: 'Natural organic fertilizer for healthy crops',
           price: 200.0,
           unit: 'bag',
+          unitSymbol: 'bag',
           category: 'Fertilizer',
+          subCategory: 'Fertilizer',
           sellerId: 'seller4',
           sellerName: 'Krishna Bahadur',
+          imageUrls: ['https://example.com/fertilizer.jpg'],
           quantity: 30,
-          createdAt: DateTime.now(),
           location: 'Lalitpur',
+          district: 'Lalitpur',
+          createdAt: DateTime.now(),
         ),
       ];
     } catch (e) {
       _error = 'Failed to load products: $e';
     } finally {
       _isLoading = false;
-      notifyListeners();
+      scheduleMicrotask(() => notifyListeners());
     }
   }
 
@@ -96,7 +114,9 @@ class MarketplaceProvider with ChangeNotifier {
     if (_selectedCategory == 'All') {
       return _products;
     }
-    return _products.where((product) => product.category == _selectedCategory).toList();
+    return _products
+        .where((product) => product.category == _selectedCategory)
+        .toList();
   }
 
   void setCategory(String category) {
@@ -145,13 +165,15 @@ class MarketplaceProvider with ChangeNotifier {
         id: 'order_${DateTime.now().millisecondsSinceEpoch}',
         buyerId: buyerId,
         sellerId: _cart.first.sellerId,
-        items: _cart.map((product) => OrderItem(
-          productId: product.id,
-          productName: product.name,
-          quantity: 1,
-          unitPrice: product.price,
-          totalPrice: product.price,
-        )).toList(),
+        items: _cart
+            .map((product) => OrderItem(
+                  productId: product.id,
+                  productName: product.title,
+                  quantity: 1,
+                  unitPrice: product.price,
+                  totalPrice: product.price,
+                ))
+            .toList(),
         totalAmount: cartTotal,
         status: OrderStatus.pending,
         createdAt: DateTime.now(),
@@ -174,5 +196,63 @@ class MarketplaceProvider with ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  Future<bool> addProduct({
+    required String sellerId,
+    required String title,
+    required String description,
+    required String category,
+    required String subCategory,
+    required List<String> imageUrls,
+    required double price,
+    required String unit,
+    required double quantity,
+    required String location,
+    required String district,
+    required String qualityGrade,
+    required bool isOrganic,
+    required List<String> tags,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
+
+      final newProduct = Product(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        sellerId: sellerId,
+        sellerName:
+            'Current User', // You might want to get this from AuthProvider
+        title: title,
+        description: description,
+        category: category,
+        subCategory: subCategory,
+        imageUrls: imageUrls,
+        price: price,
+        unit: unit,
+        unitSymbol: unit,
+        quantity: quantity,
+        location: location,
+        district: district,
+        qualityGrade: qualityGrade,
+        isOrganic: isOrganic,
+        createdAt: DateTime.now(),
+        status: 'pending',
+      );
+
+      _products.add(newProduct);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

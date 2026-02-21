@@ -75,7 +75,7 @@ class MarketService {
         return _parseKalimatiResponse(data);
       }
     } catch (e) {
-      print('Kalimati API error: $e');
+
     }
     return [];
   }
@@ -99,7 +99,7 @@ class MarketService {
         }
       }
     } catch (e) {
-      print('Error parsing Kalimati data: $e');
+
     }
     return prices;
   }
@@ -206,7 +206,7 @@ class MarketService {
         final List<dynamic> cachedList = json.decode(cachedString);
         _cachedMarketPrices = cachedList.map((json) => MarketPrice.fromJson(json)).toList();
       } catch (e) {
-        print('Error loading cached market data: $e');
+
       }
     }
   }

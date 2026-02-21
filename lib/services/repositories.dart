@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'database_helper.dart';
-import '../models/user_model.dart';
+import '../models/user.dart';
 
 /// Repository for user-related database operations
 class UserRepository {
@@ -28,8 +28,9 @@ class UserRepository {
     // Generate salt and hash password
     final salt = _generateSalt();
     final passwordHash = _hashPassword(password, salt);
-    
-    final userId = 'user_${DateTime.now().millisecondsSinceEpoch}_${username.hashCode.abs()}';
+
+    final userId =
+        'user_${DateTime.now().millisecondsSinceEpoch}_${username.hashCode.abs()}';
     final now = DateTime.now().millisecondsSinceEpoch;
 
     final userData = {
@@ -121,7 +122,7 @@ class UserRepository {
     updates.remove('password_hash');
     updates.remove('password_salt');
     updates.remove('created_at');
-    
+
     await _db.update(
       'users',
       updates,
@@ -134,7 +135,7 @@ class UserRepository {
   Future<void> updatePassword(String userId, String newPassword) async {
     final salt = _generateSalt();
     final passwordHash = _hashPassword(newPassword, salt);
-    
+
     await _db.update(
       'users',
       {
@@ -188,7 +189,8 @@ class UserRepository {
   }
 
   /// Search users by name or username
-  Future<List<Map<String, dynamic>>> searchUsers(String query, {int limit = 20}) async {
+  Future<List<Map<String, dynamic>>> searchUsers(String query,
+      {int limit = 20}) async {
     return await _db.rawQuery(
       '''
       SELECT * FROM users 
@@ -239,7 +241,8 @@ class UserRepository {
 
   /// Get user count by status
   Future<int> getUserCountByStatus(String status) async {
-    return await _db.getCount('users', where: 'status = ?', whereArgs: [status]);
+    return await _db
+        .getCount('users', where: 'status = ?', whereArgs: [status]);
   }
 
   // Private helper methods
@@ -267,7 +270,8 @@ class PostRepository {
     String? userProfilePicture,
     String? imageUrl,
   }) async {
-    final postId = 'post_${DateTime.now().millisecondsSinceEpoch}_${userId.hashCode.abs()}';
+    final postId =
+        'post_${DateTime.now().millisecondsSinceEpoch}_${userId.hashCode.abs()}';
     final now = DateTime.now().millisecondsSinceEpoch;
 
     final postData = {
@@ -367,7 +371,8 @@ class PostRepository {
   /// Get total post count
   Future<int> getPostCount({String? userId}) async {
     if (userId != null) {
-      return await _db.getCount('posts', where: 'user_id = ?', whereArgs: [userId]);
+      return await _db
+          .getCount('posts', where: 'user_id = ?', whereArgs: [userId]);
     }
     return await _db.getCount('posts');
   }
@@ -394,7 +399,8 @@ class ProductRepository {
     String? farmerPhone,
     double? quantity,
   }) async {
-    final productId = 'product_${DateTime.now().millisecondsSinceEpoch}_${farmerId.hashCode.abs()}';
+    final productId =
+        'product_${DateTime.now().millisecondsSinceEpoch}_${farmerId.hashCode.abs()}';
     final now = DateTime.now().millisecondsSinceEpoch;
 
     final productData = {
@@ -483,7 +489,8 @@ class ProductRepository {
   }
 
   /// Search products
-  Future<List<Map<String, dynamic>>> searchProducts(String query, {int limit = 20}) async {
+  Future<List<Map<String, dynamic>>> searchProducts(String query,
+      {int limit = 20}) async {
     return await _db.rawQuery(
       '''
       SELECT * FROM products 
@@ -497,7 +504,8 @@ class ProductRepository {
   }
 
   /// Update product
-  Future<void> updateProduct(String productId, Map<String, dynamic> updates) async {
+  Future<void> updateProduct(
+      String productId, Map<String, dynamic> updates) async {
     updates['updated_date'] = DateTime.now().millisecondsSinceEpoch;
     await _db.update(
       'products',

@@ -83,7 +83,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundColor: const Color(0xFF4CAF50).withOpacity(0.1),
+                  backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.1),
                   child: const Icon(
                     Icons.person,
                     color: Color(0xFF4CAF50),
@@ -194,7 +194,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(

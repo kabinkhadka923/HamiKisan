@@ -1,0 +1,549 @@
+Analyzing lib...                                                
+
+   info - Use 'const' with the constructor to improve performance - lib\main.dart:65:5 - prefer_const_constructors
+   info - Don't use 'BuildContext's across async gaps - lib\main.dart:241:52 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\main.dart:276:18 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\main.dart:280:18 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\main.dart:282:13 - use_build_context_synchronously
+   info - Statements in an if should be enclosed in a block - lib\main.dart:298:9 - curly_braces_in_flow_control_structures
+  error - The getter 'isInitialized' isn't defined for the type 'AuthProvider' - lib\main.dart:329:19 - undefined_getter
+  error - A value of type 'Null' can't be returned from the function '_extractLocalLevel' because it has a return type of 'String' - lib\models\admin_models.dart:1286:50 - return_of_invalid_type
+  error - A value of type 'Null' can't be returned from the function '_extractLocalLevel' because it has a return type of 'String' - lib\models\admin_models.dart:1289:10 - return_of_invalid_type
+  error - A value of type 'Null' can't be returned from the function '_extractWardNumber' because it has a return type of 'String' - lib\models\admin_models.dart:1293:50 - return_of_invalid_type
+  error - A value of type 'Null' can't be returned from the function '_extractWardNumber' because it has a return type of 'String' - lib\models\admin_models.dart:1296:10 - return_of_invalid_type
+warning - Unused import: 'package:provider/provider.dart' - lib\providers\admin_provider.dart:3:8 - unused_import
+  error - The argument type 'AdminRole' can't be assigned to the parameter type 'String'.  - lib\providers\admin_provider.dart:133:31 - argument_type_not_assignable
+warning - The declaration '_getFromCache' isn't referenced - lib\providers\admin_provider.dart:273:11 - unused_element
+  error - Too many positional arguments: 1 expected, but 2 found - lib\providers\admin_provider.dart:834:52 - extra_positional_arguments_could_be_named
+   info - Don't invoke 'print' in production code - lib\providers\auth_provider.dart:53:7 - avoid_print
+warning - Dead code - lib\providers\auth_provider.dart:111:18 - dead_code
+warning - Dead code - lib\providers\auth_provider.dart:120:25 - dead_code
+warning - Dead code - lib\providers\auth_provider.dart:142:18 - dead_code
+warning - Dead code - lib\providers\auth_provider.dart:147:25 - dead_code
+   info - Don't invoke 'print' in production code - lib\providers\auth_provider.dart:488:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\providers\auth_provider.dart:497:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\providers\post_provider.dart:39:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\providers\post_provider.dart:46:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\providers\post_provider.dart:49:7 - avoid_print
+   info - Unnecessary 'const' keyword - lib\screens\admin\admin_dashboard_screen.dart:524:42 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:82:23 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:136:23 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:179:23 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:180:23 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:181:23 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:186:19 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:187:19 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:189:19 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:190:19 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:191:19 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:192:19 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:194:19 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\screens\admin\api_settings_screen.dart:195:19 - unnecessary_const
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin\farmer_listings_screen.dart:80:64 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin\farmer_listings_screen.dart:116:38 - prefer_const_constructors
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\screens\admin\kalimati_items_screen.dart:207:17 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin\kalimati_items_screen.dart:255:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin\kalimati_items_screen.dart:275:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin\kalimati_items_screen.dart:420:18 - prefer_const_constructors
+   info - The private field _passwordFocusNode could be 'final' - lib\screens\admin_login_screen.dart:47:13 - prefer_final_fields
+   info - The private field _usernameFocusNode could be 'final' - lib\screens\admin_login_screen.dart:48:13 - prefer_final_fields
+   info - The private field _twoFactorFocusNode could be 'final' - lib\screens\admin_login_screen.dart:49:13 - prefer_final_fields
+warning - The value of the field 'roleKisanAdmin' isn't used - lib\screens\admin_login_screen.dart:53:23 - unused_field
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:215:37 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:308:42 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:332:38 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:345:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:347:75 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:351:35 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:356:46 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:372:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:374:77 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:378:35 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:385:46 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:401:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:403:75 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:407:35 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:414:46 - prefer_const_constructors
+  error - The named parameter 'disabledColor' isn't defined - lib\screens\admin_login_screen.dart:431:29 - undefined_named_parameter
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:454:38 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:493:18 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:504:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:506:59 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:510:20 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:525:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin_login_screen.dart:527:53 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:531:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:535:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:547:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:556:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:560:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:568:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:584:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:589:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:593:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:599:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:603:22 - prefer_const_constructors
+  error - The getter 'encrypted' isn't defined for the type 'Icons' - lib\screens\admin_login_screen.dart:609:24 - undefined_getter
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:613:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:623:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:631:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\admin_login_screen.dart:646:26 - prefer_const_constructors
+   info - The type of the right operand ('String') isn't a subtype or a supertype of the left operand ('UserRole?') - lib\screens\admin_login_screen.dart:747:28 - unrelated_type_equality_checks
+  error - Too many positional arguments: 1 expected, but 2 found - lib\screens\admin_login_screen.dart:801:43 - extra_positional_arguments_could_be_named
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\community_screen.dart:132:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\community_screen.dart:272:64 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\create_post_screen.dart:86:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\create_post_screen.dart:197:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:161:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:163:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:252:51 - deprecated_member_use
+warning - The value of the local variable 'priceAlerts' isn't used - lib\screens\dashboards\farmer_dashboard_screen.dart:476:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:484:26 - deprecated_member_use
+warning - The value of the local variable 'iconColor' isn't used - lib\screens\dashboards\farmer_dashboard_screen.dart:513:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:610:41 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:633:15 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\screens\dashboards\farmer_dashboard_screen.dart:634:27 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:637:19 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:733:39 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:762:9 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\screens\dashboards\farmer_dashboard_screen.dart:763:21 - prefer_const_literals_to_create_immutables
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:819:27 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:828:46 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:973:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1023:24 - prefer_const_constructors
+   info - Don't use 'BuildContext's across async gaps - lib\screens\dashboards\farmer_dashboard_screen.dart:1046:31 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\dashboards\farmer_dashboard_screen.dart:1047:38 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1079:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1202:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1226:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1290:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1294:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1295:61 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1390:20 - prefer_const_constructors
+   info - The 'if' statement could be replaced by a null-aware assignment - lib\screens\dashboards\farmer_dashboard_screen.dart:1436:7 - prefer_conditional_assignment
+warning - The value of the local variable 'selectedImage' isn't used - lib\screens\dashboards\farmer_dashboard_screen.dart:1445:11 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1451:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1476:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1486:22 - prefer_const_constructors
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\dashboards\farmer_dashboard_screen.dart:1507:33 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\dashboards\farmer_dashboard_screen.dart:1508:40 - use_build_context_synchronously
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1518:22 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1578:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1614:29 - deprecated_member_use
+warning - The declaration '_buildComment' isn't referenced - lib\screens\dashboards\farmer_dashboard_screen.dart:1633:10 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1686:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1754:33 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1796:32 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1796:46 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1815:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:1831:57 - deprecated_member_use
+   info - Statements in an if should be enclosed in a block - lib\screens\dashboards\farmer_dashboard_screen.dart:1949:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\dashboards\farmer_dashboard_screen.dart:1951:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\dashboards\farmer_dashboard_screen.dart:1953:7 - curly_braces_in_flow_control_structures
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:1973:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:2060:22 - prefer_const_constructors
+   info - Don't use 'BuildContext's across async gaps - lib\screens\dashboards\farmer_dashboard_screen.dart:2086:31 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\dashboards\farmer_dashboard_screen.dart:2088:40 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\dashboards\farmer_dashboard_screen.dart:2092:40 - use_build_context_synchronously
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:2120:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:2174:22 - prefer_const_constructors
+   info - Don't use 'BuildContext's across async gaps - lib\screens\dashboards\farmer_dashboard_screen.dart:2201:31 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\dashboards\farmer_dashboard_screen.dart:2202:38 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:2224:26 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:2239:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\farmer_dashboard_screen.dart:2240:26 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:2287:27 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\farmer_dashboard_screen.dart:2298:32 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:109:15 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:149:52 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:212:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:275:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:295:30 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:310:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:311:49 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:392:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:440:18 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:505:52 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:589:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:634:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:736:16 - prefer_const_constructors
+warning - The declaration '_showDesignDialog' isn't referenced - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:784:8 - unused_element
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:788:16 - prefer_const_constructors
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:812:42 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:812:57 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:816:42 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:816:57 - deprecated_member_use
+warning - The declaration '_showMediaDialog' isn't referenced - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:855:8 - unused_element
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\kisan_admin_dashboard_screen.dart:859:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:54:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:56:34 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:162:18 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:199:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:200:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:216:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:217:57 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:282:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:340:18 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:387:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:409:52 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:480:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:627:18 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:637:40 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:665:32 - prefer_const_constructors
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\real_admin_dashboard_screen.dart:754:40 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\real_admin_dashboard_screen.dart:754:55 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\real_admin_dashboard_screen.dart:758:40 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\real_admin_dashboard_screen.dart:758:55 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\real_admin_dashboard_screen.dart:762:40 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\dashboards\real_admin_dashboard_screen.dart:762:55 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboards\real_admin_dashboard_screen.dart:849:16 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:1213:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:1215:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\dashboards\real_admin_dashboard_screen.dart:1261:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\diagnosis_result_screen.dart:148:39 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps - lib\screens\doctor_screen.dart:795:7 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\doctor_screen.dart:936:38 - deprecated_member_use
+warning - The value of the field '_currentIndex' isn't used - lib\screens\home_screen.dart:33:13 - unused_field
+warning - This default clause is covered by the previous cases - lib\screens\home_screen.dart:71:7 - unreachable_switch_default
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\home_screen.dart:130:42 - undefined_getter
+  error - The getter 'headerGradient' isn't defined for the type 'AppColors' - lib\screens\home_screen.dart:200:29 - undefined_getter
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home_screen.dart:243:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home_screen.dart:407:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home_screen.dart:512:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home_screen.dart:513:50 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\home_screen.dart:801:38 - use_build_context_synchronously
+warning - The declaration '_buildMarketplacePage' isn't referenced - lib\screens\home_screen.dart:817:10 - unused_element
+warning - The declaration '_buildLearningPage' isn't referenced - lib\screens\home_screen.dart:821:10 - unused_element
+  error - Invalid constant value - lib\screens\home_screen.dart:853:33 - invalid_constant
+  error - The getter 'headerGradient' isn't defined for the type 'AppColors' - lib\screens\home_screen.dart:853:43 - undefined_getter
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home_screen.dart:954:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home_screen.dart:960:34 - deprecated_member_use
+warning - The declaration '_showProfileMenu' isn't referenced - lib\screens\home_screen.dart:1007:8 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home_screen.dart:1025:53 - deprecated_member_use
+warning - The declaration '_showMessage' isn't referenced - lib\screens\home_screen.dart:1101:8 - unused_element
+warning - The value of the local variable 'productionCost' isn't used - lib\screens\insurance_calculator_screen.dart:41:13 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance - lib\screens\insurance_calculator_screen.dart:206:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\insurance_calculator_screen.dart:207:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\insurance_calculator_screen.dart:209:24 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\screens\insurance_calculator_screen.dart:211:29 - prefer_const_literals_to_create_immutables
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\kisan_admin_secure_panel.dart:236:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\kisan_admin_secure_panel.dart:646:28 - deprecated_member_use
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\appointments_screen.dart:17:36 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\appointments_screen.dart:95:38 - undefined_getter
+  error - Invalid constant value - lib\screens\kisan_doctor\appointments_screen.dart:98:58 - invalid_constant
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\appointments_screen.dart:98:68 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\appointments_screen.dart:128:82 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\appointments_screen.dart:150:44 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\consultation_screen.dart:38:36 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\consultation_screen.dart:55:42 - undefined_getter
+  error - Invalid constant value - lib\screens\kisan_doctor\consultation_screen.dart:58:67 - invalid_constant
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\consultation_screen.dart:58:77 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\consultation_screen.dart:84:36 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\consultation_screen.dart:136:83 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\consultation_screen.dart:177:78 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\consultation_screen.dart:229:80 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\feedback_screen.dart:17:36 - undefined_getter
+  error - Invalid constant value - lib\screens\kisan_doctor\feedback_screen.dart:48:104 - invalid_constant
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\feedback_screen.dart:48:114 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\kisan_doctor_dashboard_screen.dart:38:36 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\kisan_doctor_dashboard_screen.dart:194:41 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\kisan_doctor_dashboard_screen.dart:213:30 - undefined_getter
+  error - Invalid constant value - lib\screens\kisan_doctor\kisan_doctor_dashboard_screen.dart:216:55 - invalid_constant
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\kisan_doctor_dashboard_screen.dart:216:65 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\notifications_screen.dart:18:36 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\notifications_screen.dart:81:35 - undefined_getter
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\kisan_doctor\notifications_screen.dart:87:61 - deprecated_member_use
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\notifications_screen.dart:106:36 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\profile_screen.dart:36:36 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\profile_screen.dart:61:36 - undefined_getter
+  error - Invalid constant value - lib\screens\kisan_doctor\profile_screen.dart:69:65 - invalid_constant
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\profile_screen.dart:69:75 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\profile_screen.dart:113:76 - undefined_getter
+  error - The getter 'primaryGreen' isn't defined for the type 'AppColors' - lib\screens\kisan_doctor\profile_screen.dart:211:72 - undefined_getter
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\language_selection_screen.dart:97:59 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\language_selection_screen.dart:100:61 - deprecated_member_use
+warning - The value of the field '_modules' isn't used - lib\screens\learning_screen.dart:11:30 - unused_field
+warning - The declaration '_validateOtp' isn't referenced - lib\screens\login_screen.dart:214:11 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:335:48 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:341:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:365:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:382:18 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:432:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:434:50 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:438:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:446:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:456:20 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:483:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:485:57 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:489:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:496:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:509:30 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:516:30 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:579:26 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:607:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:609:59 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:613:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:620:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:699:18 - prefer_const_constructors
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\screens\login_screen.dart:709:11 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\screens\login_screen.dart:731:11 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:805:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:845:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:899:22 - prefer_const_constructors
+  error - Undefined name '_otpResendCooldowns' - lib\screens\login_screen.dart:910:69 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:980:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:988:20 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:1002:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:1004:50 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:1011:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:1015:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:1028:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:1114:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:1120:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\login_screen.dart:1127:28 - prefer_const_constructors
+  error - The method 'login' isn't defined for the type 'AuthProvider' - lib\screens\login_screen.dart:1260:42 - undefined_method
+  error - The named parameter 'email' is required, but there's no corresponding argument - lib\screens\login_screen.dart:1301:20 - missing_required_argument
+  error - The named parameter 'status' is required, but there's no corresponding argument - lib\screens\login_screen.dart:1301:20 - missing_required_argument
+  error - The named parameter 'email' is required, but there's no corresponding argument - lib\screens\login_screen.dart:1317:42 - missing_required_argument
+  error - The named parameter 'name' is required, but there's no corresponding argument - lib\screens\login_screen.dart:1317:42 - missing_required_argument
+  error - The named parameter 'phoneNumber' is required, but there's no corresponding argument - lib\screens\login_screen.dart:1317:42 - missing_required_argument
+  error - The named parameter 'role' is required, but there's no corresponding argument - lib\screens\login_screen.dart:1317:42 - missing_required_argument
+  error - The named parameter 'username' is required, but there's no corresponding argument - lib\screens\login_screen.dart:1317:42 - missing_required_argument
+  error - The named parameter 'user' isn't defined - lib\screens\login_screen.dart:1318:9 - undefined_named_parameter
+  error - The method 'verifyOtp' isn't defined for the type 'AuthProvider' - lib\screens\login_screen.dart:1367:42 - undefined_method
+  error - The method 'resendOtp' isn't defined for the type 'AuthProvider' - lib\screens\login_screen.dart:1405:42 - undefined_method
+  error - The name 'MarketPrice' isn't a type, so it can't be used as a type argument - lib\screens\market_prices_screen.dart:18:8 - non_type_as_type_argument
+  error - The name 'PriceAlert' isn't a type, so it can't be used as a type argument - lib\screens\market_prices_screen.dart:19:8 - non_type_as_type_argument
+  error - The method 'getCurrentPrices' isn't defined for the type 'MarketService' - lib\screens\market_prices_screen.dart:46:43 - undefined_method
+  error - The method 'getPriceAlerts' isn't defined for the type 'MarketService' - lib\screens\market_prices_screen.dart:47:43 - undefined_method
+  error - The method 'getCurrentPrices' isn't defined for the type 'MarketService' - lib\screens\market_prices_screen.dart:72:43 - undefined_method
+  error - The property 'cropName' can't be unconditionally accessed because the receiver can be 'null' - lib\screens\market_prices_screen.dart:159:25 - unchecked_use_of_nullable_value
+  error - The property 'pricePerKg' can't be unconditionally accessed because the receiver can be 'null' - lib\screens\market_prices_screen.dart:160:48 - unchecked_use_of_nullable_value
+  error - The method 'max' isn't defined for the type '_MarketPricesScreenState' - lib\screens\market_prices_screen.dart:161:9 - undefined_method
+  error - The property 'cropName' can't be unconditionally accessed because the receiver can be 'null' - lib\screens\market_prices_screen.dart:161:36 - unchecked_use_of_nullable_value
+  error - The property 'trend' can't be unconditionally accessed because the receiver can be 'null' - lib\screens\market_prices_screen.dart:163:49 - unchecked_use_of_nullable_value
+  error - Undefined name 'PriceTrend' - lib\screens\market_prices_screen.dart:163:58 - undefined_identifier
+  error - The property 'trend' can't be unconditionally accessed because the receiver can be 'null' - lib\screens\market_prices_screen.dart:164:50 - unchecked_use_of_nullable_value
+  error - Undefined name 'PriceTrend' - lib\screens\market_prices_screen.dart:164:59 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market_prices_screen.dart:246:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market_prices_screen.dart:266:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market_prices_screen.dart:355:35 - deprecated_member_use
+  error - Undefined class 'MarketPrice' - lib\screens\market_prices_screen.dart:400:26 - undefined_class
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market_prices_screen.dart:408:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market_prices_screen.dart:530:37 - deprecated_member_use
+  error - Undefined class 'PriceAlert' - lib\screens\market_prices_screen.dart:544:26 - undefined_class
+  error - Undefined name 'PriceTrend' - lib\screens\market_prices_screen.dart:562:24 - undefined_identifier
+  error - The name 'MarketPrice' isn't a type, so it can't be used as a type argument - lib\screens\market_prices_screen.dart:569:8 - non_type_as_type_argument
+  error - The property 'cropName' can't be unconditionally accessed because the receiver can be 'null' - lib\screens\market_prices_screen.dart:571:57 - unchecked_use_of_nullable_value
+  error - The property 'district' can't be unconditionally accessed because the receiver can be 'null' - lib\screens\market_prices_screen.dart:572:65 - unchecked_use_of_nullable_value
+  error - Undefined class 'MarketPrice' - lib\screens\market_prices_screen.dart:577:26 - undefined_class
+  error - Undefined class 'MarketPrice' - lib\screens\market_prices_screen.dart:586:34 - undefined_class
+  error - The method 'savePriceAlertPreference' isn't defined for the type 'MarketService' - lib\screens\market_prices_screen.dart:748:38 - undefined_method
+   info - Don't use 'BuildContext's across async gaps - lib\screens\market_prices_screen.dart:753:30 - use_build_context_synchronously
+  error - Undefined class 'PriceAlert' - lib\screens\market_prices_screen.dart:769:26 - undefined_class
+warning - Unused import: '../../providers/localization_provider.dart' - lib\screens\marketplace\marketplace_screen.dart:6:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\marketplace\marketplace_screen.dart:142:56 - deprecated_member_use
+  error - The getter 'title' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:15:19 - undefined_getter
+  error - The getter 'imageUrls' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:26:25 - undefined_getter
+  error - The getter 'imageUrls' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:32:47 - undefined_getter
+  error - The getter 'imageUrls' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:47:36 - undefined_getter
+  error - The getter 'title' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:79:35 - undefined_getter
+  error - The getter 'isVerified' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:86:35 - undefined_getter
+  error - The getter 'subCategory' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:111:54 - undefined_getter
+  error - The getter 'district' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:144:53 - undefined_getter
+  error - The getter 'qualityGrade' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:153:29 - undefined_getter
+  error - The getter 'qualityGrade' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:154:53 - undefined_getter
+  error - The getter 'isOrganic' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:161:29 - undefined_getter
+  error - The getter 'isOrganic' isn't defined for the type 'Product' - lib\screens\marketplace\product_details_screen.dart:162:36 - undefined_getter
+  error - Undefined name 'MarketplaceCategory' - lib\screens\marketplace\sell_product_screen.dart:87:24 - undefined_identifier
+  error - Undefined name 'MarketplaceCategory' - lib\screens\marketplace\sell_product_screen.dart:113:26 - undefined_identifier
+  error - Undefined name 'MarketplaceConstants' - lib\screens\marketplace\sell_product_screen.dart:152:30 - undefined_identifier
+  error - Undefined name 'MarketplaceConstants' - lib\screens\marketplace\sell_product_screen.dart:190:24 - undefined_identifier
+  error - Undefined name 'MarketplaceConstants' - lib\screens\marketplace\sell_product_screen.dart:216:24 - undefined_identifier
+  error - The method 'addProduct' isn't defined for the type 'MarketplaceProvider' - lib\screens\marketplace\sell_product_screen.dart:376:47 - undefined_method
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\notifications_screen.dart:59:59 - deprecated_member_use
+warning - The value of the local variable 'authProvider' isn't used - lib\screens\otp_verification_screen.dart:27:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\post_detail_screen.dart:187:33 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\profile_screen.dart:219:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\profile_screen.dart:220:19 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\profile_screen.dart:233:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\profile_screen.dart:234:19 - deprecated_member_use
+  error - Expected an identifier - lib\screens\register_screen.dart:425:42 - missing_identifier
+   info - Don't use 'BuildContext's across async gaps - lib\screens\register_screen.dart:643:28 - use_build_context_synchronously
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\settings_screen.dart:171:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\settings_screen.dart:172:17 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\settings_screen.dart:182:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\settings_screen.dart:183:17 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\splash_screen.dart:34:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\splash_screen.dart:35:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\splash_screen.dart:70:45 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\screens\splash_screen.dart:121:15 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\screens\splash_screen.dart:122:27 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance - lib\screens\splash_screen.dart:133:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\splash_screen.dart:135:28 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\super_admin_secure_panel.dart:302:66 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\super_admin_secure_panel.dart:805:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\super_admin_secure_panel.dart:1009:26 - deprecated_member_use
+warning - The declaration '_performSystemAction' isn't referenced - lib\screens\super_admin_secure_panel.dart:1163:8 - unused_element
+   info - Use 'const' with the constructor to improve performance - lib\screens\tools_screen.dart:181:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\tools_screen.dart:248:20 - prefer_const_constructors
+   info - Unnecessary 'const' keyword - lib\screens\tools_screen.dart:277:11 - unnecessary_const
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\tools_screen.dart:428:33 - deprecated_member_use
+warning - The declaration '_getMockUser' isn't referenced - lib\services\auth_service.dart:220:32 - unused_element
+  error - Conditions must have a static type of 'bool' - lib\services\auth_service.dart:272:11 - non_bool_condition
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:332:7 - avoid_print
+   info - The type of the right operand ('String') isn't a subtype or a supertype of the left operand ('Future<String>') - lib\services\auth_service.dart:604:57 - unrelated_type_equality_checks
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:633:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:650:7 - avoid_print
+   info - The prefix 'IO' isn't a lower_case_with_underscores identifier - lib\services\chat_service.dart:1:60 - library_prefixes
+   info - Don't invoke 'print' in production code - lib\services\chat_service.dart:27:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\chat_service.dart:37:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\chat_service.dart:113:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\database.dart:599:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\database.dart:601:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\database.dart:604:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\market_service.dart:78:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\market_service.dart:102:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\market_service.dart:209:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\marketplace_database_service.dart:23:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\marketplace_database_service.dart:37:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\marketplace_database_service.dart:54:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\marketplace_database_service.dart:72:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\marketplace_database_service.dart:86:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\marketplace_database_service.dart:100:7 - avoid_print
+  error - The named parameter 'quantity' is required, but there's no corresponding argument - lib\services\marketplace_database_service.dart:107:7 - missing_required_argument
+  error - The named parameter 'sellerName' is required, but there's no corresponding argument - lib\services\marketplace_database_service.dart:107:7 - missing_required_argument
+  error - The named parameter 'quantityAvailable' isn't defined - lib\services\marketplace_database_service.dart:115:9 - undefined_named_parameter
+  error - The named parameter 'minOrderQuantity' isn't defined - lib\services\marketplace_database_service.dart:116:9 - undefined_named_parameter
+  error - The named parameter 'images' isn't defined - lib\services\marketplace_database_service.dart:118:9 - undefined_named_parameter
+  error - The named parameter 'status' isn't defined - lib\services\marketplace_database_service.dart:119:9 - undefined_named_parameter
+  error - Undefined name 'ProductStatus' - lib\services\marketplace_database_service.dart:119:17 - undefined_identifier
+  error - The named parameter 'updatedAt' isn't defined - lib\services\marketplace_database_service.dart:121:9 - undefined_named_parameter
+  error - The named parameter 'quantity' is required, but there's no corresponding argument - lib\services\marketplace_database_service.dart:123:7 - missing_required_argument
+  error - The named parameter 'sellerName' is required, but there's no corresponding argument - lib\services\marketplace_database_service.dart:123:7 - missing_required_argument
+  error - The named parameter 'quantityAvailable' isn't defined - lib\services\marketplace_database_service.dart:131:9 - undefined_named_parameter
+  error - The named parameter 'minOrderQuantity' isn't defined - lib\services\marketplace_database_service.dart:132:9 - undefined_named_parameter
+  error - The named parameter 'images' isn't defined - lib\services\marketplace_database_service.dart:134:9 - undefined_named_parameter
+  error - The named parameter 'status' isn't defined - lib\services\marketplace_database_service.dart:135:9 - undefined_named_parameter
+  error - Undefined name 'ProductStatus' - lib\services\marketplace_database_service.dart:135:17 - undefined_identifier
+  error - The named parameter 'updatedAt' isn't defined - lib\services\marketplace_database_service.dart:137:9 - undefined_named_parameter
+  error - The named parameter 'quantity' is required, but there's no corresponding argument - lib\services\marketplace_database_service.dart:139:7 - missing_required_argument
+  error - The named parameter 'sellerName' is required, but there's no corresponding argument - lib\services\marketplace_database_service.dart:139:7 - missing_required_argument
+  error - The named parameter 'quantityAvailable' isn't defined - lib\services\marketplace_database_service.dart:147:9 - undefined_named_parameter
+  error - The named parameter 'minOrderQuantity' isn't defined - lib\services\marketplace_database_service.dart:148:9 - undefined_named_parameter
+  error - The named parameter 'images' isn't defined - lib\services\marketplace_database_service.dart:150:9 - undefined_named_parameter
+  error - The named parameter 'status' isn't defined - lib\services\marketplace_database_service.dart:151:9 - undefined_named_parameter
+  error - Undefined name 'ProductStatus' - lib\services\marketplace_database_service.dart:151:17 - undefined_identifier
+  error - The named parameter 'updatedAt' isn't defined - lib\services\marketplace_database_service.dart:153:9 - undefined_named_parameter
+  error - Target of URI doesn't exist: '../models/user_model.dart' - lib\services\repositories.dart:4:8 - uri_does_not_exist
+  error - Undefined class 'UserRole' - lib\services\repositories.dart:17:14 - undefined_class
+   info - Don't invoke 'print' in production code - lib\services\security_service.dart:99:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\security_service.dart:114:5 - avoid_print
+  error - The method 'isPasswordStrong' isn't defined for the type 'SecurityUtils' - lib\services\security_service.dart:127:24 - undefined_method
+warning - The value of the field '_openWeatherMapUrl' isn't used - lib\services\weather_service.dart:6:23 - unused_field
+warning - The value of the field '_openWeatherMapApiKey' isn't used - lib\services\weather_service.dart:7:23 - unused_field
+warning - The value of the field '_meteoblueUrl' isn't used - lib\services\weather_service.dart:10:23 - unused_field
+warning - The value of the field '_cachedWeatherData' isn't used - lib\services\weather_service.dart:13:16 - unused_field
+warning - The value of the field '_lastUpdateTime' isn't used - lib\services\weather_service.dart:14:13 - unused_field
+warning - The declaration '_calculateRainChance' isn't referenced - lib\services\weather_service.dart:164:7 - unused_element
+warning - The declaration '_saveCachedData' isn't referenced - lib\services\weather_service.dart:188:16 - unused_element
+   info - Don't invoke 'print' in production code - lib\services\weather_service.dart:224:9 - avoid_print
+   info - 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\utils\app_colors.dart:256:7 - deprecated_member_use
+   info - 'onBackground' is deprecated and shouldn't be used. Use onSurface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\utils\app_colors.dart:262:7 - deprecated_member_use
+   info - 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\utils\app_colors.dart:279:7 - deprecated_member_use
+   info - 'onBackground' is deprecated and shouldn't be used. Use onSurface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\utils\app_colors.dart:285:7 - deprecated_member_use
+   info - 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\utils\app_theme.dart:221:58 - deprecated_member_use
+   info - 'dialogBackgroundColor' is deprecated and shouldn't be used. Use DialogThemeData.backgroundColor instead. This feature was deprecated after v3.27.0-0.1.pre - lib\utils\app_theme.dart:223:7 - deprecated_member_use
+   info - Dangling library doc comment - lib\utils\constants.dart:1:1 - dangling_library_doc_comments
+  error - Const variables must be initialized with a constant value - lib\utils\constants.dart:378:48 - const_initialized_with_non_constant_value
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:378:48 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:378:48 - undefined_identifier
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:379:46 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:379:46 - undefined_identifier
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:380:44 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:380:44 - undefined_identifier
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:383:16 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:383:16 - undefined_identifier
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:385:46 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:385:46 - undefined_identifier
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:386:44 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:386:44 - undefined_identifier
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:387:52 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:387:52 - undefined_identifier
+  error - Const variables must be initialized with a constant value - lib\utils\constants.dart:394:16 - const_initialized_with_non_constant_value
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:394:16 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:394:16 - undefined_identifier
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:400:16 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:400:16 - undefined_identifier
+  error - The values in a const map literal must be constant - lib\utils\constants.dart:406:16 - non_constant_map_value
+  error - Undefined name 'AppColors' - lib\utils\constants.dart:406:16 - undefined_identifier
+   info - Don't invoke 'print' in production code - lib\utils\error_handler.dart:68:9 - avoid_print
+warning - The value of the field '_stackTrace' isn't used - lib\utils\error_handler.dart:168:15 - unused_field
+  error - Too many positional arguments: 1 expected, but 3 found - lib\utils\error_handler.dart:209:50 - extra_positional_arguments_could_be_named
+   info - Don't invoke 'print' in production code - lib\utils\logger.dart:97:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\utils\logger.dart:99:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\utils\logger.dart:101:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\utils\logger.dart:103:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\utils\logger.dart:105:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\utils\logger.dart:107:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\utils\logger.dart:110:29 - avoid_print
+   info - Don't invoke 'print' in production code - lib\utils\logger.dart:114:7 - avoid_print
+   info - Dangling library doc comment - lib\utils\security_utils.dart:1:1 - dangling_library_doc_comments
+warning - Unused import: 'package:crypto/crypto.dart' - lib\utils\security_utils.dart:7:8 - unused_import
+   info - The imported package 'pointycastle' isn't a dependency of the importing package - lib\utils\security_utils.dart:9:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:pointycastle/pointycastle.dart' - lib\utils\security_utils.dart:9:8 - uri_does_not_exist
+   info - The imported package 'pointycastle' isn't a dependency of the importing package - lib\utils\security_utils.dart:10:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:pointycastle/api.dart' - lib\utils\security_utils.dart:10:8 - uri_does_not_exist
+   info - The imported package 'pointycastle' isn't a dependency of the importing package - lib\utils\security_utils.dart:11:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:pointycastle/block/aes.dart' - lib\utils\security_utils.dart:11:8 - uri_does_not_exist
+   info - The imported package 'pointycastle' isn't a dependency of the importing package - lib\utils\security_utils.dart:12:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:pointycastle/block/modes/cbc.dart' - lib\utils\security_utils.dart:12:8 - uri_does_not_exist
+   info - The imported package 'pointycastle' isn't a dependency of the importing package - lib\utils\security_utils.dart:13:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:pointycastle/paddings/pkcs7.dart' - lib\utils\security_utils.dart:13:8 - uri_does_not_exist
+   info - The imported package 'pointycastle' isn't a dependency of the importing package - lib\utils\security_utils.dart:14:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:pointycastle/random/fortuna_random.dart' - lib\utils\security_utils.dart:14:8 - uri_does_not_exist
+  error - The method 'PBKDF2KeyDerivator' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:29:20 - undefined_method
+  error - The method 'HMac' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:29:39 - undefined_method
+  error - The method 'SHA256Digest' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:29:44 - undefined_method
+  error - The method 'Pbkdf2Parameters' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:30:14 - undefined_method
+  error - The method 'CBCBlockCipher' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:59:22 - undefined_method
+  error - The method 'AESEngine' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:59:37 - undefined_method
+  error - The method 'ParametersWithIV' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:62:11 - undefined_method
+  error - The method 'KeyParameter' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:63:13 - undefined_method
+  error - The method 'CBCBlockCipher' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:98:22 - undefined_method
+  error - The method 'AESEngine' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:98:37 - undefined_method
+  error - The method 'ParametersWithIV' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:101:11 - undefined_method
+  error - The method 'KeyParameter' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:102:13 - undefined_method
+  error - Expected an identifier - lib\utils\security_utils.dart:134:41 - missing_identifier
+  error - Expected an identifier - lib\utils\security_utils.dart:134:42 - missing_identifier
+  error - Expected to find ',' - lib\utils\security_utils.dart:134:43 - expected_token
+  error - Expected to find ']' - lib\utils\security_utils.dart:134:43 - expected_token
+  error - Expected to find ']' - lib\utils\security_utils.dart:134:43 - expected_token
+  error - Too many positional arguments: 1 expected, but 2 found - lib\utils\security_utils.dart:134:43 - extra_positional_arguments_could_be_named
+  error - The method 'FortunaRandom' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:419:20 - undefined_method
+  error - The method 'KeyParameter' isn't defined for the type 'SecurityUtils' - lib\utils\security_utils.dart:420:17 - undefined_method
+   info - Use 'const' for final variables initialized to a constant value - lib\utils\security_utils.dart:566:5 - prefer_const_declarations
+  error - A value of type 'double' can't be assigned to a variable of type 'int' - lib\utils\security_utils.dart:583:43 - invalid_assignment
+  error - The argument type 'double' can't be assigned to the parameter type 'int?'.  - lib\utils\security_utils.dart:584:37 - argument_type_not_assignable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\admin_shield.dart:22:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\admin_shield.dart:23:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\admin_shield.dart:38:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\admin_shield.dart:51:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\admin_shield.dart:62:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\admin_shield.dart:95:23 - deprecated_member_use
+  error - The method 'cos' isn't defined for the type '_ShieldPainter' - lib\widgets\admin_shield.dart:106:38 - undefined_method
+  error - The method 'sin' isn't defined for the type '_ShieldPainter' - lib\widgets\admin_shield.dart:107:38 - undefined_method
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\animated_logo.dart:58:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\animated_logo.dart:74:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\loading_overlay.dart:23:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\loading_overlay.dart:34:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\role_selection_card.dart:31:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\role_selection_card.dart:39:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\role_selection_card.dart:46:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\role_selection_card.dart:60:53 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\widgets\role_selection_card.dart:85:30 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\widgets\secure_input_field.dart:61:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\widgets\secure_input_field.dart:65:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\widgets\secure_input_field.dart:69:23 - prefer_const_constructors
+
+545 issues found. (ran in 2.3s)

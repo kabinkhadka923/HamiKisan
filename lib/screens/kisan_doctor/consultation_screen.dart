@@ -4,11 +4,17 @@ import '../../models/user.dart';
 import '../../models/kisan_doctor_models.dart';
 import '../../providers/kisan_doctor_provider.dart';
 import '../../utils/app_colors.dart';
+import '../video_call_screen.dart';
 
 class ConsultationScreen extends StatefulWidget {
   final User doctor;
+  final CaseStatus? initialStatusFilter;
 
-  const ConsultationScreen({super.key, required this.doctor});
+  const ConsultationScreen({
+    super.key,
+    required this.doctor,
+    this.initialStatusFilter,
+  });
 
   @override
   State<ConsultationScreen> createState() => _ConsultationScreenState();
@@ -33,18 +39,33 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
   }
 
   Widget _buildCasesList(KisanDoctorProvider provider) {
+    final visibleCases = widget.initialStatusFilter == null
+        ? provider.cases
+        : provider.cases
+            .where((case_) => case_.status == widget.initialStatusFilter)
+            .toList();
+    final title = widget.initialStatusFilter == CaseStatus.ongoing
+        ? 'Pending Queries'
+        : 'Consultations';
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
-        title: const Text('Consultations'),
+        title: Text(title),
       ),
-      body: provider.cases.isEmpty
-          ? const Center(child: Text('No cases available'))
+      body: visibleCases.isEmpty
+          ? Center(
+              child: Text(
+                widget.initialStatusFilter == CaseStatus.ongoing
+                    ? 'No pending queries'
+                    : 'No cases available',
+              ),
+            )
           : ListView.builder(
               padding: const EdgeInsets.all(12),
-              itemCount: provider.cases.length,
+              itemCount: visibleCases.length,
               itemBuilder: (context, index) {
-                final case_ = provider.cases[index];
+                final case_ = visibleCases[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
@@ -52,16 +73,19 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: AppColors.primaryGreen.withOpacity(0.2),
+                        color: AppColors.primaryGreen.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.agriculture, color: AppColors.primaryGreen),
+                      child: const Icon(Icons.agriculture,
+                          color: AppColors.primaryGreen),
                     ),
-                    title: Text(case_.cropType, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(case_.cropType,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(case_.problemDescription, maxLines: 2, overflow: TextOverflow.ellipsis),
+                        Text(case_.problemDescription,
+                            maxLines: 2, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 4),
                         Chip(
                           label: Text(case_.status.name),
@@ -87,6 +111,24 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => provider.clearSelection(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.video_call),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VideoCallScreen(
+                    doctorName: widget.doctor.name,
+                    doctorSpecialty: 'Medical Consultant',
+                    callId: case_.caseId,
+                    recipientId: case_.farmerId,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -100,11 +142,14 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Crop: ${case_.cropType}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('Crop: ${case_.cropType}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
                     Text('Problem: ${case_.problemDescription}'),
                     const SizedBox(height: 8),
-                    Text('Status: ${case_.status.name}', style: TextStyle(color: _getStatusColor(case_.status))),
+                    Text('Status: ${case_.status.name}',
+                        style: TextStyle(color: _getStatusColor(case_.status))),
                   ],
                 ),
               ),
@@ -112,7 +157,17 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
             const SizedBox(height: 16),
 
             // Chat Messages
-            Text('Chat History', style: Theme.of(context).textTheme.titleMedium),
+            Row(
+              children: [
+                Text('Chat History',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const Spacer(),
+                const Icon(Icons.security, color: Colors.green, size: 16),
+                const SizedBox(width: 4),
+                const Text('E2EE Secured',
+                    style: TextStyle(color: Colors.green, fontSize: 12)),
+              ],
+            ),
             const SizedBox(height: 12),
             Container(
               height: 200,
@@ -128,19 +183,39 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                       itemBuilder: (context, index) {
                         final msg = provider.currentCaseMessages[index];
                         return Align(
-                          alignment: msg.senderId == widget.doctor.id ? Alignment.centerRight : Alignment.centerLeft,
+                          alignment: msg.senderId == widget.doctor.id
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 8),
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: msg.senderId == widget.doctor.id ? AppColors.primaryGreen : Colors.grey[300],
+                              color: msg.senderId == widget.doctor.id
+                                  ? AppColors.primaryGreen
+                                  : Colors.grey[300],
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(
-                              msg.messageText,
-                              style: TextStyle(
-                                color: msg.senderId == widget.doctor.id ? Colors.white : Colors.black,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  msg.messageText,
+                                  style: TextStyle(
+                                    color: msg.senderId == widget.doctor.id
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Icon(
+                                  Icons.lock_outline,
+                                  size: 10,
+                                  color: msg.senderId == widget.doctor.id
+                                      ? Colors.white70
+                                      : Colors.black54,
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -157,8 +232,10 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                     controller: _messageController,
                     decoration: InputDecoration(
                       hintText: 'Type message...',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                     ),
                   ),
                 ),
@@ -174,7 +251,8 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                       _messageController.clear();
                     }
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryGreen),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen),
                   child: const Icon(Icons.send, color: Colors.white),
                 ),
               ],
@@ -182,14 +260,16 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
             const SizedBox(height: 24),
 
             // Solution Form
-            Text('Provide Solution', style: Theme.of(context).textTheme.titleMedium),
+            Text('Provide Solution',
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
             TextField(
               controller: _solutionController,
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: 'Describe the solution...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
             const SizedBox(height: 12),
@@ -197,7 +277,8 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
               controller: _medicineController,
               decoration: InputDecoration(
                 hintText: 'Medicine recommendation...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
             const SizedBox(height: 12),
@@ -205,7 +286,8 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
               controller: _fertilizerController,
               decoration: InputDecoration(
                 hintText: 'Fertilizer recommendation...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
             const SizedBox(height: 16),
@@ -226,8 +308,10 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                         const SnackBar(content: Text('Solution updated')),
                       );
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryGreen),
-                    child: const Text('Update Solution', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen),
+                    child: const Text('Update Solution',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -240,8 +324,10 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                         const SnackBar(content: Text('Case closed')),
                       );
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                    child: const Text('Close Case', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange),
+                    child: const Text('Close Case',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
