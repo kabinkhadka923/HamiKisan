@@ -1,176 +1,170 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:http/http.dart' as http;
+
 import '../models/marketplace_models.dart';
+import 'auth_service.dart';
+import 'backend_config.dart';
 
 class MarketplaceDatabaseService {
-  static const String _productsKey = 'marketplace_products';
-  static const String _ordersKey = 'marketplace_orders';
+  final Map<String, String> _headers = const {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
 
-  Future<List<Product>> getAllProducts() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final productsJson = prefs.getString(_productsKey);
-
-      if (productsJson == null) {
-        // Initialize with sample products
-        await _initializeSampleProducts();
-        return getAllProducts();
-      }
-
-      final productsList = json.decode(productsJson) as List;
-      return productsList.map((json) => Product.fromJson(json)).toList();
-    } catch (e) {
-      return [];
+  Future<Map<String, String>> _authHeaders() async {
+    final token = await AuthService.getAuthToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('Authentication required');
     }
+    return {
+      ..._headers,
+      'Authorization': 'Bearer $token',
+    };
   }
 
-  Future<void> insertProduct(Product product) async {
-    try {
-      final products = await getAllProducts();
-      products.add(product);
+  Future<List<Product>> getAllProducts() async {
+    final response = await http.get(
+      BackendConfig.uri('/api/products', query: {'status': 'approved'}),
+      headers: _headers,
+    );
 
-      final prefs = await SharedPreferences.getInstance();
-      final productsJson =
-          json.encode(products.map((p) => p.toJson()).toList());
-      await prefs.setString(_productsKey, productsJson);
-    } catch (e) {
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch products');
     }
+
+    final productsList = json.decode(response.body) as List<dynamic>;
+    return productsList
+        .map((jsonItem) => _mapProductFromBackend(Map<String, dynamic>.from(jsonItem)))
+        .toList();
+  }
+
+  Future<Product> insertProduct(Product product) async {
+    final response = await http.post(
+      BackendConfig.uri('/api/products'),
+      headers: await _authHeaders(),
+      body: json.encode({
+        'title': product.title,
+        'description': product.description,
+        'category': product.category,
+        'subCategory': product.subCategory,
+        'price': product.price,
+        'unit': product.unit,
+        'quantity': product.quantity,
+        'location': product.location,
+        'district': product.district,
+        'qualityGrade': product.qualityGrade,
+        'isOrganic': product.isOrganic,
+        'imageUrls': product.imageUrls,
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to create product');
+    }
+
+    final payload = json.decode(response.body) as Map<String, dynamic>;
+    return _mapProductFromBackend(payload);
   }
 
   Future<void> updateProduct(Product product) async {
-    try {
-      final products = await getAllProducts();
-      final index = products.indexWhere((p) => p.id == product.id);
-
-      if (index != -1) {
-        products[index] = product;
-
-        final prefs = await SharedPreferences.getInstance();
-        final productsJson =
-            json.encode(products.map((p) => p.toJson()).toList());
-        await prefs.setString(_productsKey, productsJson);
-      }
-    } catch (e) {
-    }
+    await http.patch(
+      BackendConfig.uri('/api/products/${product.id}/status'),
+      headers: await _authHeaders(),
+      body: json.encode({'status': product.status}),
+    );
   }
 
   Future<List<Order>> getUserOrders(String userId) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final ordersJson = prefs.getString(_ordersKey);
+    final _ = userId;
+    final response = await http.get(
+      BackendConfig.uri('/api/orders/mine'),
+      headers: await _authHeaders(),
+    );
 
-      if (ordersJson == null) return [];
-
-      final ordersList = json.decode(ordersJson) as List;
-      final allOrders = ordersList.map((json) => Order.fromJson(json)).toList();
-
-      return allOrders
-          .where((order) => order.buyerId == userId || order.sellerId == userId)
-          .toList();
-    } catch (e) {
-
-      return [];
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch orders');
     }
+
+    final payload = json.decode(response.body) as Map<String, dynamic>;
+    final ordersList = (payload['orders'] as List<dynamic>? ?? []);
+    return ordersList
+        .map((jsonItem) => Order.fromJson(Map<String, dynamic>.from(jsonItem)))
+        .toList();
   }
 
-  Future<void> insertOrder(Order order) async {
-    try {
-      final orders = await _getAllOrders();
-      orders.add(order);
-
-      final prefs = await SharedPreferences.getInstance();
-      final ordersJson = json.encode(orders.map((o) => o.toJson()).toList());
-      await prefs.setString(_ordersKey, ordersJson);
-    } catch (e) {
-
-    }
+  Future<Order> insertOrder(Order order) async {
+    return createOrder(
+      deliveryAddress: order.deliveryAddress,
+      notes: order.notes,
+      items: order.items,
+    );
   }
 
-  Future<List<Order>> _getAllOrders() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final ordersJson = prefs.getString(_ordersKey);
+  Future<Order> createOrder({
+    required String deliveryAddress,
+    String? notes,
+    required List<OrderItem> items,
+  }) async {
+    final response = await http.post(
+      BackendConfig.uri('/api/orders'),
+      headers: await _authHeaders(),
+      body: json.encode({
+        'deliveryAddress': deliveryAddress,
+        'notes': notes,
+        'items': items
+            .map((item) => {
+                  'productId': item.productId,
+                  'quantity': item.quantity,
+                })
+            .toList(),
+      }),
+    );
 
-      if (ordersJson == null) return [];
-
-      final ordersList = json.decode(ordersJson) as List;
-      return ordersList.map((json) => Order.fromJson(json)).toList();
-    } catch (e) {
-
-      return [];
+    if (response.statusCode != 201) {
+      throw Exception('Failed to place order');
     }
+
+    return Order.fromJson(json.decode(response.body) as Map<String, dynamic>);
   }
 
-  Future<void> _initializeSampleProducts() async {
-    final sampleProducts = [
-      Product(
-        id: 'product_1',
-        sellerId: 'user_farmer_demo',
-        sellerName: 'Demo Farmer',
-        title: 'Premium Rice',
-        category: 'Crops',
-        subCategory: 'Rice',
-        description: 'High quality organic rice from Kavre district',
-        price: 85.0,
-        unit: 'kg',
-        unitSymbol: 'kg',
-        quantity: 500.0,
-        location: 'Kathmandu',
-        district: 'Kavre',
-        imageUrls: ['https://example.com/rice.jpg'],
-        status: 'active',
-        isVerified: true,
-        isOrganic: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      Product(
-        id: 'product_2',
-        sellerId: 'user_farmer_demo',
-        sellerName: 'Demo Farmer',
-        title: 'Organic Tomatoes',
-        category: 'Crops',
-        subCategory: 'Vegetables',
-        description: 'Fresh organic tomatoes, pesticide-free',
-        price: 120.0,
-        unit: 'kg',
-        unitSymbol: 'kg',
-        quantity: 200.0,
-        location: 'Pokhara',
-        district: 'Kaski',
-        imageUrls: ['https://example.com/tomatoes.jpg'],
-        status: 'active',
-        isVerified: true,
-        isOrganic: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      Product(
-        id: 'product_3',
-        sellerId: 'user_farmer_demo',
-        sellerName: 'Demo Farmer',
-        title: 'NPK Fertilizer',
-        category: 'Fertilizer',
-        subCategory: 'Fertilizer',
-        description: 'Balanced NPK fertilizer for all crops',
-        price: 45.0,
-        unit: 'kg',
-        unitSymbol: 'kg',
-        quantity: 1000.0,
-        location: 'Biratnagar',
-        district: 'Morang',
-        imageUrls: ['https://example.com/fertilizer.jpg'],
-        status: 'active',
-        isVerified: false,
-        isOrganic: false,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-    ];
+  Product _mapProductFromBackend(Map<String, dynamic> raw) {
+    int parseDate(dynamic value) {
+      if (value is int) return value;
+      if (value is String) {
+        final parsedInt = int.tryParse(value);
+        if (parsedInt != null) return parsedInt;
+        final parsedDate = DateTime.tryParse(value);
+        if (parsedDate != null) return parsedDate.millisecondsSinceEpoch;
+      }
+      if (value is DateTime) return value.millisecondsSinceEpoch;
+      return DateTime.now().millisecondsSinceEpoch;
+    }
 
-    final prefs = await SharedPreferences.getInstance();
-    final productsJson =
-        json.encode(sampleProducts.map((p) => p.toJson()).toList());
-    await prefs.setString(_productsKey, productsJson);
+    final mapped = <String, dynamic>{
+      'id': raw['id'].toString(),
+      'title': raw['title'],
+      'description': raw['description'],
+      'price': raw['price'],
+      'unit': raw['unit'] ?? 'unit',
+      'category': raw['category'] ?? 'General',
+      'subCategory': raw['subCategory'] ?? raw['category'] ?? 'General',
+      'sellerId': raw['sellerId']?.toString() ?? '',
+      'sellerName': raw['sellerName'] ?? 'Unknown Seller',
+      'imageUrls':
+          (raw['imageUrls'] as List<dynamic>? ?? []).map((item) => item.toString()).toList(),
+      'quantity': (raw['quantity'] as num?)?.toDouble() ?? 0.0,
+      'unitSymbol': raw['unit'] ?? 'unit',
+      'location': raw['location'] ?? 'Unknown',
+      'district': raw['district'] ?? 'Unknown',
+      'qualityGrade': raw['qualityGrade'] ?? 'B',
+      'isOrganic': raw['isOrganic'] == true,
+      'status': raw['status'] ?? 'pending',
+      'isVerified': raw['status'] == 'approved',
+      'createdAt': parseDate(raw['createdAt']),
+      'updatedAt': raw['updatedAt'] == null ? null : parseDate(raw['updatedAt']),
+    };
+
+    return Product.fromJson(mapped);
   }
 }

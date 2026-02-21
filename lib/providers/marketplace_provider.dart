@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../models/marketplace_models.dart';
+import '../services/marketplace_database_service.dart';
 
 class MarketplaceProvider with ChangeNotifier {
+  final MarketplaceDatabaseService _dbService = MarketplaceDatabaseService();
   List<Product> _products = [];
   final List<Order> _orders = [];
   final List<Product> _cart = [];
@@ -25,83 +27,10 @@ class MarketplaceProvider with ChangeNotifier {
   Future<void> loadProducts() async {
     _isLoading = true;
     _error = null;
-    // Use scheduleMicrotask to avoid setState() during build error
     scheduleMicrotask(() => notifyListeners());
 
     try {
-      // Simulate API call with mock data
-      await Future.delayed(const Duration(seconds: 1));
-
-      _products = [
-        Product(
-          id: '1',
-          title: 'Organic Rice',
-          description: 'Premium quality organic rice from local farmers',
-          price: 85.0,
-          unit: 'kg',
-          unitSymbol: 'kg',
-          category: 'Crops',
-          subCategory: 'Rice',
-          sellerId: 'seller1',
-          sellerName: 'Ram Bahadur',
-          imageUrls: ['https://example.com/rice.jpg'],
-          quantity: 100,
-          location: 'Kathmandu',
-          district: 'Kathmandu',
-          createdAt: DateTime.now(),
-        ),
-        Product(
-          id: '2',
-          title: 'Fresh Tomatoes',
-          description: 'Farm fresh tomatoes, harvested today',
-          price: 120.0,
-          unit: 'kg',
-          unitSymbol: 'kg',
-          category: 'Crops',
-          subCategory: 'Vegetables',
-          sellerId: 'seller2',
-          sellerName: 'Sita Devi',
-          imageUrls: ['https://example.com/tomatoes.jpg'],
-          quantity: 50,
-          location: 'Pokhara',
-          district: 'Kaski',
-          createdAt: DateTime.now(),
-        ),
-        Product(
-          id: '3',
-          title: 'Wheat Seeds',
-          description: 'High quality wheat seeds for planting',
-          price: 150.0,
-          unit: 'kg',
-          unitSymbol: 'kg',
-          category: 'Seeds',
-          subCategory: 'Seeds',
-          sellerId: 'seller3',
-          sellerName: 'Hari Prasad',
-          imageUrls: ['https://example.com/wheat_seeds.jpg'],
-          quantity: 25,
-          location: 'Chitwan',
-          district: 'Chitwan',
-          createdAt: DateTime.now(),
-        ),
-        Product(
-          id: '4',
-          title: 'Organic Fertilizer',
-          description: 'Natural organic fertilizer for healthy crops',
-          price: 200.0,
-          unit: 'bag',
-          unitSymbol: 'bag',
-          category: 'Fertilizer',
-          subCategory: 'Fertilizer',
-          sellerId: 'seller4',
-          sellerName: 'Krishna Bahadur',
-          imageUrls: ['https://example.com/fertilizer.jpg'],
-          quantity: 30,
-          location: 'Lalitpur',
-          district: 'Lalitpur',
-          createdAt: DateTime.now(),
-        ),
-      ];
+      _products = await _dbService.getAllProducts();
     } catch (e) {
       _error = 'Failed to load products: $e';
     } finally {
@@ -152,36 +81,43 @@ class MarketplaceProvider with ChangeNotifier {
     required String deliveryAddress,
     String? notes,
   }) async {
+    final _ = buyerId;
     if (_cart.isEmpty) return false;
 
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      final groupedItems = <String, OrderItem>{};
+      for (final product in _cart) {
+        final current = groupedItems[product.id];
+        if (current == null) {
+          groupedItems[product.id] = OrderItem(
+            productId: product.id,
+            productName: product.title,
+            quantity: 1,
+            unitPrice: product.price,
+            totalPrice: product.price,
+          );
+        } else {
+          final nextQuantity = current.quantity + 1;
+          groupedItems[product.id] = OrderItem(
+            productId: current.productId,
+            productName: current.productName,
+            quantity: nextQuantity,
+            unitPrice: current.unitPrice,
+            totalPrice: current.unitPrice * nextQuantity,
+          );
+        }
+      }
 
-      final order = Order(
-        id: 'order_${DateTime.now().millisecondsSinceEpoch}',
-        buyerId: buyerId,
-        sellerId: _cart.first.sellerId,
-        items: _cart
-            .map((product) => OrderItem(
-                  productId: product.id,
-                  productName: product.title,
-                  quantity: 1,
-                  unitPrice: product.price,
-                  totalPrice: product.price,
-                ))
-            .toList(),
-        totalAmount: cartTotal,
-        status: OrderStatus.pending,
-        createdAt: DateTime.now(),
+      final createdOrder = await _dbService.createOrder(
         deliveryAddress: deliveryAddress,
         notes: notes,
+        items: groupedItems.values.toList(),
       );
 
-      _orders.add(order);
+      _orders.insert(0, createdOrder);
       clearCart();
       return true;
     } catch (e) {
@@ -218,14 +154,10 @@ class MarketplaceProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
       final newProduct = Product(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         sellerId: sellerId,
-        sellerName:
-            'Current User', // You might want to get this from AuthProvider
+        sellerName: 'Current User',
         title: title,
         description: description,
         category: category,
@@ -243,7 +175,8 @@ class MarketplaceProvider with ChangeNotifier {
         status: 'pending',
       );
 
-      _products.add(newProduct);
+      final createdProduct = await _dbService.insertProduct(newProduct);
+      _products.insert(0, createdProduct);
       notifyListeners();
       return true;
     } catch (e) {

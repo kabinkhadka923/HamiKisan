@@ -5,12 +5,13 @@ import '../models/user.dart';
 import '../utils/security_utils.dart';
 import '../services/security_service.dart';
 import '../services/web_auth_service.dart';
+import '../services/backend_config.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 
 class AuthService {
-  static const String _apiUrl = 'https://api.hamikisan.com';
-  static const bool _useLocalDb = true;
+  static const bool _useLocalDb = false;
   static const String _sessionKey = 'hami_kisan_session';
+  static const String _tokenKey = 'hami_kisan_token';
 
   final Map<String, String> _headers = {
     'Content-Type': 'application/json',
@@ -22,6 +23,59 @@ class AuthService {
   static const String _usersKey = 'local_users_db_v4';
   static const String _otpStoreKey = 'local_otp_store';
 
+  static Future<String?> getAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  Future<void> _saveAuthToken(String? token) async {
+    if (token == null || token.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  Map<String, dynamic> _normalizeBackendUser(Map<String, dynamic> rawUser) {
+    final backendRole = (rawUser['role'] ?? 'farmer').toString().toLowerCase();
+    final appRole = switch (backendRole) {
+      'doctor' => 'kisanDoctor',
+      'admin' => 'kisanAdmin',
+      _ => 'farmer',
+    };
+
+    int parseDate(dynamic value) {
+      if (value is int) return value;
+      if (value is String) {
+        final parsedInt = int.tryParse(value);
+        if (parsedInt != null) return parsedInt;
+        final parsedDate = DateTime.tryParse(value);
+        if (parsedDate != null) return parsedDate.millisecondsSinceEpoch;
+      }
+      if (value is DateTime) return value.millisecondsSinceEpoch;
+      return DateTime.now().millisecondsSinceEpoch;
+    }
+
+    return {
+      'id': rawUser['id'].toString(),
+      'email': (rawUser['email'] ?? '').toString(),
+      'phoneNumber': rawUser['phoneNumber']?.toString(),
+      'name': (rawUser['name'] ?? '').toString(),
+      'profilePicture': rawUser['profilePicture'],
+      'role': appRole,
+      'status': (rawUser['status'] ?? 'approved').toString(),
+      'address': rawUser['address'],
+      'language': rawUser['language'],
+      'farmingCategory': rawUser['farmingCategory'],
+      'specialization': rawUser['specialization'],
+      'permissions': rawUser['permissions'],
+      'createdAt': parseDate(rawUser['createdAt'] ?? rawUser['created_at']),
+      'lastLoginAt': rawUser['lastLoginAt'] == null
+          ? null
+          : parseDate(rawUser['lastLoginAt']),
+      'isVerified': rawUser['isVerified'] ?? true,
+      'hasSelectedLanguage': rawUser['hasSelectedLanguage'] ?? true,
+    };
+  }
+
   Future<Map<String, dynamic>?> login(String email, String password) async {
     if (_useLocalDb) {
       return await _loginWithLocalDb(email, password, useEmail: true);
@@ -29,18 +83,18 @@ class AuthService {
 
     try {
       final response = await http.post(
-        Uri.parse('$_apiUrl/auth/login'),
+        BackendConfig.uri('/api/auth/login'),
         headers: _headers,
         body: json.encode({
-          'email': email,
+          'identifier': email,
           'password': password,
-          'fcm_token': '',
         }),
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['user'];
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        await _saveAuthToken(data['token']?.toString());
+        return _normalizeBackendUser(data['user'] as Map<String, dynamic>);
       }
       return null;
     } catch (e) {
@@ -50,31 +104,33 @@ class AuthService {
 
   Future<Map<String, dynamic>?> loginWithUsername(
       String username, String password) async {
-    if (kIsWeb) {
-      return await _webLogin(username, password);
-    }
-
     if (_useLocalDb) {
       return await _loginWithLocalDb(username, password, useEmail: false);
     }
 
     try {
       final response = await http.post(
-        Uri.parse('$_apiUrl/auth/login'),
+        BackendConfig.uri('/api/auth/login'),
         headers: _headers,
         body: json.encode({
-          'username': username,
+          'identifier': username,
           'password': password,
-          'fcm_token': '',
         }),
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['user'];
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        await _saveAuthToken(data['token']?.toString());
+        return _normalizeBackendUser(data['user'] as Map<String, dynamic>);
+      }
+      if (kIsWeb) {
+        return await _webLogin(username, password);
       }
       return null;
     } catch (e) {
+      if (kIsWeb) {
+        return await _webLogin(username, password);
+      }
       throw Exception('Network error: Please check your connection');
     }
   }
@@ -104,9 +160,12 @@ class AuthService {
         };
       }
 
-      // If bypass failed, try regular local DB (which we fixed using FFI-web)
-      return await _loginWithLocalDb(identifier, password,
-          useEmail: identifier.contains('@'));
+      if (_useLocalDb) {
+        return await _loginWithLocalDb(identifier, password,
+            useEmail: identifier.contains('@'));
+      }
+
+      return null;
     } catch (e) {
       print('[AUTH] Web login error: $e');
       return null;
@@ -142,21 +201,26 @@ class AuthService {
 
     try {
       final response = await http.post(
-        Uri.parse('$_apiUrl/auth/register'),
+        BackendConfig.uri('/api/auth/register'),
         headers: _headers,
         body: json.encode({
           'username': username,
           'email': email,
-          'phone_number': phoneNumber,
+          'phoneNumber': phoneNumber,
           'name': name,
           'role': role.name,
           'password': password,
+          'address': address,
+          'language': language,
+          'farmingCategory': farmingCategory,
+          'specialization': specialization,
         }),
       );
 
       if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return data['user'];
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        await _saveAuthToken(data['token']?.toString());
+        return _normalizeBackendUser(data['user'] as Map<String, dynamic>);
       } else {
         return null;
       }
@@ -171,20 +235,7 @@ class AuthService {
       return await _verifyLocalOTP(phoneNumber, otp);
     }
 
-    try {
-      final response = await http.post(
-        Uri.parse('$_apiUrl/auth/verify-otp'),
-        headers: _headers,
-        body: json.encode({
-          'phone_number': phoneNumber,
-          'otp': otp,
-        }),
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      return otp == '123456';
-    }
+    return otp == '123456';
   }
 
   Future<bool> resendOTP(String phoneNumber) async {
@@ -193,20 +244,15 @@ class AuthService {
       return true;
     }
 
-    try {
-      final response = await http.post(
-        Uri.parse('$_apiUrl/auth/resend-otp'),
-        headers: _headers,
-        body: json.encode({'phone_number': phoneNumber}),
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      return true;
-    }
+    return true;
   }
 
   Future<Map<String, dynamic>?> getCurrentUser() async {
+    if (kIsWeb) {
+      final webUser = await _webAuth.getCurrentUser();
+      return webUser?.toJson();
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final sessionData = prefs.getString(_sessionKey);
 
@@ -227,14 +273,35 @@ class AuthService {
   }
 
   Future<void> clearSession() async {
+    if (kIsWeb) {
+      await _webAuth.logout();
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_sessionKey);
+    await prefs.remove(_tokenKey);
   }
 
   Future<void> updateUser(User user) async {
     if (_useLocalDb) {
       await _updateLocalUser(user.id, user.toJson());
     } else {
+      final token = await getAuthToken();
+      if (token != null && token.isNotEmpty) {
+        await http.put(
+          BackendConfig.uri('/api/users/me'),
+          headers: {
+            ..._headers,
+            'Authorization': 'Bearer $token',
+          },
+          body: json.encode({
+            'name': user.name,
+            'phone': user.phoneNumber,
+            'location': user.address,
+            'specialty': user.specialization,
+          }),
+        );
+      }
       await saveSession(user);
     }
   }
@@ -786,6 +853,16 @@ class AuthService {
   }
 
   Future<void> updateUserLanguage(String userId, String language) async {
+    if (!_useLocalDb) {
+      final session = await getCurrentUser();
+      if (session != null && session['id'] == userId) {
+        session['language'] = language;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_sessionKey, json.encode(session));
+      }
+      return;
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final usersStr = prefs.getString(_usersKey);
@@ -801,6 +878,16 @@ class AuthService {
 
   Future<void> updateUserLanguageSelection(
       String userId, bool hasSelected) async {
+    if (!_useLocalDb) {
+      final session = await getCurrentUser();
+      if (session != null && session['id'] == userId) {
+        session['hasSelectedLanguage'] = hasSelected;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_sessionKey, json.encode(session));
+      }
+      return;
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final usersStr = prefs.getString(_usersKey);

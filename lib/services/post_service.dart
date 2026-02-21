@@ -1,78 +1,164 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:http/http.dart' as http;
+
 import '../models/post_model.dart';
+import 'auth_service.dart';
+import 'backend_config.dart';
 
 class PostService {
-  static const String _postsKey = 'community_posts';
-  SharedPreferences? _prefs;
+  final Map<String, String> _headers = const {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
 
-  Future<void> initialize() async {
-    _prefs ??= await SharedPreferences.getInstance();
-  }
+  Future<void> initialize() async {}
 
   Future<void> addPost(Post post) async {
-    await initialize();
-    final posts = await getAllPosts();
-    posts.insert(0, post);
-    await _savePosts(posts);
+    await createPost(
+      post.id,
+      post.authorName,
+      post.authorRole,
+      post.content,
+      post.imagePath,
+      postType: post.postType,
+      district: post.district,
+    );
   }
 
-  Future<Post> createPost(String userId, String userName, String userRole, String content, String? imagePath, {String postType = 'General', String? district}) async {
-    await initialize();
-    final postId = DateTime.now().millisecondsSinceEpoch.toString();
-    final post = Post(
-      id: postId,
-      authorName: userName,
-      authorRole: userRole,
-      content: content,
-      postType: postType,
-      district: district,
-      imagePath: imagePath,
-      timestamp: DateTime.now(),
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      isLiked: false,
+  Future<Post> createPost(
+    String userId,
+    String userName,
+    String userRole,
+    String content,
+    String? imagePath, {
+    String postType = 'General',
+    String? district,
+  }) async {
+    final _ = [userId, userName, userRole];
+    final token = await AuthService.getAuthToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('You must be logged in to create a post.');
+    }
+
+    final response = await http.post(
+      BackendConfig.uri('/api/posts'),
+      headers: {
+        ..._headers,
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({
+        'content': content,
+        'postType': postType,
+        'district': district,
+        'imagePath': imagePath,
+      }),
     );
-    await addPost(post);
-    return post;
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to create post.');
+    }
+
+    final payload = json.decode(response.body) as Map<String, dynamic>;
+    return _mapPost(payload);
   }
 
   Future<List<Post>> getPosts() async {
-    return await getAllPosts();
+    return getAllPosts();
   }
 
   Future<List<Post>> getAllPosts() async {
-    await initialize();
-    final jsonString = _prefs!.getString(_postsKey);
-    if (jsonString == null) return [];
-    final List<dynamic> jsonList = json.decode(jsonString);
-    return jsonList.map((json) => Post.fromJson(json)).toList();
+    final token = await AuthService.getAuthToken();
+    final headers = {
+      ..._headers,
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await http.get(
+      BackendConfig.uri('/api/posts'),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load posts.');
+    }
+
+    final data = json.decode(response.body) as List<dynamic>;
+    return data.map((item) => _mapPost(Map<String, dynamic>.from(item))).toList();
   }
 
   Future<List<Post>> getPostsByDistrict(String district) async {
-    final posts = await getAllPosts();
-    return posts.where((p) => p.district == district).toList();
+    final token = await AuthService.getAuthToken();
+    final headers = {
+      ..._headers,
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await http.get(
+      BackendConfig.uri('/api/posts', query: {'district': district}),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load district posts.');
+    }
+
+    final data = json.decode(response.body) as List<dynamic>;
+    return data.map((item) => _mapPost(Map<String, dynamic>.from(item))).toList();
   }
 
   Future<void> deletePost(String postId) async {
-    final posts = await getAllPosts();
-    posts.removeWhere((p) => p.id == postId);
-    await _savePosts(posts);
-  }
+    final token = await AuthService.getAuthToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('You must be logged in to delete a post.');
+    }
 
-  Future<void> toggleLike(String postId) async {
-    final posts = await getAllPosts();
-    final index = posts.indexWhere((p) => p.id == postId);
-    if (index != -1) {
-      posts[index].isLiked = !posts[index].isLiked;
-      posts[index].likes += posts[index].isLiked ? 1 : -1;
-      await _savePosts(posts);
+    final response = await http.delete(
+      BackendConfig.uri('/api/posts/$postId'),
+      headers: {
+        ..._headers,
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete post.');
     }
   }
 
-  Future<void> _savePosts(List<Post> posts) async {
-    final jsonString = json.encode(posts.map((p) => p.toJson()).toList());
-    await _prefs!.setString(_postsKey, jsonString);
+  Future<void> toggleLike(String postId) async {
+    final token = await AuthService.getAuthToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('You must be logged in to like a post.');
+    }
+
+    final response = await http.post(
+      BackendConfig.uri('/api/posts/$postId/like'),
+      headers: {
+        ..._headers,
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to toggle like.');
+    }
+  }
+
+  Post _mapPost(Map<String, dynamic> raw) {
+    return Post(
+      id: raw['id'].toString(),
+      authorName: (raw['authorName'] ?? '').toString(),
+      authorRole: (raw['authorRole'] ?? 'farmer').toString(),
+      content: (raw['content'] ?? '').toString(),
+      postType: (raw['postType'] ?? 'General').toString(),
+      district: raw['district']?.toString(),
+      imagePath: raw['imagePath']?.toString(),
+      timestamp: DateTime.tryParse(raw['timestamp']?.toString() ?? '') ?? DateTime.now(),
+      likes: (raw['likes'] as num?)?.toInt() ?? 0,
+      comments: (raw['comments'] as num?)?.toInt() ?? 0,
+      shares: (raw['shares'] as num?)?.toInt() ?? 0,
+      isLiked: raw['isLiked'] == true,
+    );
   }
 }

@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_provider.dart';
 import '../../services/weather_service.dart';
@@ -13,6 +11,8 @@ import '../../models/post_model.dart';
 import '../../screens/post_detail_screen.dart';
 import '../../screens/profile_screen.dart';
 import '../consultation_contacts_screen.dart';
+import '../../screens/create_post_screen.dart';
+import '../../screens/marketplace/sell_product_screen.dart';
 
 class FarmerDashboardScreen extends StatefulWidget {
   const FarmerDashboardScreen({super.key});
@@ -451,6 +451,11 @@ class _HomeContentState extends State<_HomeContent>
     final forecast =
         await _weatherService.getWeeklyForecast(location.$1, location.$2);
     final prices = await _marketService.getDailyMarketPrices();
+
+    if (mounted) {
+      await context.read<PostProvider>().loadPosts();
+    }
+
     setState(() {
       _weather = weather;
       _forecast = forecast;
@@ -746,64 +751,80 @@ class _HomeContentState extends State<_HomeContent>
   }
 
   Widget _buildPostsAndNews() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Row(
+    return Consumer<PostProvider>(
+      builder: (context, postProvider, _) {
+        final posts = postProvider.posts;
+        if (posts.isEmpty) {
+          return const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.article, color: Color(0xFF4CAF50), size: 24),
+                  SizedBox(width: 8),
+                  Text('Posts & News',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              SizedBox(height: 12),
+              Text('No posts yet, be the first to post!'),
+            ],
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.article, color: Color(0xFF4CAF50), size: 24),
-            SizedBox(width: 8),
-            Text('Posts & News',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Row(
+              children: [
+                Icon(Icons.article, color: Color(0xFF4CAF50), size: 24),
+                SizedBox(width: 8),
+                Text('Posts & News',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...posts.map((post) {
+              final now = DateTime.now();
+              final difference = now.difference(post.timestamp);
+              String timeStr = '${post.timestamp.day}/${post.timestamp.month}';
+              if (difference.inDays == 0) {
+                timeStr = difference.inHours == 0
+                    ? '${difference.inMinutes}m ago'
+                    : '${difference.inHours}h ago';
+              } else if (difference.inDays < 7) {
+                timeStr = '${difference.inDays}d ago';
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: _buildFacebookStylePost(
+                  context,
+                  post,
+                  timeStr,
+                  Icons.person,
+                  Colors.green,
+                ),
+              );
+            }),
           ],
-        ),
-        const SizedBox(height: 12),
-        _buildFacebookStylePost(
-          'Ministry of Agriculture',
-          'Government',
-          'New subsidy program for organic farming announced. Farmers can now apply for up to Rs. 50,000 in subsidies for organic certification and equipment.',
-          '2h ago',
-          Icons.account_balance,
-          Colors.blue,
-          45,
-          12,
-        ),
-        const SizedBox(height: 12),
-        _buildFacebookStylePost(
-          'Ram Bahadur',
-          'Farmer',
-          'Just harvested my first organic tomato crop! The yield is amazing. Thanks to HamiKisan community for all the support and tips. 🍅',
-          '5h ago',
-          Icons.person,
-          Colors.green,
-          28,
-          8,
-        ),
-        const SizedBox(height: 12),
-        _buildFacebookStylePost(
-          'Dr. Sharma',
-          'Kisan Doctor',
-          'Monsoon season tips: Make sure to check your crops for fungal diseases. Early detection is key! Apply neem oil spray as a preventive measure.',
-          '1d ago',
-          Icons.medical_services,
-          Colors.orange,
-          67,
-          15,
-        ),
-      ],
+        );
+      },
     );
   }
 
   Widget _buildFacebookStylePost(
-    String name,
-    String role,
-    String content,
+    BuildContext context,
+    Post post,
     String time,
     IconData icon,
     Color iconColor,
-    int likes,
-    int comments,
   ) {
+    final postProvider = context.read<PostProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final userId = authProvider.currentUser?.id ?? '';
     return Card(
       elevation: 2,
       color: Colors.white.withValues(alpha: 0.85),
@@ -823,10 +844,10 @@ class _HomeContentState extends State<_HomeContent>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name,
+                      Text(post.authorName,
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text(role,
+                      Text(post.authorRole,
                           style:
                               TextStyle(fontSize: 12, color: Colors.grey[600])),
                     ],
@@ -837,27 +858,81 @@ class _HomeContentState extends State<_HomeContent>
               ],
             ),
             const SizedBox(height: 12),
-            Text(content, style: const TextStyle(fontSize: 13)),
+            Text(post.content, style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 12),
             const Divider(height: 1),
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.thumb_up_outlined,
-                    size: 18, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text('$likes',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                InkWell(
+                  onTap: () {
+                    if (userId.isNotEmpty) {
+                      postProvider.toggleLike(post.id, userId);
+                    }
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                        size: 18,
+                        color: post.isLiked
+                            ? const Color(0xFF4CAF50)
+                            : Colors.grey[600],
+                      ),
+                      const SizedBox(width: 4),
+                      Text('${post.likes}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: post.isLiked
+                                ? const Color(0xFF4CAF50)
+                                : Colors.grey[600],
+                            fontWeight: post.isLiked
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          )),
+                    ],
+                  ),
+                ),
                 const SizedBox(width: 20),
-                Icon(Icons.comment_outlined, size: 18, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text('$comments',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PostDetailScreen(post: post),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Icon(Icons.comment_outlined,
+                          size: 18, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text('${post.comments}',
+                          style:
+                              TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    ],
+                  ),
+                ),
                 const SizedBox(width: 20),
-                Icon(Icons.share_outlined, size: 18, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text('Share',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                InkWell(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Share link copied to clipboard!')),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Icon(Icons.share_outlined,
+                          size: 18, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text('${post.shares}',
+                          style:
+                              TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    ],
+                  ),
+                ),
               ],
             ),
           ],
@@ -1579,7 +1654,13 @@ class _CommunityContentState extends State<_CommunityContent> {
                   const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.send, color: Color(0xFF4CAF50)),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pop(context); // Close the bottom sheet
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Comment feature coming soon!')),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -1897,260 +1978,6 @@ class _AddContent extends StatefulWidget {
 }
 
 class _AddContentState extends State<_AddContent> {
-  void _showCreatePostDialog() {
-    final contentController = TextEditingController();
-    String postType = 'General';
-    File? selectedImage;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Create Post'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  initialValue: postType,
-                  decoration: const InputDecoration(labelText: 'Post Type'),
-                  items: const [
-                    DropdownMenuItem(value: 'General', child: Text('General')),
-                    DropdownMenuItem(
-                        value: 'Question', child: Text('Question')),
-                    DropdownMenuItem(
-                        value: 'Farming Tip', child: Text('Farming Tip')),
-                    DropdownMenuItem(
-                        value: 'Success Story', child: Text('Success Story')),
-                    DropdownMenuItem(value: 'Events', child: Text('Events')),
-                    DropdownMenuItem(
-                        value: 'Weather Alert', child: Text('Weather Alert')),
-                  ],
-                  onChanged: (v) => setState(() => postType = v!),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: contentController,
-                  maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'What\'s on your mind?',
-                    border: OutlineInputBorder(),
-                    hintText:
-                        'Share your thoughts, questions, or farming tips...',
-                  ),
-                ),
-                if (selectedImage != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 150,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: FileImage(selectedImage!),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final ImagePicker picker = ImagePicker();
-                          final XFile? image = await picker.pickImage(
-                              source: ImageSource.gallery);
-                          if (image != null) {
-                            setState(() => selectedImage = File(image.path));
-                          }
-                        },
-                        icon: const Icon(Icons.photo),
-                        label: const Text('Photo'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final ImagePicker picker = ImagePicker();
-                          final XFile? image = await picker.pickImage(
-                              source: ImageSource.camera);
-                          if (image != null) {
-                            setState(() => selectedImage = File(image.path));
-                          }
-                        },
-                        icon: const Icon(Icons.camera_alt),
-                        label: const Text('Camera'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (contentController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please write something')),
-                  );
-                  return;
-                }
-
-                // Get user district from auth provider (assuming it has this field)
-                final auth = context.read<AuthProvider>();
-                final district = auth.currentUser?.address ??
-                    'Kathmandu'; // Default to Kathmandu if no district
-
-                final success = await context.read<PostProvider>().createPost(
-                      auth.currentUser?.id ?? '',
-                      auth.currentUser?.name ?? 'Farmer',
-                      auth.currentUser?.role.name ?? 'farmer',
-                      contentController.text,
-                      selectedImage?.path,
-                      postType: postType,
-                      district: district,
-                    );
-
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Post created successfully!')),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Failed to create post')),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
-              ),
-              child: const Text('Post'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showSellProductDialog() {
-    final nameController = TextEditingController();
-    final locationController = TextEditingController();
-    final productController = TextEditingController();
-    final priceController = TextEditingController();
-    final phoneController = TextEditingController();
-    String unit = 'केजी';
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Sell Your Product'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Your Name'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: locationController,
-                  decoration: const InputDecoration(labelText: 'Location'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: productController,
-                  decoration: const InputDecoration(labelText: 'Product Name'),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: unit,
-                  decoration: const InputDecoration(labelText: 'Unit'),
-                  items: const [
-                    DropdownMenuItem(value: 'केजी', child: Text('केजी (KG)')),
-                    DropdownMenuItem(
-                        value: 'के.जी.', child: Text('के.जी. (KG)')),
-                    DropdownMenuItem(
-                        value: 'दर्जन', child: Text('दर्जन (Dozen)')),
-                    DropdownMenuItem(
-                        value: 'प्रति गोटा',
-                        child: Text('प्रति गोटा (Per Piece)')),
-                  ],
-                  onChanged: (v) => setState(() => unit = v!),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: priceController,
-                  decoration: const InputDecoration(labelText: 'Price (Rs.)'),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: phoneController,
-                  decoration:
-                      const InputDecoration(labelText: 'Contact Number'),
-                  keyboardType: TextInputType.phone,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (nameController.text.isEmpty ||
-                    locationController.text.isEmpty ||
-                    productController.text.isEmpty ||
-                    priceController.text.isEmpty ||
-                    phoneController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill all fields')),
-                  );
-                  return;
-                }
-
-                final service = FarmerListingService();
-                await service.initialize();
-                await service.addListing(FarmerListing(
-                  farmerName: nameController.text,
-                  location: locationController.text,
-                  productName: productController.text,
-                  price: double.parse(priceController.text),
-                  unit: unit,
-                  phone: phoneController.text,
-                  timestamp: DateTime.now(),
-                ));
-
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Product listed successfully!')),
-                );
-              },
-              child: const Text('List Product'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Duplicate method removed
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -2182,7 +2009,14 @@ class _AddContentState extends State<_AddContent> {
                 title: 'Create Post',
                 subtitle: 'Share updates, tips, or questions',
                 color: Colors.blue,
-                onTap: _showCreatePostDialog,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreatePostScreen(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               _buildActionCard(
@@ -2190,7 +2024,14 @@ class _AddContentState extends State<_AddContent> {
                 title: 'Sell Product',
                 subtitle: 'List your products in marketplace',
                 color: const Color(0xFF4CAF50),
-                onTap: _showSellProductDialog,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SellProductScreen(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               _buildActionCard(

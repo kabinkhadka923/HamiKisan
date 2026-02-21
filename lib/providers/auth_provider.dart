@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
@@ -33,7 +35,8 @@ class AuthProvider with ChangeNotifier {
       // Validate session security
       final isValidSession = await SecurityService.validateSession();
       if (!isValidSession) {
-        await logout();
+        _currentUser = null;
+        _error = null;
         return;
       }
 
@@ -43,15 +46,14 @@ class AuthProvider with ChangeNotifier {
         await _currentUser?.loadPreferences();
 
         // Log session restoration
-        await SecurityService.logSecurityEvent(
+        unawaited(SecurityService.logSecurityEvent(
             'SESSION_RESTORED', _currentUser!.id, {
           'name': _currentUser!.name,
-        });
+        }));
       }
     } catch (e) {
       _error = 'Failed to initialize auth: $e';
-
-      await logout(); // Clear potentially corrupted session
+      _currentUser = null;
     }
   }
 

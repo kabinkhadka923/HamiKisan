@@ -30,8 +30,12 @@ const authorizeRoles = (...roles) => (req, res, next) => {
   return next();
 };
 
+// Backward-compatible alias used by some route files.
+const protect = authMiddleware;
+
 module.exports = {
   authMiddleware,
+  protect,
   authorizeRoles,
   getTokenFromHeader,
 };

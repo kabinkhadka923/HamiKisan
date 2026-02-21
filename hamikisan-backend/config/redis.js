@@ -11,7 +11,12 @@ const connectRedis = async () => {
   }
 
   const url = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-  redisClient = createClient({ url });
+  redisClient = createClient({
+    url,
+    socket: {
+      reconnectStrategy: false,
+    },
+  });
 
   redisClient.on('error', (error) => {
     // eslint-disable-next-line no-console

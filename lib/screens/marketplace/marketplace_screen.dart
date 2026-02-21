@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/marketplace_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/marketplace_models.dart';
 import '../../widgets/localized_text.dart';
 
@@ -396,7 +397,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       }
 
                       final success = await provider.placeOrder(
-                        buyerId: 'current_user_id',
+                        buyerId: context.read<AuthProvider>().currentUser?.id ?? '',
                         deliveryAddress: addressController.text.trim(),
                         notes: notesController.text.trim().isEmpty
                             ? null

@@ -1,4 +1,4 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../models/weather_models.dart';
 
 class WeatherMarketProvider with ChangeNotifier {
@@ -31,9 +31,7 @@ class WeatherMarketProvider with ChangeNotifier {
     Future.microtask(() => notifyListeners());
 
     try {
-      // Simulate API call with mock data
-      await Future.delayed(const Duration(seconds: 1));
-      
+      // Keep startup fast: no artificial delay for mock/weather bootstrap data.
       _weatherData = WeatherData(
         temperature: 25.0 + (DateTime.now().hour - 12) * 0.5,
         humidity: 65.0,
@@ -58,9 +56,7 @@ class WeatherMarketProvider with ChangeNotifier {
     Future.microtask(() => notifyListeners());
 
     try {
-      // Simulate API call with mock data
-      await Future.delayed(const Duration(seconds: 1));
-      
+      // Keep startup fast: no artificial delay for mock/market bootstrap data.
       _marketPrices = [
         MarketPrice(
           productName: 'Rice',
@@ -116,11 +112,13 @@ class WeatherMarketProvider with ChangeNotifier {
   }
 
   String getFarmingTip() {
-    if (_weatherData == null) return 'Check weather conditions before farming activities.';
-    
+    if (_weatherData == null) {
+      return 'Check weather conditions before farming activities.';
+    }
+
     final temp = _weatherData!.temperature;
     final humidity = _weatherData!.humidity;
-    
+
     if (temp > 30) {
       return 'High temperature today. Water your crops early morning or evening.';
     } else if (temp < 15) {

@@ -53,6 +53,23 @@ Chat:
 - `GET /api/chat/rooms/:roomId/messages` (JWT required)
 - `POST /api/chat/messages` (JWT required)
 
+Posts:
+- `GET /api/posts`
+- `POST /api/posts` (JWT required)
+- `DELETE /api/posts/:id` (JWT required)
+- `POST /api/posts/:id/like` (JWT required)
+
+Products:
+- `GET /api/products`
+- `GET /api/products/mine` (JWT required)
+- `POST /api/products` (JWT required)
+- `PATCH /api/products/:id/status` (admin JWT required)
+
+Orders:
+- `POST /api/orders` (JWT required)
+- `GET /api/orders/mine` (JWT required)
+- `PATCH /api/orders/:id/status` (JWT required)
+
 ## 4) Socket.IO Events
 
 Client must connect with JWT:

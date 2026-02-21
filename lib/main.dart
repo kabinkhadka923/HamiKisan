@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
@@ -43,20 +45,22 @@ void main() async {
   configureUrlStrategy();
   initDatabaseFactory();
 
-  if (kIsWeb && kDebugMode) {
-    // Emergency fix for web - ensures admin exists in SharedPreferences
-    // ONLY in debug mode to avoid security risks in production
-    await WebAuthService().emergencyCreateAdmin();
-  }
-
-  // Initialize database service early
-  try {
-    await DatabaseService().database;
-  } catch (e) {
-    if (kDebugMode) print('[MAIN] Initial database access error: $e');
-  }
-
   runApp(const MyApp());
+
+  // Non-critical startup tasks are intentionally deferred so first screen opens faster.
+  if (kIsWeb && kDebugMode) {
+    unawaited(
+      WebAuthService().emergencyCreateAdmin().catchError((e) {
+        if (kDebugMode) print('[MAIN] Emergency admin setup error: $e');
+      }),
+    );
+  }
+
+  unawaited(
+    DatabaseService().database.then<void>((_) {}, onError: (Object e) {
+      if (kDebugMode) print('[MAIN] Background database warmup error: $e');
+    }),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -81,6 +85,7 @@ class MyApp extends StatelessWidget {
         home: const AppInitializer(),
         debugShowCheckedModeBanner: true,
         routes: {
+          '/admin/login': (context) => const AdminLoginScreen(),
           '/HamiSuperAdmin': (context) => const AdminLoginScreen(),
           '/kisan-admin': (context) => const AdminLoginScreen(),
           '/language-selection': (context) => const LanguageSelectionScreen(),
@@ -111,18 +116,31 @@ class _AppInitializerState extends State<AppInitializer> {
     final authProvider = context.read<AuthProvider>();
     final weatherProvider = context.read<WeatherMarketProvider>();
     final marketplaceProvider = context.read<MarketplaceProvider>();
+    final startupDeadline =
+        kIsWeb ? const Duration(seconds: 3) : const Duration(seconds: 5);
 
-    await Future.wait([
-      localizationProvider.initialize(),
-      authProvider.initialize(),
-      weatherProvider.initialize(),
-      marketplaceProvider.initialize(),
-      AudioService().initialize(),
-    ]);
+    // Critical path only: enough data to route user to first usable screen.
+    await Future.wait(
+      [
+        localizationProvider.initialize(),
+        authProvider.initialize(),
+      ],
+    ).timeout(startupDeadline, onTimeout: () {
+      if (kDebugMode) {
+        print(
+            '[STARTUP] Critical initialization timed out at $startupDeadline');
+      }
+      return <void>[];
+    });
 
     if (mounted) {
       setState(() => _isInitialized = true);
     }
+
+    // Defer non-critical initializers to avoid blocking initial paint.
+    unawaited(weatherProvider.initialize());
+    unawaited(marketplaceProvider.initialize());
+    unawaited(AudioService().initialize());
   }
 
   @override
@@ -130,7 +148,9 @@ class _AppInitializerState extends State<AppInitializer> {
     // Check URL for admin route first
     final uri = Uri.base;
     if (uri.path == '/admin' ||
+        uri.path == '/admin/login' ||
         uri.path == '/admin/' ||
+        uri.path == '/admin/login/' ||
         uri.path == '/HamiSuperAdmin' ||
         uri.path == '/HamiSuperAdmin/' ||
         uri.path == '/kisan-admin' ||
