@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/user.dart';
 import '../providers/auth_provider.dart';
+import '../services/call/phone_call_service.dart';
 import '../services/chat_service.dart';
 import 'consultation_chat_screen.dart';
 
@@ -147,9 +148,10 @@ class _ConsultationContactsScreenState
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final user = _filteredContacts[index];
+          final hasPhone = user.phoneNumber?.isNotEmpty == true;
           return ListTile(
             leading: CircleAvatar(
-              backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.12),
+              backgroundColor: const Color(0xFF2E7D32).withOpacity(0.12),
               child: Icon(
                 user.role == UserRole.kisanDoctor
                     ? Icons.medical_services
@@ -157,13 +159,43 @@ class _ConsultationContactsScreenState
                 color: const Color(0xFF2E7D32),
               ),
             ),
-            title: Text(user.name),
-            subtitle: Text(
-              user.phoneNumber?.isNotEmpty == true
-                  ? user.phoneNumber!
-                  : user.email,
+            title: Text(
+              user.role == UserRole.kisanDoctor
+                  ? '${user.name} (Kisan Doctor)'
+                  : user.name,
             ),
-            trailing: const Icon(Icons.chevron_right),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  hasPhone ? user.phoneNumber! : user.email,
+                ),
+                if (user.specialization?.isNotEmpty == true)
+                  Text(
+                    user.specialization!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
+                  ),
+              ],
+            ),
+            isThreeLine: user.specialization?.isNotEmpty == true,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasPhone)
+                  IconButton(
+                    icon: const Icon(Icons.call, color: Color(0xFF2E7D32)),
+                    tooltip: 'Call ${user.name}',
+                    onPressed: () =>
+                        PhoneCallService.makeCall(user.phoneNumber!),
+                  ),
+                const Icon(Icons.chat_bubble_outline,
+                    color: Color(0xFF2E7D32)),
+              ],
+            ),
             onTap: () {
               Navigator.push(
                 context,

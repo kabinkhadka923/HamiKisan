@@ -299,7 +299,7 @@ class _SuperAdminSecurePanelState extends State<SuperAdminSecurePanel> with Sing
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(status).withValues(alpha: 0.1),
+                                  color: _getStatusColor(status).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -802,7 +802,7 @@ class _SuperAdminSecurePanelState extends State<SuperAdminSecurePanel> with Sing
   Widget _buildCriticalMetricCard(String title, String value, IconData icon, Color color, String change) {
     return Card(
       elevation: 6,
-      shadowColor: color.withValues(alpha: 0.3),
+      shadowColor: color.withOpacity(0.3),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1006,7 +1006,7 @@ class _SuperAdminSecurePanelState extends State<SuperAdminSecurePanel> with Sing
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(

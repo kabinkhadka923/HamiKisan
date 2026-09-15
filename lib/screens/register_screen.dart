@@ -205,7 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 elevation: 2,
                                 shadowColor:
-                                    const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                                    const Color(0xFF4CAF50).withOpacity(0.3),
                               ),
                               child: authProvider.isLoading
                                   ? const SizedBox(
@@ -344,7 +344,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? iconColor.withValues(alpha: 0.1) : Colors.white,
+          color: isSelected ? iconColor.withOpacity(0.1) : Colors.white,
           border: Border.all(
             color: isSelected ? iconColor : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -353,7 +353,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: iconColor.withValues(alpha: 0.2),
+                color: iconColor.withOpacity(0.2),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -785,7 +785,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String? hint,
   }) {
     return DropdownButtonFormField<String>(
-      initialValue: value,
+      value: value,
       decoration: InputDecoration(
         labelText: '$label${isRequired ? ' *' : ''}',
         hintText: hint,

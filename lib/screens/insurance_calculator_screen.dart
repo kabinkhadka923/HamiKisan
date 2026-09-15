@@ -70,7 +70,7 @@ class _InsuranceCalculatorScreenState extends State<InsuranceCalculatorScreen> {
                       const SizedBox(height: 16),
                       
                       DropdownButtonFormField<String>(
-                        initialValue: _selectedCrop,
+                        value: _selectedCrop,
                         decoration: const InputDecoration(
                           labelText: 'Select Crop',
                           border: OutlineInputBorder(),

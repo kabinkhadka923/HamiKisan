@@ -55,7 +55,7 @@ class _AnimatedLogoState extends State<AnimatedLogo>
                 gradient: AppColors.primaryGradient,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: AppColors.primary.withOpacity(0.3),
                     blurRadius: 20,
                     spreadRadius: 5,
                     offset: const Offset(0, 5),
@@ -71,7 +71,7 @@ class _AnimatedLogoState extends State<AnimatedLogo>
                     height: widget.size * 0.8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Colors.white.withOpacity(0.1),
                     ),
                   ),
                   // App Icon / Image

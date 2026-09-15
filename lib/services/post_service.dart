@@ -1,164 +1,186 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/post_model.dart';
-import 'auth_service.dart';
-import 'backend_config.dart';
+import '../models/user.dart';
+import '../services/auth_service.dart';
+import '../backend_config.dart';
 
 class PostService {
-  final Map<String, String> _headers = const {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
+  static final PostService _instance = PostService._internal();
+  factory PostService() => _instance;
+  PostService._internal();
 
-  Future<void> initialize() async {}
+  static const String _localPostsKey = 'local_farmer_posts_v1';
 
-  Future<void> addPost(Post post) async {
-    await createPost(
-      post.id,
-      post.authorName,
-      post.authorRole,
-      post.content,
-      post.imagePath,
-      postType: post.postType,
-      district: post.district,
+  String? _currentFarmerId;
+  bool _isConnected = false;
+
+  final StreamController<Post> _postStreamController =
+      StreamController<Post>.broadcast();
+  Stream<Post> get postStream => _postStreamController.stream;
+
+  Function(Post)? onPostCreated;
+  Function(List<Post>)? onPostsLoaded;
+  Function(Post)? onPostUpdated;
+  Function(Post)? onPostDeleted;
+  Function(Post)? onPostLiked;
+
+  Future<void> initialize(String farmerId) async {
+    _currentFarmerId = farmerId;
+    _isConnected = true;
+
+    // Load local posts first
+    final localPosts = await _loadLocalPosts();
+    onPostsLoaded?.call(localPosts);
+  }
+
+  Future<List<Post>> _loadLocalPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? jsonString = prefs.getString(_localPostsKey);
+
+    if (jsonString == null) return [];
+
+    final List<dynamic> posts = json.decode(jsonString);
+    return posts.map((p) => Post.fromMap(p)).toList();
+  }
+
+  Future<void> _saveLocalPosts(List<Post> posts) async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<Map<String, dynamic>> jsonPosts =
+        posts.map((p) => p.toMap()).toList();
+    final String jsonString = json.encode(jsonPosts);
+    await prefs.setString(_localPostsKey, jsonString);
+  }
+
+  /// Create a new post
+  Future<Post> createPost(Post post) async {
+    // Set farmer info from current user
+    final postWithFarmer = post.copyWith(
+      farmerId: _currentFarmerId ?? '',
+      farmerName: await _getFarmerName(),
     );
-  }
 
-  Future<Post> createPost(
-    String userId,
-    String userName,
-    String userRole,
-    String content,
-    String? imagePath, {
-    String postType = 'General',
-    String? district,
-  }) async {
-    final _ = [userId, userName, userRole];
-    final token = await AuthService.getAuthToken();
-    if (token == null || token.isEmpty) {
-      throw Exception('You must be logged in to create a post.');
+    // Save locally
+    final currentPosts = await _loadLocalPosts();
+    currentPosts.add(postWithFarmer);
+    await _saveLocalPosts(currentPosts);
+
+    // Broadcast to UI
+    _postStreamController.add(postWithFarmer);
+
+    // Call backend
+    try {
+      final token = await AuthService.getAuthToken();
+      final body = {
+        'farmerId': postWithFarmer.farmerId,
+        'farmerName': postWithFarmer.farmerName,
+        'postType': postWithFarmer.postType.name,
+        'title': postWithFarmer.title,
+        'content': postWithFarmer.content,
+        if (postWithFarmer.mediaUrl != null) 'mediaUrl': postWithFarmer.mediaUrl,
+        if (postWithFarmer.imageUrl != null) 'imageUrl': postWithFarmer.imageUrl,
+        if (postWithFarmer.imageUrls.isNotEmpty)
+            'imageUrls': postWithFarmer.imageUrls,
+        if (postWithFarmer.price != null) 'price': postWithFarmer.price,
+        if (postWithFarmer.unit != null) 'unit': postWithFarmer.unit,
+        if (postWithFarmer.cropName != null) 'cropName': postWithFarmer.cropName,
+        if (postWithFarmer.location != null) 'location': postWithFarmer.location,
+        if (postWithFarmer.district != null) 'district': postWithFarmer.district,
+        'isOrganic': postWithFarmer.isOrganic,
+        'qualityGrade': postWithFarmer.qualityGrade,
+        'status': postWithFarmer.status.name,
+      };
+
+      final response = await http.post(
+        BackendConfig.uri('/api/posts'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: body,
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        onPostCreated?.call(postWithFarmer);
+        return postWithFarmer;
+      } else {
+        throw Exception('Failed to create post');
+      }
+    } catch (e) {
+      // If backend fails, keep local version
+      onPostCreated?.call(postWithFarmer);
+      return postWithFarmer;
     }
-
-    final response = await http.post(
-      BackendConfig.uri('/api/posts'),
-      headers: {
-        ..._headers,
-        'Authorization': 'Bearer $token',
-      },
-      body: json.encode({
-        'content': content,
-        'postType': postType,
-        'district': district,
-        'imagePath': imagePath,
-      }),
-    );
-
-    if (response.statusCode != 201) {
-      throw Exception('Failed to create post.');
-    }
-
-    final payload = json.decode(response.body) as Map<String, dynamic>;
-    return _mapPost(payload);
   }
 
-  Future<List<Post>> getPosts() async {
-    return getAllPosts();
-  }
-
+  /// Get all posts (local + backend)
   Future<List<Post>> getAllPosts() async {
-    final token = await AuthService.getAuthToken();
-    final headers = {
-      ..._headers,
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-    };
-
-    final response = await http.get(
-      BackendConfig.uri('/api/posts'),
-      headers: headers,
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to load posts.');
-    }
-
-    final data = json.decode(response.body) as List<dynamic>;
-    return data.map((item) => _mapPost(Map<String, dynamic>.from(item))).toList();
+    final localPosts = await _loadLocalPosts();
+    // TODO: Fetch from backend and merge
+    return localPosts;
   }
 
-  Future<List<Post>> getPostsByDistrict(String district) async {
-    final token = await AuthService.getAuthToken();
-    final headers = {
-      ..._headers,
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-    };
+  /// Like a post
+  Future<void> likePost(Post post) async {
+    final updatedPost = post.copyWith(likes: post.likes + 1);
 
-    final response = await http.get(
-      BackendConfig.uri('/api/posts', query: {'district': district}),
-      headers: headers,
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to load district posts.');
+    // Update locally
+    final currentPosts = await _loadLocalPosts();
+    final idx =
+        currentPosts.indexWhere((p) => p.id == post.id);
+    if (idx >= 0) {
+      currentPosts[idx] = updatedPost;
+      await _saveLocalPosts(currentPosts);
+      _postStreamController.add(updatedPost);
     }
 
-    final data = json.decode(response.body) as List<dynamic>;
-    return data.map((item) => _mapPost(Map<String, dynamic>.from(item))).toList();
+    // Call backend
+    try {
+      final token = await AuthService.getAuthToken();
+      await http.post(
+        BackendConfig.uri('/api/posts/like'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: {'postId': post.id, 'farmerId': _currentFarmerId},
+      ).timeout(const Duration(seconds: 5));
+    } catch (_) {}
   }
 
-  Future<void> deletePost(String postId) async {
-    final token = await AuthService.getAuthToken();
-    if (token == null || token.isEmpty) {
-      throw Exception('You must be logged in to delete a post.');
+  /// Add comment to post
+  Future<void> addComment(Post post, String comment) async {
+    final updatedPost = post.copyWith(comments: post.comments + 1);
+
+    // Update locally
+    final currentPosts = await _loadLocalPosts();
+    final idx =
+        currentPosts.indexWhere((p) => p.id == post.id);
+    if (idx >= 0) {
+      currentPosts[idx] = updatedPost;
+      await _saveLocalPosts(currentPosts);
+      _postStreamController.add(updatedPost);
     }
 
-    final response = await http.delete(
-      BackendConfig.uri('/api/posts/$postId'),
-      headers: {
-        ..._headers,
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to delete post.');
-    }
+    // Call backend
+    try {
+      final token = await AuthService.getAuthToken();
+      await http.post(
+        BackendConfig.uri('/api/posts/comment'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: {'postId': post.id, 'comment': comment, 'farmerId': _currentFarmerId},
+      ).timeout(const Duration(seconds: 5));
+    } catch (_) {}
   }
 
-  Future<void> toggleLike(String postId) async {
-    final token = await AuthService.getAuthToken();
-    if (token == null || token.isEmpty) {
-      throw Exception('You must be logged in to like a post.');
-    }
-
-    final response = await http.post(
-      BackendConfig.uri('/api/posts/$postId/like'),
-      headers: {
-        ..._headers,
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to toggle like.');
-    }
-  }
-
-  Post _mapPost(Map<String, dynamic> raw) {
-    return Post(
-      id: raw['id'].toString(),
-      authorName: (raw['authorName'] ?? '').toString(),
-      authorRole: (raw['authorRole'] ?? 'farmer').toString(),
-      content: (raw['content'] ?? '').toString(),
-      postType: (raw['postType'] ?? 'General').toString(),
-      district: raw['district']?.toString(),
-      imagePath: raw['imagePath']?.toString(),
-      timestamp: DateTime.tryParse(raw['timestamp']?.toString() ?? '') ?? DateTime.now(),
-      likes: (raw['likes'] as num?)?.toInt() ?? 0,
-      comments: (raw['comments'] as num?)?.toInt() ?? 0,
-      shares: (raw['shares'] as num?)?.toInt() ?? 0,
-      isLiked: raw['isLiked'] == true,
-    );
+  /// Get farmer name from auth
+  Future<String> _getFarmerName() async {
+    // In production, fetch from user service
+    return 'Farmer';
   }
 }

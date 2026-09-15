@@ -28,7 +28,7 @@ class RoleSelectionCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: isSelected ? color.withValues(alpha: 0.1) : Colors.white,
+          color: isSelected ? color.withOpacity(0.1) : Colors.white,
           border: Border.all(
             color: isSelected ? color : AppColors.outline,
             width: isSelected ? 2 : 1,
@@ -36,14 +36,14 @@ class RoleSelectionCard extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withValues(alpha: 0.2),
+                    color: color.withOpacity(0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   )
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withOpacity(0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
@@ -57,7 +57,7 @@ class RoleSelectionCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isSelected ? color : color.withValues(alpha: 0.1),
+                  color: isSelected ? color : color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

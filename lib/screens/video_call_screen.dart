@@ -1,26 +1,38 @@
+import 'dart:async';
+import 'dart:html' as html if (dart.library.html) 'dart-html';
 import 'package:flutter/material.dart';
-import '../services/call/kisan_video_call_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import '../services/kisan_video_call_service.dart';
+import '../services/audio_service.dart';
+import 'video_call_screen.dart';
+
+enum CallRole { caller, callee }
 
 class VideoCallScreen extends StatefulWidget {
-  final String doctorName;
-  final String doctorSpecialty;
-  final String? doctorImageUrl;
   final String callId;
-  final String? recipientId;
+  final String peerName;
+  final String callerName;
+  final String? callerSpecialty;
+  final CallRole role;
+  final String callerId;
+  final String calleeId;
   final bool isOutgoing;
   final CallType callType;
   final Map<String, dynamic>? callContext;
 
   const VideoCallScreen({
-    super.key,
-    required this.doctorName,
-    this.doctorSpecialty = 'General Practitioner',
-    this.doctorImageUrl,
     required this.callId,
-    this.recipientId,
-    this.isOutgoing = true,
-    this.callType = CallType.video,
+    required this.peerName,
+    required this.callerName,
+    this.callerSpecialty,
+    required this.role,
+    required this.callerId,
+    required this.calleeId,
+    required this.isOutgoing,
+    required this.callType,
     this.callContext,
+    super.key,
   });
 
   @override
@@ -28,595 +40,264 @@ class VideoCallScreen extends StatefulWidget {
 }
 
 class _VideoCallScreenState extends State<VideoCallScreen>
-    with SingleTickerProviderStateMixin {
-  final KisanVideoCallService _callService = KisanVideoCallService();
+    with TickerProviderStateMixin {
+  late KisanVideoCallService _callService;
+  late AudioService _audioService;
 
-  late AnimationController _ringAnimationController;
-  late Animation<double> _ringPulseAnimation;
-
-  bool _isCallConnected = false;
-  bool _isRinging = false;
-  bool _isMuted = false;
-  bool _isVideoEnabled = true;
-  String _callDuration = '00:00';
+  late StreamSubscription<CallState>? _stateSubscription;
+  late StreamSubscription<void>? _callConnectedSubscription;
+  late StreamSubscription<void>? _callEndedSubscription;
 
   @override
   void initState() {
     super.initState();
-    _isVideoEnabled = widget.callType == CallType.video;
-
-    // Initialize ring animation
-    _ringAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    _ringPulseAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.1), weight: 50),
-      TweenSequenceItem(tween: Tween(begin: 1.1, end: 1.0), weight: 50),
-    ]).animate(
-      CurvedAnimation(
-        parent: _ringAnimationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _ringAnimationController.repeat(reverse: true);
-
-    // Start call process
-    _initializeCall();
-  }
-
-  Future<void> _initializeCall() async {
-    // Listen for connection events
-    _callService.onCallConnected.listen((_) {
-      if (mounted) {
-        setState(() {
-          _isCallConnected = true;
-          _isRinging = false;
-        });
-        _ringAnimationController.stop();
-      }
-    });
-
-    _callService.onCallEnded.listen((_) {
-      if (mounted) {
-        Navigator.pop(context);
-      }
-    });
-
-    // Listen for call duration updates
-    _callService.onDurationChanged.listen((duration) {
-      if (mounted) {
-        setState(() {
-          _callDuration = _callService.getCallDurationString();
-        });
-      }
-    });
-
-    // Listen for state changes
-    _callService.onStateChanged.listen((state) {
-      if (!mounted) return;
-    });
-
-    if (widget.isOutgoing) {
-      // Outgoing call
-      setState(() {
-        _isRinging = true;
-      });
-      final recipientId = (widget.recipientId ?? widget.callId).trim();
-      if (recipientId.isEmpty) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Unable to start call: missing recipient')),
-        );
-        Navigator.pop(context);
-        return;
-      }
-      await _callService.handleOutgoingCall(
-        recipientId: recipientId,
-        callType: widget.callType,
-      );
-    } else {
-      // Incoming call
-      setState(() {
-        _isRinging = true;
-      });
-      final callerType =
-          (widget.callContext?['callerType']?.toString() ?? 'doctor');
-      await _callService.handleIncomingCall(
-        callerId: widget.callId,
-        callerType: callerType,
-        context: widget.callContext,
-      );
-    }
+    _initializeServices();
   }
 
   @override
   void dispose() {
-    _ringAnimationController.dispose();
+    _stateSubscription?.cancel();
+    _callConnectedSubscription?.cancel();
+    _callEndedSubscription?.cancel();
     _callService.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // Main video/content area
-          _buildMainContent(),
+  Future<void> _initializeServices() async {
+    _callService = KisanVideoCallService();
+    _audioService = AudioService();
 
-          // Ringing overlay
-          if (_isRinging) _buildRingingOverlay(),
+    // Set socket.io connection from auth provider
+    final authProvider = context.read<AuthProvider>();
+    _callService.setSocket(authProvider.socket);
 
-          // Call controls
-          _buildCallControls(),
+    // Initialize with socket connection
+    await _callService.init(socket: authProvider.socket);
 
-          // Top info bar
-          _buildInfoBar(),
-        ],
-      ),
-    );
+    // Subscribe to call state changes
+    _stateSubscription = _callService.onStateChanged.listen((state) {
+      if (!mounted) return;
+      setState(() {
+        // Update UI based on state
+      });
+      _handleCallStateChange(state);
+    });
+
+    _callConnectedSubscription = _callService.onCallConnected.listen((_) {
+      if (!mounted) return;
+      setState(() {
+        // Call connected
+      });
+    });
+
+    _callEndedSubscription = _callService.onCallEnded.listen((_) {
+      if (!mounted) return;
+      setState(() {
+        // Call ended
+      });
+      _navigateBack();
+    });
   }
 
-  Widget _buildRingingOverlay() {
-    if (!widget.isOutgoing) {
-      return Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF66BB6A)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: ScaleTransition(
-              scale: _ringPulseAnimation,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 56,
-                    backgroundColor: Colors.white.withValues(alpha: 0.22),
-                    child: widget.doctorImageUrl != null
-                        ? ClipOval(
-                            child: Image.network(
-                              widget.doctorImageUrl!,
-                              fit: BoxFit.cover,
-                              width: 112,
-                              height: 112,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.person,
-                            size: 52,
-                            color: Colors.white,
-                          ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    widget.doctorName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Incoming Video Consultation...',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 36),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FloatingActionButton(
-                        heroTag: 'decline_call',
-                        onPressed: () => _callService.declineCall(),
-                        backgroundColor: Colors.red.shade600,
-                        child: const Icon(Icons.call_end),
-                      ),
-                      const SizedBox(width: 44),
-                      FloatingActionButton(
-                        heroTag: 'accept_call',
-                        onPressed: () => _callService.acceptCall(),
-                        backgroundColor: Colors.green.shade600,
-                        child: const Icon(Icons.video_call),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+  void _handleCallStateChange(CallState state) {
+    setState(() {
+      // Update UI based on state
+    });
+    switch (state) {
+      case CallState.connected:
+        _audioService.playCallConnected();
+        break;
+      case CallState.ending:
+        _audioService.playCallEnded();
+        break;
+      case CallState.ringingIncoming:
+      case CallState.ringingOutgoing:
+        _audioService.playIncomingCall(
+          customRingtone: 'incomming_call_ringtone.mp3',
+          vibrate: true,
+          callerType: 'doctor',
+        );
+        break;
     }
-
-    return Container(
-      color: Colors.black.withValues(alpha: 0.8),
-      child: Center(
-        child: ScaleTransition(
-          scale: _ringPulseAnimation,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: Colors.blue.shade800,
-                child: widget.doctorImageUrl != null
-                    ? ClipOval(
-                        child: Image.network(
-                          widget.doctorImageUrl!,
-                          fit: BoxFit.cover,
-                          width: 120,
-                          height: 120,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.white,
-                      ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                widget.isOutgoing ? 'Calling...' : 'Incoming Call',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                widget.doctorName,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 30),
-              if (!widget.isOutgoing)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Decline button
-                    FloatingActionButton(
-                      heroTag: 'decline_call',
-                      onPressed: () => _callService.declineCall(),
-                      backgroundColor: Colors.red,
-                      child: const Icon(Icons.call_end),
-                    ),
-                    const SizedBox(width: 40),
-                    // Accept button
-                    FloatingActionButton(
-                      heroTag: 'accept_call',
-                      onPressed: () => _callService.acceptCall(),
-                      backgroundColor: Colors.green,
-                      child: const Icon(Icons.call),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
-  Widget _buildMainContent() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.grey.shade900,
-            Colors.grey.shade800,
+  /// Show incoming call dialog
+  void _showIncomingCallDialog(dynamic callData) {
+    final callerName = callData['fromName'] ?? widget.callerName ?? 'Doctor';
+    final callType = callData['callType'] ?? 'video';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Incoming Call'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.call, size: 64, color: Colors.green),
+            const SizedBox(height: 16),
+            Text(
+              '$callerName is calling',
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Call Type: $callType',
+              style: const TextStyle(fontSize: 14, color: Colors.green),
+            ),
           ],
         ),
-      ),
-      child:
-          _isCallConnected ? _buildConnectedContent() : _buildWaitingContent(),
-    );
-  }
-
-  Widget _buildConnectedContent() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 80,
-            backgroundColor: Colors.blue.shade800,
-            child: widget.doctorImageUrl != null
-                ? ClipOval(
-                    child: Image.network(
-                      widget.doctorImageUrl!,
-                      fit: BoxFit.cover,
-                      width: 160,
-                      height: 160,
-                    ),
-                  )
-                : const Icon(
-                    Icons.person,
-                    size: 80,
-                    color: Colors.white,
-                  ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _declineCall();
+            },
+            child: const Text('Decline'),
           ),
-          const SizedBox(height: 20),
-          Text(
-            widget.doctorName,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.doctorSpecialty,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              _callDuration,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _answerCall();
+            },
+            child: const Text('Accept'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWaitingContent() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(
-            color: Colors.blue,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            widget.isOutgoing
-                ? 'Connecting to ${widget.doctorName}...'
-                : 'Incoming call from ${widget.doctorName}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-            ),
-          ),
-        ],
+  Future<void> _answerCall() async {
+    if (_callService.currentCallId != null) {
+      await _callService.answerCall();
+      // Socket.io answer already emitted in answerCall()
+    }
+  }
+
+  Future<void> _endCall() async {
+    await _callService.endCall();
+    _navigateBack();
+  }
+
+  void _navigateBack() {
+    // Add delay to let the end animation play
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    });
+  }
+
+  Widget _buildVideoArea() {
+    // Placeholder for local/remote video streams
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: _buildCallStateWidget(),
       ),
     );
+  }
+
+  Widget _buildCallStateWidget() {
+    switch (_callService.callState) {
+      case CallState.idle:
+        return const Text(
+          'Ready for call',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        );
+      case CallState.ringingIncoming:
+      case CallState.ringingOutgoing:
+        return const Text(
+          'Ringling...',
+          style: TextStyle(color: Colors.orange, fontSize: 18),
+        );
+      case CallState.connected:
+        return const Text(
+          'Connected',
+          style: TextStyle(color: Colors.green, fontSize: 18),
+        );
+      case CallState.ending:
+        return const Text(
+          'Ending call...',
+          style: TextStyle(color: Colors.orange, fontSize: 18),
+        );
+      case CallState.error:
+        return const Text(
+          'Call error',
+          style: TextStyle(color: Colors.red, fontSize: 18),
+        );
+    }
   }
 
   Widget _buildCallControls() {
-    if (!widget.isOutgoing && _isRinging && !_isCallConnected) {
-      return const SizedBox.shrink();
-    }
-
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 30,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // Mute button
-          _buildControlButton(
-            icon: Icons.mic,
-            activeIcon: Icons.mic_off,
-            isActive: _isMuted,
-            onTap: () {
-              setState(() => _isMuted = !_isMuted);
-              _callService.muteCall(_isMuted);
-            },
-            color: _isMuted ? Colors.red : Colors.white24,
-          ),
-
-          // End call button
-          _buildControlButton(
-            icon: Icons.call_end,
-            isActive: true,
-            onTap: () => _callService.endCall(),
-            color: Colors.red,
-            scale: 1.3,
-          ),
-
-          // Switch camera button
-          if (widget.callType == CallType.video)
-            _buildControlButton(
-              icon: Icons.switch_camera,
-              isActive: false,
-              onTap: () {
-                setState(() => _isVideoEnabled = !_isVideoEnabled);
-                _callService.switchCamera();
-              },
-              color: _isVideoEnabled ? Colors.white24 : Colors.red,
-            )
-          else
-            const SizedBox(width: 56),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoBar() {
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + 16,
-      left: 16,
-      right: 16,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Back button
-          IconButton(
-            onPressed: () => _showExitConfirmation(),
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ),
-
-          // Call info
-          Column(
-            children: [
-              Text(
-                _isCallConnected ? 'Connected' : 'Connecting',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              if (_isCallConnected)
-                Text(
-                  _callDuration,
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                )
-              else
-                Text(
-                  widget.callType == CallType.video
-                      ? 'Video Call'
-                      : 'Audio Call',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
-                ),
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Mute button
+            _buildMuteButton(),
+            const SizedBox(height: 16),
+            // End call button
+            _buildEndCallButton(),
+            const SizedBox(height: 16),
+            // Video toggle (only for caller)
+            if (widget.isOutgoing && widget.role == CallRole.caller) ...[
+              _buildVideoToggle(),
+              const SizedBox(height: 16),
             ],
-          ),
-
-          // Network status
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _isCallConnected
-                  ? Colors.green.withValues(alpha: 0.2)
-                  : Colors.orange.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.wifi,
-                  color: _isCallConnected ? Colors.green : Colors.orange,
-                  size: 16,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _isCallConnected ? 'Good' : 'Connecting',
-                  style: TextStyle(
-                    color: _isCallConnected ? Colors.green : Colors.orange,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildControlButton({
-    required IconData icon,
-    IconData? activeIcon,
-    required bool isActive,
-    required VoidCallback onTap,
-    required Color color,
-    double scale = 1.0,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(16 * scale),
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 8,
-              spreadRadius: 2,
-            ),
           ],
         ),
-        child: Icon(
-          isActive && activeIcon != null ? activeIcon : icon,
-          color: Colors.white,
-          size: 24 * scale,
-        ),
       ),
     );
   }
 
-  Future<void> _showExitConfirmation() async {
-    final shouldExit = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('End Call?'),
-        content: const Text('Are you sure you want to end the call?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            child: const Text(
-              'End Call',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
+  Widget _buildMuteButton() {
+    return ElevatedButton.icon(
+      onPressed: () async {
+        await _callService.muteCall(!_callService.isMuted);
+        setState(() {});
+      },
+      icon: Icon(
+        _callService.isMuted ? Icons.unmute : Icons.mute,
+        color: Colors.white,
+      ),
+      label: Text(
+        _callService.isMuted ? 'Unmute' : 'Mute',
+        style: const TextStyle(color: Colors.white),
+      ),
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+    );
+  }
+
+  Widget _buildEndCallButton() {
+    return ElevatedButton(
+      onPressed: _endCall,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+        minimumSize: const Size(double.infinity, 50),
+      ),
+      child: const Text(
+        'End Call',
+        style: TextStyle(color: Colors.white, fontSize: 18),
       ),
     );
+  }
 
-    if (shouldExit == true) {
-      await _callService.endCall();
-    }
+  Widget _buildVideoToggle() {
+    return ElevatedButton.icon(
+      onPressed: () async {
+        await _callService.switchCamera();
+        setState(() {});
+      },
+      icon: const Icon(Icons.videocam, color: Colors.white),
+      label: const Text(
+        'Switch Camera',
+        style: Style(color: Colors.white),
+      ),
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+    );
   }
 }

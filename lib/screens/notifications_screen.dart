@@ -239,7 +239,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         if (_currentFilter != NotificationFilter.all)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.green.withValues(alpha: 0.05),
+            color: Colors.green.withOpacity(0.05),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -356,7 +356,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
-            color: notification.isRead ? Colors.white : Colors.green.withValues(alpha: 0.05),
+            color: notification.isRead ? Colors.white : Colors.green.withOpacity(0.05),
             border: Border(
               left: BorderSide(
                 color: notification.color,
@@ -473,7 +473,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: notification.color.withValues(alpha: 0.1),
+        color: notification.color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(
@@ -656,7 +656,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   onChanged: (value) {
                     setState(() => _enableVibration = value);
                   },
-                  activeThumbColor: Colors.green,
+                  activeColor: Colors.green,
                 ),
                 SwitchListTile(
                   title: const Text('Enable Sounds'),
@@ -665,7 +665,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   onChanged: (value) {
                     setState(() => _enableSound = value);
                   },
-                  activeThumbColor: Colors.green,
+                  activeColor: Colors.green,
                 ),
                 const Divider(),
                 const Text(

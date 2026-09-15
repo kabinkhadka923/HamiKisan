@@ -107,7 +107,7 @@ class SettingsScreen extends StatelessWidget {
       onChanged: (bool value) {
         // TODO: Implement notification toggle
       },
-      activeThumbColor: const Color(0xFF4CAF50),
+      activeColor: const Color(0xFF4CAF50),
     );
   }
 

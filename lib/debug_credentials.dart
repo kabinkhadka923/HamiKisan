@@ -53,8 +53,9 @@ Future<void> debugStoredCredentials() async {
   if (superAdminUser != null) {
     print('Super Admin Test:');
     print('Username: ${superAdminUser['username']}');
-    print('Expected Password: @PhulasiPokhari.');
-    print('Stored Hash: ${superAdminUser['password_hash']}');
+    print('Password hash exists: ${superAdminUser['password_hash'] != null}');
+    print('Stored Hash: ${superAdminUser['password_hash']?.toString().substring(0, 20)}...');
+    print('(Password shown above for debugging only - do not use in production)');
     print('---\n');
   }
 
@@ -67,8 +68,9 @@ Future<void> debugStoredCredentials() async {
   if (kisanAdminUser != null) {
     print('Kisan Admin Test:');
     print('Username: ${kisanAdminUser['username']}');
-    print('Expected Password: @NepaliKisan923.');
-    print('Stored Hash: ${kisanAdminUser['password_hash']}');
+    print('Password hash exists: ${kisanAdminUser['password_hash'] != null}');
+    print('Stored Hash: ${kisanAdminUser['password_hash']?.toString().substring(0, 20)}...');
+    print('(Password shown above for debugging only - do not use in production)');
     print('---\n');
   }
 }

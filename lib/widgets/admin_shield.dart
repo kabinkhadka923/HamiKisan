@@ -20,8 +20,8 @@ class AdminShield extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: RadialGradient(
           colors: [
-            (color ?? AppColors.secondary).withValues(alpha: 0.2),
-            (color ?? AppColors.secondary).withValues(alpha: 0.05),
+            (color ?? AppColors.secondary).withOpacity(0.2),
+            (color ?? AppColors.secondary).withOpacity(0.05),
           ],
         ),
         shape: BoxShape.circle,
@@ -36,7 +36,7 @@ class AdminShield extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: (color ?? AppColors.secondary).withValues(alpha: 0.3),
+                color: (color ?? AppColors.secondary).withOpacity(0.3),
                 width: 2,
               ),
             ),
@@ -49,7 +49,7 @@ class AdminShield extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: (color ?? AppColors.secondary).withValues(alpha: 0.5),
+                color: (color ?? AppColors.secondary).withOpacity(0.5),
                 width: 2,
               ),
             ),
@@ -60,7 +60,7 @@ class AdminShield extends StatelessWidget {
             width: size * 0.5,
             height: size * 0.5,
             decoration: BoxDecoration(
-              color: (color ?? AppColors.secondary).withValues(alpha: 0.1),
+              color: (color ?? AppColors.secondary).withOpacity(0.1),
               shape: BoxShape.circle,
               border: Border.all(
                 color: color ?? AppColors.secondary,
@@ -93,7 +93,7 @@ class _ShieldPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withValues(alpha: 0.2)
+      ..color = color.withOpacity(0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 

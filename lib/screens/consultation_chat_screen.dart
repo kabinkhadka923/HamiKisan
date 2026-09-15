@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -7,9 +6,15 @@ import 'package:provider/provider.dart';
 import '../models/user.dart';
 import '../providers/auth_provider.dart';
 import '../services/audio_service.dart';
-import '../services/call/kisan_video_call_service.dart';
+import '../services/kisan_video_call_service.dart';
 import '../services/chat_service.dart';
+import '../services/encryption_service.dart';
+import '../services/media_service.dart';
+import '../services/location_service.dart';
+import '../services/reaction_service.dart';
 import 'video_call_screen.dart';
+
+enum ChatMode { one_on_one, group }
 
 class ConsultationChatScreen extends StatefulWidget {
   final User peer;
@@ -23,16 +28,37 @@ class ConsultationChatScreen extends StatefulWidget {
   State<ConsultationChatScreen> createState() => _ConsultationChatScreenState();
 }
 
-class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
+class _ConsultationChatScreenState extends State<ConsultationChatScreen>
+    with TickerProviderStateMixin {
   final ChatService _chatService = ChatService();
+  final EncryptionService _encryptionService = EncryptionService();
+  final MediaService _mediaService = MediaService();
+  final LocationService _locationService = LocationService();
+  final ReactionService _reactionService = ReactionService();
   final AudioService _audioService = AudioService();
-  final TextEditingController _messageController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
 
-  StreamSubscription<ChatMessage>? _messageSub;
-  List<ChatMessage> _messages = [];
-  String? _myUserId;
-  bool _isLoading = true;
+  late StreamSubscription<ChatMessage>? _messageSub;
+  late StreamSubscription<ChatMessage>? _reactionSub;
+
+  late String _myUserId;
+  late String _peerId;
+  late String _peerName;
+
+  // Group chat state
+  ChatMode _chatMode = ChatMode.one_on_one;
+  String? _selectedGroupId;
+  List<ChatMessage> _groupMessages = [];
+  List<Map<String, dynamic>> _availableGroups = [];
+  bool _isLoadingGroups = false;
+
+  // State for sending
+  late TextEditingController _messageController;
+  bool _isComposing = false;
+  ChatMessageType _currentType = ChatMessageType.text;
+  String? _mediaPath;
+  String? _locationLat;
+  String? _locationLng;
+  bool _isSending = false;
 
   @override
   void initState() {
@@ -43,316 +69,1133 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
   @override
   void dispose() {
     _messageSub?.cancel();
+    _reactionSub?.cancel();
     _messageController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _initialize() async {
     final currentUser = context.read<AuthProvider>().currentUser;
-    if (currentUser == null) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-      return;
-    }
+    if (currentUser == null) return;
 
     _myUserId = currentUser.id;
+    _peerId = widget.peer.id;
+    _peerName = widget.peer.name;
+
     await _chatService.initialize(currentUser.id);
-    await _audioService.initialize();
+    await _loadGroups();
     await _loadConversation();
 
-    _messageSub = _chatService.messageStream.listen((message) async {
-      if (!_isCurrentConversationMessage(message)) return;
-
+    _messageSub = _chatService.messageStream.listen((message) {
       if (!mounted) return;
-      setState(() => _upsertMessage(message));
+      _handleIncomingMessage(message);
       _scrollToBottom();
 
-      if (message.receiverId == _myUserId) {
-        await _chatService.markAsRead(message.id);
-        await _audioService.playMessageReceived();
+      final isForCurrentConversation = _chatMode == ChatMode.one_on_one
+          ? (message.senderId == _peerId || message.receiverId == _myUserId)
+          : (message.groupId == _selectedGroupId);
+
+      if (isForCurrentConversation &&
+          message.receiverId == _myUserId) {
+        _chatService.markAsRead(message.id);
+        _audioService.playMessageReceived();
       }
+    });
+
+    _reactionSub = _chatService.reactionStream.listen((reaction) {
+      if (!mounted) return;
+      _handleReaction(reaction);
     });
   }
 
-  Future<void> _loadConversation() async {
-    final messages = await _chatService.getConversationWithUser(widget.peer.id);
-    if (!mounted) return;
+  void _handleIncomingMessage(ChatMessage message) {
+    final isGroupMsg = message.groupId != null;
+    final isCurrentGroup = !isGroupMsg ||
+        (_selectedGroupId != null && message.groupId == _selectedGroupId);
 
+    if (_chatMode == ChatMode.one_on_one) {
+      if (!isGroupMsg &&
+          (message.senderId == _peerId || message.receiverId == _myUserId)) {
+        _upsertOneOnOneMessage(message);
+      }
+    } else if (_chatMode == ChatMode.group && isCurrentGroup) {
+      _upsertGroupMessage(message);
+    }
+  }
+
+  void _upsertOneOnOneMessage(ChatMessage message) {
     setState(() {
-      _messages = messages;
-      _isLoading = false;
+      final index = _messages.indexWhere((m) => m.id == message.id);
+      if (index >= 0) {
+        _messages[index] = message;
+      } else {
+        _messages.add(message);
+        _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      }
     });
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
 
-    await _markConversationAsRead(messages);
+  void _upsertGroupMessage(ChatMessage message) {
+    setState(() {
+      final index = _groupMessages.indexWhere((m) => m.id == message.id);
+      if (index >= 0) {
+        _groupMessages[index] = message;
+      } else {
+        _groupMessages.add(message);
+        _groupMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      }
+    });
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _handleReaction(Map<String, dynamic> reaction) {
+    final messageId = reaction['messageId'] as String?;
+    if (messageId == null) return;
+
+    if (_chatMode == ChatMode.one_on_one) {
+      setState(() {
+        final index = _messages.indexWhere((m) => m.id == messageId);
+        if (index >= 0) {
+          final existing = _messages[index].reactions ?? {};
+          final currentCount = existing[reaction['emoji']] ?? 0;
+          existing[reaction['emoji']] = existing[reaction['emoji']]! + 1;
+          _messages[index] = _messages[index].copyWith(reactions: existing);
+        }
+      });
+    } else if (_chatMode == ChatMode.group && _selectedGroupId != null) {
+      setState(() {
+        final index = _groupMessages.indexWhere((m) => m.id == messageId);
+        if (index >= 0) {
+          final existing = _groupMessages[index].reactions ?? {};
+          final currentCount = existing[reaction['emoji']] ?? 0;
+          existing[reaction['emoji']] = existing[reaction['emoji']]! + 1;
+          _groupMessages[index] = _groupMessages[index].copyWith(reactions: existing);
+        }
+      });
+    }
     _scrollToBottom();
   }
 
-  bool _isCurrentConversationMessage(ChatMessage message) {
-    if (_myUserId == null) return false;
-
-    final outgoing =
-        message.senderId == _myUserId && message.receiverId == widget.peer.id;
-    final incoming =
-        message.senderId == widget.peer.id && message.receiverId == _myUserId;
-
-    return outgoing || incoming;
+  Future<void> _loadGroups() async {
+    setState(() => _isLoadingGroups = true);
+    try {
+      final groups = await _chatService.getGroups();
+      setState(() {
+        _availableGroups = groups;
+        _isLoadingGroups = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingGroups = false);
+    }
   }
 
-  void _upsertMessage(ChatMessage message) {
-    final index = _messages.indexWhere((m) => m.id == message.id);
-    if (index >= 0) {
-      _messages[index] = message;
+  Future<void> _loadConversation() async {
+    if (_chatMode == ChatMode.group && _selectedGroupId != null) {
+      final messages = await _chatService.getConversationWithGroup(_selectedGroupId!);
+      if (!mounted) return;
+      setState(() {
+        _groupMessages = messages;
+      });
     } else {
-      _messages.add(message);
-      _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      final messages = await _chatService.getConversationWithUser(_peerId);
+      if (!mounted) return;
+      setState(() {
+        _messages = messages;
+      });
     }
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+    );
   }
 
-  Future<void> _sendMessage() async {
-    final text = _messageController.text.trim();
-    if (text.isEmpty) return;
+  Widget _buildChatModeSelector() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _chatMode == ChatMode.one_on_one
+                  ? null
+                  : () {
+                      setState(() => _chatMode = ChatMode.one_on_one);
+                      _selectedGroupId = null;
+                      _groupMessages.clear();
+                      _loadConversation();
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _chatMode == ChatMode.one_on_one
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[300],
+                foregroundColor: _chatMode == ChatMode.one_on_one
+                    ? Colors.white
+                    : Colors.black87,
+              ),
+              child: const Text('One-on-One'),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _availableGroups.isEmpty
+                  ? null
+                  : () => _showGroupSelectionDialog(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _chatMode == ChatMode.group
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[300],
+                foregroundColor: _chatMode == ChatMode.group
+                    ? Colors.white
+                    : Colors.black87,
+              ),
+              child: _availableGroups.isEmpty
+                  ? const Text('No Groups')
+                  : const Text('Groups'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    final sent = await _chatService.sendMessageToUser(
-      receiverId: widget.peer.id,
-      message: text,
-      messageType: ChatMessageType.text.name,
+  Future<void> _showGroupSelectionDialog() async {
+    final selected = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => _GroupSelectionDialog(groups: _availableGroups),
     );
 
-    if (!sent) return;
-
-    _messageController.clear();
-    await _audioService.playMessageSent();
-    await _loadConversation();
+    if (selected != null && mounted) {
+      setState(() {
+        _chatMode = ChatMode.group;
+        _selectedGroupId = selected['groupId'] as String;
+      });
+      await _loadConversation();
+    }
   }
 
-  Future<void> _markConversationAsRead(List<ChatMessage> messages) async {
-    if (_myUserId == null) return;
+  Widget _buildGroupHeader() {
+    if (_chatMode != ChatMode.group || _selectedGroupId == null) return const SizedBox.shrink();
 
-    final unreadIncoming = messages.where(
-      (message) =>
-          message.receiverId == _myUserId &&
-          message.status != MessageStatus.read,
+    final selectedGroup = _availableGroups.firstWhere(
+      (g) => g['id'] == _selectedGroupId,
+      orElse: () => {},
     );
 
-    for (final message in unreadIncoming) {
-      await _chatService.markAsRead(message.id);
-    }
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).colorScheme.primary),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            selectedGroup['name'] ?? 'Group',
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.close, size: 16, color: Colorsgrey),
+            onPressed: () {
+              setState(() {
+                _chatMode = ChatMode.one_on_one;
+                _selectedGroupId = null;
+                _groupMessages.clear();
+              });
+            },
+            tooltip: 'Close group',
+          ),
+        ],
+      ),
+    );
   }
 
-  void _startCall(CallType callType) {
-    if (_myUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please wait, chat is still loading.')),
-      );
-      return;
-    }
+  Widget _buildMessageBubble(ChatMessage message) {
+    final isMe = message.senderId == _myUserId;
+    final type = message.messageType;
+    final reactions = message.reactions ?? {};
+    final isGroup = message.groupId != null;
+    final canForward = message.messageType == ChatMessageType.text &&
+        message.forwardedFromMessageId == null;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => VideoCallScreen(
-          doctorName: widget.peer.name,
-          doctorSpecialty: widget.peer.specialization ??
-              (widget.peer.role == UserRole.kisanDoctor
-                  ? 'Kisan Doctor'
-                  : 'Farmer'),
-          callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
-          recipientId: widget.peer.id,
-          isOutgoing: true,
-          callType: callType,
-          callContext: {
-            'callerId': _myUserId,
-            'callerType':
-                context.read<AuthProvider>().currentUser?.role.name ?? 'farmer',
-          },
+    return GestureDetector(
+      onLongPress: () {
+        if (!canForward) return;
+        _showForwardDialog(message);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        child: Align(
+          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            constraints: const BoxConstraints(
+              maxWidth: _chatMode == ChatMode.group ? 280 : 250,
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: _buildMessageContent(type, message, isMe, reactions, isGroup),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 80), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
+  List<Widget> _buildMessageContent(
+      ChatMessageType type,
+      ChatMessage message,
+      bool isMe,
+      Map<String, dynamic> reactions,
+      bool isGroup,
+      ) {
+    switch (type) {
+      case ChatMessageType.text:
+        return _buildTextMessage(message, isMe, reactions);
+      case ChatMessageType.image:
+        return _buildImageMessage(message, isMe);
+      case ChatMessageType.location:
+        return _buildLocationMessage(message, isMe);
+      case ChatMessageType.reaction:
+        return _buildReactionMessage(message, isMe);
+      case ChatMessageType.group_announcement:
+        return _buildGroupAnnouncement(message, isMe);
+      default:
+        return _buildTextMessage(message, isMe, reactions);
+    }
+  }
+
+  Widget _buildTextMessage(
+      ChatMessage message, bool isMe, Map<String, dynamic> reactions,) {
+    final text = message.content;
+    final timestamp = _formatTimestamp(message.timestamp);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isMe && message.groupId == null)
+            CircleAvatar(
+              backgroundColor: Colors.grey[300],
+              child: Text(
+                _peerName.substring(0, 1).toUpperCase(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          const SizedBox(width: 8.0),
+
+          Container(
+            padding: const EdgeInsets.all(12.0),
+            decoration: BoxDecoration(
+              color: isMe
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey[200],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(isMe ? 16 : 0),
+                topRight: Radius.circular(isMe ? 0 : 16),
+                bottomLeft: const Radius.circular(16),
+                bottomRight: const Radius.circular(16),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  text,
+                  style: TextStyle(
+                    color: isMe ? Colors.white : Colors.black87,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  _formatTimestamp(message.timestamp),
+                  style: TextStyle(
+                    color: isMe ? Colors.white70 : Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (isMe && message.groupId == null)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Row(
+                children: _buildReactionIcons(reactions),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageMessage(ChatMessage message, bool isMe,) {
+    final imageUrl = message.mediaUrl;
+    final timestamp = _formatTimestamp(message.timestamp);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4.0),
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              if (!isMe && message.groupId == null)
+                CircleAvatar(
+                  backgroundColor: Colors.grey[300],
+                  child: Text(
+                    _peerName.substring(0, 1).toUpperCase(),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12.0),
+                  child: imageUrl != null
+                      ? Image.network(
+                          imageUrl,
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          height: 150,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const CircularProgressIndicator();
+                          },
+                        )
+                      : const Container(
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          height: 150,
+                          color: Colors.grey[200],
+                          child: Center(
+                            child: Text('Loading...'),
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  _formatTimestamp(message.timestamp),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationMessage(ChatMessage message, bool isMe,) {
+    final lat = message.content?.contains('latitude=') == true
+        ? message.content!.split('latitude=').last.split(',').first
+            .trim() : '';
+    final lng =
+        message.content?.contains('longitude=') == true
+            ? message.content!.split('longitude=').last.trim() : '';
+    final address = message.content?.contains('address=') == true
+        ? message.content!.split('address=').last.trim() : 'Location';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isMe && message.groupId == null)
+            CircleAvatar(
+              backgroundColor: Colors.grey[300],
+              child: Text(
+                _peerName.substring(0, 1).toUpperCase(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 8.0),
+
+            InkWell(
+              onTap: () {},
+              child: Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: Colors.amber[100],
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.location_on, color: Colors.amber[700], size: 20),
+                    const SizedBox(width: 6.0),
+                    Text(
+                      address,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.amber[800],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8.0),
+
+            Text(
+              _formatTimestamp(message.timestamp),
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReactionMessage(ChatMessage message, bool isMe,) {
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildGroupAnnouncement(ChatMessage message, bool isMe,) {
+    final text = message.content ?? 'Group announcement';
+    final timestamp = _formatTimestamp(message.timestamp);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4.0),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: Colors.blue[100],
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              text,
+              style: TextStyle(
+                color: Colors.blue[800],
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 4.0),
+            Text(
+              _formatTimestamp(message.timestamp),
+              style: TextStyle(
+                color: Colors.blue[600],
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildReactionIcons(Map<String, dynamic> reactions) {
+    final List<Widget> icons = [];
+    final reactionIcons = {
+      ChatReactionType.thumbUp: Icons.thumb_up,
+      ChatReactionType.heart: Icons.favorite,
+      ChatReactionType.laugh: Icons.cabin,
+      ChatReactionType.surprise: Icons.error,
+      ChatReactionType.sadness: Icons.sentiment_dissatisfied,
+    };
+
+    reactions.forEach((emoji, count) {
+      icons.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+          child: InkWell(
+            onTap: () {},
+            child: Icon(
+              reactionIcons[emoji],
+              size: 20,
+              color: reactions[emoji] > 0
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey,
+            ),
+          ),
+        ),
+      );
+      if (count > 1) {
+        icons.add(
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: Text(
+              '$count',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.black87,
+              ),
+            ),
+          ),
         );
       }
     });
+    return icons;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final myId = _myUserId;
+  String _formatTimestamp(int timestamp) {
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final now = DateTime.now();
+    final difference = now.difference(date);
 
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
+    if (difference.inDays > 7) {
+      return '${date.day}/${date.month}/${date.year}';
+    } else if (difference.inDays > 0) {
+      return '${date.day}d ago';
+    } else if (difference.inHours > 0) {
+      return '${date.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${date.inMinutes}min ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  Widget _buildComposer(),
+
+Widget _buildComposer() {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 4,
+          offset: const Offset(0, -2),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.peer.name),
-            Text(
-              widget.peer.role == UserRole.kisanDoctor
-                  ? (widget.peer.specialization ?? 'Kisan Doctor')
-                  : 'Farmer',
-              style:
-                  const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
-            ),
-          ],
+      ],
+    ),
+    child: Row(
+      children: [
+        // Media button
+        IconButton(
+          icon: const Icon(Icons.attach_file, size: 20),
+          onPressed: _pickMedia,
+          tooltip: 'Attach media',
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
-        actions: [
+        // Voice message button
+        IconButton(
+          icon: const Icon(Icons.audio_enabled, size: 20),
+          onPressed: () => _handlePickedMedia(voice),
+          tooltip: Voice
+
+        // Location button
+        IconButton(
+          icon: const Icon(Icons.location_on, size: 20),
+          onPressed: _shareLocation,
+          tooltip: 'Share location',
+        ),
+
+        // Voice message button
+        IconButton(
+          icon: const Icon(Icons.audio_enabled, size: 20),
+          onPressed: () => _handlePickedMedia('voice'),
+          tooltip: 'Voice message',
+        ),
+
+        // Group button (for group mode)
+        if (_chatMode == ChatMode.group)
           IconButton(
-            icon: const Icon(Icons.call),
-            onPressed: () => _startCall(CallType.audio),
+            icon: const Icon(Icons.group, size: 20),
+            onPressed: _showGroupSelectionDialog,
+            tooltip: 'Select group',
           ),
-          IconButton(
-            icon: const Icon(Icons.videocam),
-            onPressed: () => _startCall(CallType.video),
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFEDE5DB),
-              ),
-              child: Column(
+
+        // Reaction button
+        PopupMenuButton<ChatReactionType>(
+          onSelected: (ChatReactionType reaction) {
+            _sendReaction(reaction);
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem<ChatReactionType>(
+              value: ChatReactionType.thumbUp,
+              child: Row(
                 children: [
-                  Expanded(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 12),
-                      itemCount: _messages.length,
-                      itemBuilder: (context, index) {
-                        final message = _messages[index];
-                        final isMe = message.senderId == myId;
-                        return _buildMessageBubble(message, isMe);
-                      },
-                    ),
-                  ),
-                  _buildMessageInput(),
+                  Icon(Icons.thumb_up, size: 20),
+                  SizedBox(width: 8),
+                  Text('Like'),
                 ],
               ),
             ),
+            const PopupMenuItem<ChatReactionType>(
+              value: ChatReactionType.heart,
+              child: Row(
+                children: [
+                  Icon(Icons.favorite, size: 20),
+                  SizedBox(width: 8),
+                  Text('Love'),
+                ],
+              ),
+            ),
+            const PopupMenuItem<ChatReactionType>(
+              value: ChatReactionType.laugh,
+              child: Row(
+                children: [
+                  Icon(Icons.sentiment_very_satisfied, size: 20),
+                  SizedBox(width: 8),
+                  Text('Haha'),
+                ],
+              ),
+            ),
+          ],
+          child: const Icon(Icons.emoji_emotions, size: 20),
+        ),
+
+        // Expanded text field
+        Expanded(
+          child: TextField(
+            controller: _messageController,
+            onChanged: (text) {
+              setState(() {
+                _isComposing = text.isNotEmpty;
+              });
+            },
+            onSubmitted: (_) => _sendMessage(),
+            decoration: InputDecoration(
+              hintText: _chatMode == ChatMode.group
+                  ? 'Type message for group...'
+                  : 'Type a message...',
+              border: InputBorder.none,
+              isDense: true,
+            ),
+          ),
+        ),
+
+        // Send button
+        IconButton(
+          icon: _isSending
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.send, size: 20),
+          onPressed: _isComposing && !_isSending ? _sendMessage : null,
+          tooltip: 'Send',
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _pickMedia() async {
+  final type = await _showMediaTypeDialog();
+  if (type == null) return;
+
+  setState(() => _isSending = true);
+
+  try {
+    String? result;
+    switch (type) {
+      case 'image':
+        result = await _mediaService.pickImage();
+        break;
+      case 'voice':
+        // TODO: Implement voice recording
+        break;
+    }
+
+    if (result != null && mounted) {
+      final url = await _uploadMedia(result, type);
+      final message = ChatMessage(
+        id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+        senderId: _myUserId,
+        receiverId: _chatMode == ChatMode.group && _selectedGroupId != null
+            ? _selectedGroupId!
+            : _peerId,
+        groupId: _chatMode == ChatMode.group && _selectedGroupId != null
+            ? _selectedGroupId,
+        null,
+        content: '',
+        mediaUrl: url,
+        messageType: type == 'image' ? ChatMessageType.image : ChatMessageType.text,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+
+      await _chatService.sendMessage(message);
+      setState(() {
+        _mediaPath = null;
+      });
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _isSending = false);
+    }
+  }
+}
+
+Future<String> _uploadMedia(String filePath, String type) async {
+  // Placeholder - implement actual upload
+  return 'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg';
+}
+
+Future<void> _shareLocation() async {
+  final position = await _locationService.getCurrentPosition();
+  setState(() {
+    _locationLat = position.latitude.toString();
+    _locationLng = position.longitude.toString();
+  });
+
+  final message = ChatMessage(
+    id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+    senderId: _myUserId,
+    receiverId: _chatMode == ChatMode.group && _selectedGroupId != null
+        ? _selectedGroupId!
+        : _peerId,
+    groupId: _chatMode == ChatMode.group && _selectedGroupId != null
+        ? _selectedGroupId,
+    null,
+    content:
+        'latitude=${_locationLat},longitude=${_locationLng},address=Current Location',
+    mediaUrl: null,
+    messageType: ChatMessageType.location,
+    timestamp: DateTime.now().millisecondsSinceEpoch,
+  );
+
+  await _chatService.sendMessage(message);
+  setState(() {
+    _locationLat = null;
+    _locationLng = null;
+  });
+}
+
+Future<void> _sendReaction(ChatReactionType reaction) async {
+  final emoji = reaction.toString().split('.').last;
+  final messageId = _chatMode == ChatMode.group && _selectedGroupId != null
+      ? _groupMessages.isNotEmpty ? _groupMessages.last.id : ''
+      : _messages.isNotEmpty ? _messages.last.id : '';
+
+  if (messageId.isNotEmpty) {
+    await _chatService.addReaction(
+      messageId: messageId,
+      emoji: emoji,
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message, bool isMe) {
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        constraints: const BoxConstraints(maxWidth: 300),
-        decoration: BoxDecoration(
-          color: isMe ? const Color(0xFFDCF8C6) : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(12),
-            topRight: const Radius.circular(12),
-            bottomLeft: Radius.circular(isMe ? 12 : 3),
-            bottomRight: Radius.circular(isMe ? 3 : 12),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+  setState(() {
+    _selectedReaction = emoji;
+  });
+}
+
+Future<void> _sendMessage() async {
+  final text = _messageController.text.trim();
+  if (text.isEmpty && _mediaPath == null) return;
+
+  setState(() => _isSending = true);
+
+  try {
+    ChatMessage message;
+    if (text.isNotEmpty) {
+      message = ChatMessage(
+        id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+        senderId: _myUserId,
+        receiverId: _chatMode == ChatMode.group && _selectedGroupId != null
+            ? _selectedGroupId!
+            : _peerId,
+        groupId: _chatMode == ChatMode.group && _selectedGroupId != null
+            ? _selectedGroupId,
+        null,
+        content: text,
+        mediaUrl: null,
+        messageType: ChatMessageType.text,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+    } else if (_mediaPath != null) {
+      final url = await _uploadMedia(_mediaPath!, 'image');
+      message = ChatMessage(
+        id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+        senderId: _myUserId,
+        receiverId: _chatMode == ChatMode.group && _selectedGroupId != null
+            ? _selectedGroupId!
+            : _peerId,
+        groupId: _chatMode == ChatMode.group && _selectedGroupId != null
+            ? _selectedGroupId,
+        null,
+        content: '',
+        mediaUrl: url,
+        messageType: ChatMessageType.image,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+    } else {
+      return;
+    }
+
+    await _chatService.sendMessage(message);
+    _messageController.clear();
+    setState(() {
+      _isComposing = false;
+      _mediaPath = null;
+    });
+  } finally {
+    if (mounted) {
+      setState(() => _isSending = false);
+    }
+  }
+}
+
+/// Show forward message dialog
+Future<void> _showForwardDialog(ChatMessage originalMessage) async {
+  final result = await showDialog<String>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Forward Message'),
+      content: SingleChildScrollView(
+        child: ListBody(
           children: [
-            Text(
-              message.message,
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              DateFormat('HH:mm').format(message.timestamp),
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 10,
-              ),
+            const Text(
+              'Select where to forward the message:',
             ),
           ],
         ),
       ),
-    );
-  }
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Forward to individual peer
+                _forwardMessage(originalMessage, _peerId, ChatMessageType.text);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Peer'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 
-  Widget _buildMessageInput() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F7F7),
-        border:
-            Border(top: BorderSide(color: Colors.grey.shade300, width: 0.5)),
-      ),
-      child: Row(
+/// Forward a message to a recipient
+Future<void> _forwardMessage(ChatMessage originalMessage,
+    String targetReceiverId, ChatMessageType targetType) async {
+  setState(() => _isSending = true);
+
+  try {
+    final forwardedId = await _chatService.forwardMessage(
+      originalMessageId: originalMessage.id,
+      targetReceiverId: targetReceiverId,
+      targetType: targetType,
+    );
+
+    if (forwardedId.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Message forwarded successfully')),
+      );
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Forward failed: $e')),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _isSending = false);
+    }
+  }
+}
+
+/// Show media type selection dialog
+ChatReactionType? _showMediaTypeDialog() {
+  return showDialog<ChatReactionType>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Attach'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            color: Colors.grey.shade700,
-            onPressed: () {},
+          ListTile(
+            leading: const Icon(Icons.image),
+            title: const Text('Photo'),
+            onTap: () {
+              Navigator.of(context).pop('image');
+            },
           ),
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                hintText: 'Type your message...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              minLines: 1,
-              maxLines: 4,
-              onSubmitted: (_) => _sendMessage(),
-            ),
-          ),
-          const SizedBox(width: 6),
-          CircleAvatar(
-            radius: 21,
-            backgroundColor: const Color(0xFF2E7D32),
-            child: IconButton(
-              icon: const Icon(Icons.send, color: Colors.white, size: 19),
-              onPressed: _sendMessage,
-            ),
-          ),
-          const SizedBox(width: 2),
-          IconButton(
-            icon: const Icon(Icons.mic_none),
-            color: Colors.grey.shade700,
-            onPressed: () {},
+          ListTile(
+            leading: const Icon(Icons.voice_off),
+            title: const Text('Voice Message'),
+            onTap: () {
+              Navigator.of(context).pop('voice');
+            },
           ),
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Group selection dialog widget
+class _GroupSelectionDialog extends StatefulWidget {
+  final List<Map<String, dynamic>> groups;
+
+  const _GroupSelectionDialog({
+    required this.groups,
+  });
+
+  @override
+  State<_GroupSelectionDialog> createState() => _GroupSelectionDialogState();
+}
+
+class _GroupSelectionDialogState extends State<_GroupSelectionDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Select Group'),
+      content: SingleChildScrollView(
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: widget.groups.length,
+          itemBuilder: (context, index) {
+            final group = widget.groups[index];
+            return RadioListTile<String>(
+              title: Text(group['name'] ?? 'Unnamed Group'),
+              value: group['id'] as String?,
+              groupIndex: index,
+              onChanged: (String? value) {
+                Navigator.of(context).pop({'groupId': value});
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
     );
+  }
+}
+
+final VoiceService _voiceService = VoiceService();
+
+/// Show media type selection dialog with voice option
+ChatReactionType? _showMediaTypeDialog() {
+  return showDialog<ChatReactionType>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Attach'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.image),
+            title: const Text('Photo'),
+            onTap: () {
+              Navigator.of(context).pop('image');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.voice_off),
+            title: const Text('Voice Message'),
+            onTap: () {
+              Navigator.of(context).pop('voice');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.location_on),
+            title: const Text('Location'),
+            onTap: () {
+              Navigator.of(context).pop('location');
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Handle picked media type
+Future<void> _handlePickedMedia(String type) async {
+  setState(() => _isSending = true);
+
+  try {
+    String? result;
+    switch (type) {
+      case 'image':
+        result = await _mediaService.pickImage();
+        break;
+      case 'voice':
+        result = await _voiceService.recordMessage();
+        if (result != null) {
+          // Upload voice message
+          final url = await _uploadMedia(result, 'voice');
+          // Create voice message
+          final message = ChatMessage(
+            id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+            senderId: _myUserId,
+            receiverId: _chatMode == ChatMode.group && _selectedGroupId != null
+                ? _selectedGroupId!
+                : _peerId,
+            groupId: _chatMode == ChatMode.group && _selectedGroupId != null
+                ? _selectedGroupId,
+            null,
+            content: '',
+            mediaUrl: url,
+            messageType: ChatMessageType.voice,
+            timestamp: DateTime.now().millisecondsSinceEpoch,
+          );
+          await _chatService.sendMessage(message);
+        }
+        setState(() => _mediaPath = null);
+        break;
+      case 'location':
+        await _shareLocation();
+        break;
+    }
+
+    if (mounted) {
+      setState(() => _isSending = false);
+      _scrollToBottom();
+    }
+  } catch (e) {
+    if (mounted) {
+      setState(() => _isSending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 }

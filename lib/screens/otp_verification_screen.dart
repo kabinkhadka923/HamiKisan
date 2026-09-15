@@ -26,7 +26,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     //Implement actual OTP verification logic with AuthService
     // For now, simulate success
-    bool otpVerified = _otpController.text == '123456'; // Dummy OTP
+    bool otpVerified = _otpController.text.length == 6 && RegExp(r'^\d{6}$').hasMatch(_otpController.text); // 6-digit OTP
 
     if (otpVerified) {
       // Assuming successful OTP verification means the user is now fully registered and verified

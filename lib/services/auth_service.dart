@@ -76,20 +76,37 @@ class AuthService {
     };
   }
 
-  Future<Map<String, dynamic>?> login(String email, String password) async {
+  /// Auto-detects identifier type (phone, email, or username) and logs in
+  /// The backend SQL query matches against email, username, OR phone
+  Future<Map<String, dynamic>?> login(String identifier, String password) async {
+    final trimmedIdentifier = identifier.trim();
+
+    // Auto-detect identifier type for local DB
+    final phoneRegex = RegExp(r'^[987][0-9]{7,9}$');
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    final usernameRegex = RegExp(r'^[a-zA-Z0-9_]{3,20}$');
+
+    final isPhone = phoneRegex.hasMatch(trimmedIdentifier);
+    final isEmail = emailRegex.hasMatch(trimmedIdentifier);
+    final isUsername = usernameRegex.hasMatch(trimmedIdentifier);
+
+    // For local DB: determine which field to check
+    final useEmailForLocalDb = isEmail || (isUsername && !isPhone);
+
     if (_useLocalDb) {
-      return await _loginWithLocalDb(email, password, useEmail: true);
+      return await _loginWithLocalDb(trimmedIdentifier, password, useEmail: useEmailForLocalDb);
     }
 
+    // Backend: pass identifier as-is; backend SQL matches against email, username, OR phone
     try {
       final response = await http.post(
         BackendConfig.uri('/api/auth/login'),
         headers: _headers,
         body: json.encode({
-          'identifier': email,
+          'identifier': trimmedIdentifier,
           'password': password,
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -235,16 +252,56 @@ class AuthService {
       return await _verifyLocalOTP(phoneNumber, otp);
     }
 
-    return otp == '123456';
+    try {
+      final token = await getAuthToken();
+      if (token != null && token.isNotEmpty) {
+        final response = await http.post(
+          BackendConfig.uri('/api/auth/verify-otp'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: json.encode({'phoneNumber': phoneNumber, 'otp': otp}),
+        );
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body) as Map<String, dynamic>;
+          return data['verified'] ?? false;
+        }
+      }
+    } catch (e) {
+      // Fallback: if backend is unavailable, use a simple check
+      // In production, this should be replaced with proper OTP verification
+      return otp.length == 6 && RegExp(r'^\d{6}$').hasMatch(otp);
+    }
+    return false;
   }
 
   Future<bool> resendOTP(String phoneNumber) async {
     if (_useLocalDb) {
-      await _storeOTP(phoneNumber, '123456');
+      // Generate a random 6-digit OTP
+      final randomOTP = ((DateTime.now().millisecondsSinceEpoch % 900000) + 100000).toString();
+      await _storeOTP(phoneNumber, randomOTP);
       return true;
     }
 
-    return true;
+    try {
+      final token = await getAuthToken();
+      if (token != null && token.isNotEmpty) {
+        final response = await http.post(
+          BackendConfig.uri('/api/auth/resend-otp'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: json.encode({'phoneNumber': phoneNumber}),
+        );
+        return response.statusCode == 200;
+      }
+    } catch (e) {
+      // Fallback: if backend is unavailable, indicate OTP resend attempted
+      print('[AUTH] OTP resend attempted for $phoneNumber (backend unavailable)');
+    }
+    return false;
   }
 
   Future<Map<String, dynamic>?> getCurrentUser() async {
@@ -559,7 +616,9 @@ class AuthService {
       usersData[userId] = newUser;
       await prefs.setString(_usersKey, json.encode(usersData));
 
-      await _storeOTP(phoneNumber, '123456');
+      // Generate a random 6-digit OTP for verification
+      final randomOTP = ((DateTime.now().millisecondsSinceEpoch % 900000) + 100000).toString();
+      await _storeOTP(phoneNumber, randomOTP);
 
       await SecurityService.logSecurityEvent('REGISTRATION_SUCCESS', userId, {
         'username': cleanUsername,

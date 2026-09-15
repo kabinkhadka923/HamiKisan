@@ -38,18 +38,31 @@ const updateProfile = async (req, res) => {
   return res.json({ user: result.rows[0] });
 };
 
+const USER_LIST_FIELDS = `id, name, email, role, phone, location, specialty, created_at`;
+
 const listDoctors = async (_req, res) => {
   const result = await db.query(
-    `SELECT id, name, email, role, created_at
+    `SELECT ${USER_LIST_FIELDS}
      FROM users
-     WHERE role = 'doctor'
+     WHERE role = 'doctor' AND status = 'approved'
      ORDER BY created_at DESC`,
   );
   return res.json({ doctors: result.rows });
+};
+
+const listFarmers = async (_req, res) => {
+  const result = await db.query(
+    `SELECT ${USER_LIST_FIELDS}
+     FROM users
+     WHERE role = 'farmer' AND status = 'approved'
+     ORDER BY created_at DESC`,
+  );
+  return res.json({ farmers: result.rows });
 };
 
 module.exports = {
   getProfile,
   updateProfile,
   listDoctors,
+  listFarmers,
 };

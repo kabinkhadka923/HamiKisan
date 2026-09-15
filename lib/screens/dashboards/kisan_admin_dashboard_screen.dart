@@ -96,7 +96,7 @@ class KisanAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: color.withValues(alpha: 0.2),
+                            backgroundColor: color.withOpacity(0.2),
                             child: Icon(Icons.person, color: color),
                           ),
                           title: Text('Farmer ${index + 1}'),
@@ -217,7 +217,7 @@ class KisanAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: verified ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
+                            backgroundColor: verified ? Colors.green.withOpacity(0.2) : Colors.orange.withOpacity(0.2),
                             child: Icon(Icons.medical_services, color: verified ? Colors.green : Colors.orange),
                           ),
                           title: Text('Dr. Doctor ${index + 1}'),
@@ -380,7 +380,7 @@ class KisanAdminDashboardScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: color.withValues(alpha: 0.2),
+                                      color: color.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(status, style: TextStyle(color: color, fontSize: 11)),
@@ -521,7 +521,7 @@ class KisanAdminDashboardScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        initialValue: selectedType,
+                        value: selectedType,
                         decoration: const InputDecoration(
                           labelText: 'Type',
                           border: OutlineInputBorder(),
@@ -533,7 +533,7 @@ class KisanAdminDashboardScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        initialValue: selectedTarget,
+                        value: selectedTarget,
                         decoration: const InputDecoration(
                           labelText: 'Send To',
                           border: OutlineInputBorder(),

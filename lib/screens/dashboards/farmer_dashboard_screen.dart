@@ -13,6 +13,7 @@ import '../../screens/profile_screen.dart';
 import '../consultation_contacts_screen.dart';
 import '../../screens/create_post_screen.dart';
 import '../../screens/marketplace/sell_product_screen.dart';
+import '../../widgets/incoming_call_listener.dart';
 
 class FarmerDashboardScreen extends StatefulWidget {
   const FarmerDashboardScreen({super.key});
@@ -157,9 +158,9 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
+        color: color.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -247,7 +248,7 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Column(
@@ -336,7 +337,8 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return IncomingCallListener(
+      child: Scaffold(
       appBar: _isVisible
           ? AppBar(
               title: Row(
@@ -400,6 +402,7 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
               type: BottomNavigationBarType.fixed,
             )
           : null,
+      ),
     );
   }
 }
@@ -482,7 +485,7 @@ class _HomeContentState extends State<_HomeContent>
           image: const AssetImage('assets/background/bg.jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.white.withValues(alpha: 0.3),
+            Colors.white.withOpacity(0.3),
             BlendMode.darken,
           ),
           onError: (exception, stackTrace) {},
@@ -603,7 +606,7 @@ class _HomeContentState extends State<_HomeContent>
                 Container(
                     width: 1,
                     height: 160,
-                    color: Colors.white.withValues(alpha: 0.3)),
+                    color: Colors.white.withOpacity(0.3)),
                 Expanded(
                   flex: 3,
                   child: Padding(
@@ -725,7 +728,7 @@ class _HomeContentState extends State<_HomeContent>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: suitabilityColor.withValues(alpha: 0.1),
+              color: suitabilityColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: suitabilityColor, width: 1.5),
             ),
@@ -827,7 +830,7 @@ class _HomeContentState extends State<_HomeContent>
     final userId = authProvider.currentUser?.id ?? '';
     return Card(
       elevation: 2,
-      color: Colors.white.withValues(alpha: 0.85),
+      color: Colors.white.withOpacity(0.85),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -836,7 +839,7 @@ class _HomeContentState extends State<_HomeContent>
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: iconColor.withValues(alpha: 0.1),
+                  backgroundColor: iconColor.withOpacity(0.1),
                   child: Icon(icon, color: iconColor, size: 20),
                 ),
                 const SizedBox(width: 12),
@@ -1054,7 +1057,7 @@ class _MarketContentState extends State<_MarketContent> {
                         const InputDecoration(labelText: 'Product Name')),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  initialValue: unit,
+                  value: unit,
                   decoration: const InputDecoration(labelText: 'Unit'),
                   items: const [
                     DropdownMenuItem(value: 'केजी', child: Text('केजी (KG)')),
@@ -1142,7 +1145,7 @@ class _MarketContentState extends State<_MarketContent> {
               image: const AssetImage('assets/background/bg.jpg'),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
-                Colors.white.withValues(alpha: 0.3),
+                Colors.white.withOpacity(0.3),
                 BlendMode.darken,
               ),
               onError: (exception, stackTrace) {},
@@ -1263,7 +1266,7 @@ class _MarketContentState extends State<_MarketContent> {
                     children: [
                       if (_filteredPrices.isEmpty) ...[
                         Card(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: Colors.white.withOpacity(0.9),
                           child: Padding(
                             padding: const EdgeInsets.all(24),
                             child: Column(
@@ -1287,7 +1290,7 @@ class _MarketContentState extends State<_MarketContent> {
                       ],
                       if (hotDeals.isNotEmpty) ...[
                         Card(
-                          color: Colors.orange.withValues(alpha: 0.9),
+                          color: Colors.orange.withOpacity(0.9),
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: Column(
@@ -1351,13 +1354,13 @@ class _MarketContentState extends State<_MarketContent> {
                             item.productName.contains('(by ');
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
-                          color: Colors.white.withValues(alpha: 0.95),
+                          color: Colors.white.withOpacity(0.95),
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: isFarmerListing
-                                  ? Colors.blue.withValues(alpha: 0.1)
+                                  ? Colors.blue.withOpacity(0.1)
                                   : const Color(0xFF4CAF50)
-                                      .withValues(alpha: 0.1),
+                                      .withOpacity(0.1),
                               child: Icon(
                                 isFarmerListing
                                     ? Icons.person
@@ -1516,7 +1519,7 @@ class _CommunityContentState extends State<_CommunityContent> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  initialValue: postType,
+                  value: postType,
                   decoration: const InputDecoration(labelText: 'Post Type'),
                   items: const [
                     DropdownMenuItem(value: 'General', child: Text('General')),
@@ -1633,7 +1636,7 @@ class _CommunityContentState extends State<_CommunityContent> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)
+                      color: Colors.black.withOpacity(0.1), blurRadius: 4)
                 ],
               ),
               child: Row(
@@ -1675,7 +1678,7 @@ class _CommunityContentState extends State<_CommunityContent> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -1705,7 +1708,7 @@ class _CommunityContentState extends State<_CommunityContent> {
           image: const AssetImage('assets/background/bg.jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.white.withValues(alpha: 0.3),
+            Colors.white.withOpacity(0.3),
             BlendMode.darken,
           ),
           onError: (exception, stackTrace) {},
@@ -1770,7 +1773,7 @@ class _CommunityContentState extends State<_CommunityContent> {
               ),
             ),
           Container(
-            color: Colors.white.withValues(alpha: 0.95),
+            color: Colors.white.withOpacity(0.95),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
@@ -1832,7 +1835,7 @@ class _CommunityContentState extends State<_CommunityContent> {
                           return Card(
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
-                            color: Colors.white.withValues(alpha: 0.95),
+                            color: Colors.white.withOpacity(0.95),
                             child: InkWell(
                               onTap: () =>
                                   Navigator.of(context).push(MaterialPageRoute(
@@ -1848,7 +1851,7 @@ class _CommunityContentState extends State<_CommunityContent> {
                                       children: [
                                         CircleAvatar(
                                           backgroundColor:
-                                              iconColor.withValues(alpha: 0.1),
+                                              iconColor.withOpacity(0.1),
                                           child: Icon(icon,
                                               color: iconColor, size: 20),
                                         ),
@@ -1986,7 +1989,7 @@ class _AddContentState extends State<_AddContent> {
           image: const AssetImage('assets/background/bg.jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.white.withValues(alpha: 0.3),
+            Colors.white.withOpacity(0.3),
             BlendMode.darken,
           ),
           onError: (exception, stackTrace) {},
@@ -2064,7 +2067,7 @@ class _AddContentState extends State<_AddContent> {
   }) {
     return Card(
       elevation: 4,
-      color: Colors.white.withValues(alpha: 0.95),
+      color: Colors.white.withOpacity(0.95),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -2075,7 +2078,7 @@ class _AddContentState extends State<_AddContent> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 32),

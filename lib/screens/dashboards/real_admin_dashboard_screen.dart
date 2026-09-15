@@ -165,7 +165,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: active ? Colors.green.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
+                            backgroundColor: active ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
                             child: Icon(Icons.admin_panel_settings, color: active ? Colors.green : Colors.grey),
                           ),
                           title: Text('Admin ${index + 1}'),
@@ -178,7 +178,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: active ? Colors.green.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
+                                      color: active ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(active ? 'Active' : 'Inactive', style: TextStyle(fontSize: 10, color: active ? Colors.green : Colors.grey)),
@@ -248,7 +248,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  initialValue: selectedDistrict,
+                  value: selectedDistrict,
                   decoration: const InputDecoration(labelText: 'District', border: OutlineInputBorder()),
                   items: ['Kathmandu', 'Pokhara', 'Lalitpur', 'Bhaktapur'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
                   onChanged: (v) => setState(() => selectedDistrict = v!),
@@ -312,7 +312,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: color.withValues(alpha: 0.2),
+                            backgroundColor: color.withOpacity(0.2),
                             child: Icon(
                               role == 'Farmer' ? Icons.agriculture : role == 'Doctor' ? Icons.medical_services : Icons.admin_panel_settings,
                               color: color,
@@ -329,7 +329,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: color.withValues(alpha: 0.2),
+                                      color: color.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(role, style: TextStyle(fontSize: 10, color: color)),
@@ -506,7 +506,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
+                    color: Colors.blue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Row(
@@ -1006,9 +1006,9 @@ class RealAdminDashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
+                    color: Colors.orange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
                   ),
                   child: const Row(
                     children: [
@@ -1051,7 +1051,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ExpansionTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.red.withValues(alpha: 0.2),
+                            backgroundColor: Colors.red.withOpacity(0.2),
                             child: const Icon(Icons.admin_panel_settings, color: Colors.red, size: 20),
                           ),
                           title: Text('Kisan Admin ${index + 1}'),
@@ -1138,7 +1138,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: Colors.green,
+            activeColor: Colors.green,
           ),
         ],
       ),

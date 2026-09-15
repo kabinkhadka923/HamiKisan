@@ -192,7 +192,7 @@ class SplashScreen extends StatelessWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(60),
                 ),
                 child: const Icon(
@@ -215,7 +215,7 @@ class SplashScreen extends StatelessWidget {
                 'Together We Farm',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: Colors.white.withOpacity(0.8),
                 ),
               ),
               const SizedBox(height: 48),

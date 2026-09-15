@@ -78,7 +78,7 @@ class SystemHealthLogViewer extends StatelessWidget {
                       color: log.actionColor,
                     ),
                   ),
-                  backgroundColor: log.actionColor.withValues(alpha: 0.1),
+                  backgroundColor: log.actionColor.withOpacity(0.1),
                 ),
                 const Spacer(),
                 Text(

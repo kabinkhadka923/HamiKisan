@@ -205,10 +205,26 @@ class _LoginScreenState extends State<LoginScreen>
 
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) return context.tr('required_field');
-    if (!SecurityUtils.isValidPhoneNumber(value)) {
-      return context.tr('invalid_phone');
+    
+    // Check if it's a valid Nepali phone number (starts with 9, 10 digits)
+    var cleanedPhone = value.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanedPhone.length == 10 && cleanedPhone.startsWith('9')) {
+      return null; // Valid phone number
     }
-    return null;
+    
+    // Check if it's a valid email address
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (emailRegex.hasMatch(value) && value.length <= 254) {
+      return null; // Valid email
+    }
+    
+    // Check if it's a valid username (alphanumeric, 3-20 characters)
+    final usernameRegex = RegExp(r'^[a-zA-Z0-9_]{3,20}$');
+    if (usernameRegex.hasMatch(value)) {
+      return null; // Valid username
+    }
+    
+    return context.tr('invalid_phone');
   }
 
   String? _validatePassword(String? value) {
@@ -356,7 +372,7 @@ class _LoginScreenState extends State<LoginScreen>
               Shadow(
                 offset: const Offset(1, 1),
                 blurRadius: 3,
-                color: Colors.black.withValues(alpha: 0.5),
+                color: Colors.black.withOpacity(0.5),
               ),
             ],
           ),
@@ -400,7 +416,7 @@ class _LoginScreenState extends State<LoginScreen>
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: isSelected ? role['color'].withValues(alpha: 0.1) : Colors.white,
+          color: isSelected ? role['color'].withOpacity(0.1) : Colors.white,
           border: Border.all(
             color: isSelected ? role['color']! : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -408,14 +424,14 @@ class _LoginScreenState extends State<LoginScreen>
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: role['color'].withValues(alpha: 0.2),
+                    color: role['color'].withOpacity(0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   )
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withOpacity(0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
@@ -431,7 +447,7 @@ class _LoginScreenState extends State<LoginScreen>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? role['color']
-                      : role['color'].withValues(alpha: 0.1),
+                      : role['color'].withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -538,9 +554,9 @@ class _LoginScreenState extends State<LoginScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF3DA35D).withValues(alpha: 0.1),
+            color: const Color(0xFF3DA35D).withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF3DA35D).withValues(alpha: 0.3)),
+            border: Border.all(color: const Color(0xFF3DA35D).withOpacity(0.3)),
           ),
           child: Row(
             children: [
@@ -786,7 +802,7 @@ class _LoginScreenState extends State<LoginScreen>
 
         // Province Dropdown (Mock Data for now as model doesn't have unique province list efficiently)
         DropdownButtonFormField<String>(
-          initialValue: _selectedProvince,
+          value: _selectedProvince,
           decoration: _buildInputDecoration(context.tr('province'), Icons.map),
           items: [
             'Province 1',
@@ -804,7 +820,7 @@ class _LoginScreenState extends State<LoginScreen>
 
         // District Dropdown
         DropdownButtonFormField<String>(
-          initialValue: _selectedDistrict,
+          value: _selectedDistrict,
           decoration:
               _buildInputDecoration(context.tr('district'), Icons.location_on),
           items: NepalDistricts.all
@@ -1277,7 +1293,7 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
 
-      final success = await authProvider.loginWithUsername(
+      final success = await authProvider.login(
         _phoneController.text.trim(),
         _passwordController.text.trim(),
         role: _selectedRole,

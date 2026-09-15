@@ -145,7 +145,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
           const SizedBox(height: 16),
 
           DropdownButtonFormField<String>(
-            initialValue: _selectedCropType,
+            value: _selectedCropType,
             decoration: const InputDecoration(
               labelText: 'Crop Type',
               border: OutlineInputBorder(),
@@ -161,7 +161,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
           const SizedBox(height: 16),
 
           DropdownButtonFormField<String>(
-            initialValue: _selectedSoilType,
+            value: _selectedSoilType,
             decoration: const InputDecoration(
               labelText: 'Soil Type',
               border: OutlineInputBorder(),
@@ -227,7 +227,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
           const SizedBox(height: 16),
 
           DropdownButtonFormField<String>(
-            initialValue: _irrigationType,
+            value: _irrigationType,
             decoration: const InputDecoration(
               labelText: 'Irrigation Method',
               border: OutlineInputBorder(),
@@ -432,7 +432,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color, color.withValues(alpha: 0.7)],
+          colors: [color, color.withOpacity(0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

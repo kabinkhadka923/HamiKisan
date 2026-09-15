@@ -139,7 +139,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                 label: Text(category),
                 selected: isSelected,
                 onSelected: (_) => provider.setCategory(category),
-                selectedColor: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                selectedColor: const Color(0xFF4CAF50).withOpacity(0.2),
                 checkmarkColor: const Color(0xFF4CAF50),
               ),
             );

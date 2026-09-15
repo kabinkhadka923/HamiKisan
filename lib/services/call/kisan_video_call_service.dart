@@ -1,6 +1,9 @@
 import 'dart:async';
 import '../audio_service.dart';
 
+enum CallState { idle, ringingIncoming, ringingOutgoing, connected, ending, error }
+enum CallType { video, voice }
+
 class KisanVideoCallService {
   final AudioService _audioService = AudioService();
 
@@ -14,6 +17,7 @@ class KisanVideoCallService {
   String? _currentCallId;
   bool _isMuted = false;
   bool _isVideoEnabled = true;
+  bool _isCallEstablished = false;
 
   // Streams for UI communication
   final _callConnectedController = StreamController<void>.broadcast();
@@ -21,131 +25,239 @@ class KisanVideoCallService {
   final _callStateController = StreamController<CallState>.broadcast();
   final _callDurationController = StreamController<Duration>.broadcast();
 
+  // Socket.IO client reference (set from outside)
+  dynamic _socket;
+
+  // Getter for call state
+  CallState get callState => _callState;
+  String? get currentCallId => _currentCallId;
+  bool get isMuted => _isMuted;
+  bool get isVideoEnabled => _isVideoEnabled;
+  bool get isCallEstablished => _isCallEstablished;
+
+  // Streams
   Stream<void> get onCallConnected => _callConnectedController.stream;
   Stream<void> get onCallEnded => _callEndedController.stream;
   Stream<CallState> get onStateChanged => _callStateController.stream;
   Stream<Duration> get onDurationChanged => _callDurationController.stream;
 
-  // Handle incoming call with enhanced audio
-  Future<void> handleIncomingCall({
-    required String callerId,
-    required String callerType, // 'doctor' or 'farmer'
-    Map<String, dynamic>? context, // Additional context
-  }) async {
-    if (_callState != CallState.idle) {
-      // Already in a call, send busy signal
-      await _sendBusySignal(callerId);
-      return;
-    }
+  KisanVideoCallService();
 
-    _currentCallId = callerId;
-    _callState = CallState.ringingIncoming;
-    _callStateController.add(_callState);
+  /// Set the socket.io connection (call from initState)
+  void setSocket(dynamic socket) {
+    _socket = socket;
+  }
 
-    // Play appropriate ringtone based on caller
-    final ringtone = _getRingtoneForCaller(callerType, context);
+  /// Initialize call service with socket connection
+  Future<void> init({required dynamic socket}) async {
+    setSocket(socket);
+    // Listen for incoming calls via socket.io
+    _listenForIncomingCalls();
+    _listenForCallEvents();
+  }
 
-    try {
-      await _audioService.playIncomingCall(
-        customRingtone: ringtone,
+  /// Listen for incoming calls via socket.io
+  void _listenForIncomingCalls() {
+    _socket?.on('call_incoming', (data) {
+      if (_callState != CallState.idle) return; // Already in a call
+      final callerName = data['fromName'] ?? 'Doctor';
+      final callType = data['callType'] ?? 'video';
+      final callId = data['callId'] ?? '';
+
+      _currentCallId = callId;
+      _callState = CallState.ringingIncoming;
+      _callStateController.add(_callState);
+
+      // Play ringtone
+      _audioService.playIncomingCall(
+        customRingtone: 'incomming_call_ringtone.mp3',
         vibrate: true,
-        callerType: callerType,
+        callerType: 'doctor',
       );
-    } catch (e) {
-      print('Error playing incoming call sound: $e');
-    }
 
-    // Set ring timeout (30 seconds)
-    _ringTimeoutTimer = Timer(const Duration(seconds: 30), () async {
-      if (_callState == CallState.ringingIncoming) {
-        await declineCall();
-        try {
-          await _audioService.playError();
-        } catch (e) {
-          print('Error playing error sound: $e');
+      // Set ring timeout
+      _ringTimeoutTimer?.cancel();
+      _ringTimeoutTimer = Timer(const Duration(seconds: 30), () async {
+        if (_callState == CallState.ringingIncoming) {
+          declineCall();
+          _audioService.playError();
         }
+      });
+    });
+
+    _socket?.on('call_accepted', (data) {
+      final callId = data['callId'] ?? '';
+      if (_currentCallId == callId) {
+        _callState = CallState.connected;
+        _callStateController.add(_callState);
+        _ringTimeoutTimer?.cancel();
+        _audioService.stopCallSound();
+        _audioService.playCallConnected();
+        _startCallDurationTimer();
+        _callConnectedController.add(null);
+        _isCallEstablished = true;
+      }
+    });
+
+    _socket?.on('call_declined', (data) {
+      final callId = data['callId'] ?? '';
+      if (_currentCallId == callId) {
+        _callState = CallState.idle;
+        _callStateController.add(_callState);
+        _ringTimeoutTimer?.cancel();
+        _audioService.stopCallSound();
+        _audioService.playNotification();
+        _callEndedController.add(null);
+        _isCallEstablished = false;
+      }
+    });
+
+    _socket?.on('call_ended', (data) {
+      final callId = data['callId'] ?? '';
+      if (_currentCallId == callId || _callState != CallState.idle) {
+        _callState = CallState.idle;
+        _callStateController.add(_callState);
+        _ringTimeoutTimer?.cancel();
+        _callDurationTimer?.cancel();
+        _callDuration = Duration.zero;
+        _currentCallId = null;
+        _isMuted = false;
+        _isVideoEnabled = true;
+        _isCallEstablished = false;
+        _callEndedController.add(null);
+      }
+    });
+
+    _socket?.on('call_sdp', (data) {
+      // Handle SDP exchange for WebRTC
+      final callId = data['callId'] ?? '';
+      final sdp = data['sdp'] ?? '';
+      final sdpType = data['sdpType'] ?? '';
+      if (_currentCallId == callId) {
+        // Apply remote SDP - in real implementation, this would be
+        // applied to the WebRTC peer connection
+        print('Received SDP for call $callId: $sdpType');
+      }
+    });
+
+    _socket?.on('call_ice', (data) {
+      // Handle ICE candidate exchange
+      final callId = data['callId'] ?? '';
+      final candidate = data['candidate'] ?? '';
+      if (_currentCallId == callId) {
+        print('Received ICE candidate for call $callId');
       }
     });
   }
 
-  // Handle outgoing call
-  Future<void> handleOutgoingCall({
+  /// Handle outgoing call - emit socket.io call_invite
+  Future<void> makeCall({
     required String recipientId,
+    required String recipientName,
     CallType callType = CallType.video,
   }) async {
+    if (_callState != CallState.idle) return;
+
     _currentCallId = recipientId;
     _callState = CallState.ringingOutgoing;
     _callStateController.add(_callState);
 
-    try {
-      await _audioService.playOutgoingCall();
+    // Play outgoing call sound
+    await _audioService.playOutgoingCall();
 
-      // Start connection process
-      final connectionResult = await _establishConnection(
-        recipientId,
-        callType,
-      );
+    // Emit socket.io call_invite to signaling server
+    _socket?.emit('call_invite', {
+      'toUserId': recipientId,
+      'callType': callType.name,
+      'callerName': 'Farmer', // Would come from auth
+      'callId': _currentCallId,
+    });
 
-      if (connectionResult) {
-        _callState = CallState.connected;
-        _callStateController.add(_callState);
-        await _audioService.stopCallSound();
-        try {
-          await _audioService.playCallConnected();
-        } catch (e) {
-          print('Error playing connected sound: $e');
-        }
-        _startCallDurationTimer();
-        _callConnectedController.add(null);
-      } else {
-        _callState = CallState.idle;
-        _callStateController.add(_callState);
-        await _audioService.stopCallSound();
-        try {
-          await _audioService.playError();
-        } catch (e) {
-          print('Error playing error sound: $e');
-        }
-        _callEndedController.add(null);
+    // Set ring timeout
+    _ringTimeoutTimer = Timer(const Duration(seconds: 30), () async {
+      if (_callState == CallState.ringingOutgoing) {
+        await declineCall();
+        _audioService.playError();
       }
-    } catch (e) {
-      print('Error during outgoing call: $e');
-      _callState = CallState.error;
-      _callStateController.add(_callState);
-      _callEndedController.add(null);
-    }
+    });
   }
 
-  Future<void> acceptCall() async {
-    if (_callState == CallState.ringingIncoming) {
+  /// Accept incoming call
+  Future<void> answerCall() async {
+    if (_callState == CallState.ringingIncoming && _currentCallId != null) {
       _ringTimeoutTimer?.cancel();
       _callState = CallState.connected;
       _callStateController.add(_callState);
-      await _audioService.stopCallSound();
-      try {
-        await _audioService.playCallConnected();
-      } catch (e) {
-        print('Error playing connected sound: $e');
-      }
+      _audioService.stopCallSound();
+      _audioService.playCallConnected();
       _startCallDurationTimer();
       _callConnectedController.add(null);
+      _isCallEstablished = true;
+
+      // Emit socket.io call_accepted
+      _socket?.emit('call_accepted', {
+        'callId': _currentCallId,
+        'toUserId': _currentCallId,
+      });
     }
   }
 
-  // Call controls with audio feedback
+  /// Decline incoming call
+  Future<void> declineCall() async {
+    if (_callState == CallState.ringingIncoming || _callState == CallState.ringingOutgoing) {
+      _ringTimeoutTimer?.cancel();
+      _callState = CallState.idle;
+      _callStateController.add(_callState);
+      _audioService.stopCallSound();
+      _audioService.playNotification();
+
+      // Emit socket.io call_decline
+      _socket?.emit('call_decline', {
+        'callId': _currentCallId,
+        'toUserId': _currentCallId,
+      });
+    }
+  }
+
+  /// End active call
+  Future<void> endCall() async {
+    _callState = CallState.ending;
+    _callStateController.add(_callState);
+
+    // Emit socket.io call_end
+    _socket?.emit('call_end', {
+      'callId': _currentCallId,
+      'toUserId': _myUserId,
+    });
+
+    try {
+      await _audioService.playCallEnded();
+    } catch (e) {
+      print('Error playing call ended sound: $e');
+    }
+
+    // Cleanup
+    _callDurationTimer?.cancel();
+    _ringTimeoutTimer?.cancel();
+    _callDuration = Duration.zero;
+    _currentCallId = null;
+    _isMuted = false;
+    _isVideoEnabled = true;
+    _isCallEstablished = false;
+    _callEndedController.add(null);
+  }
+
+  /// Toggle mute
   Future<void> muteCall(bool muted) async {
     _isMuted = muted;
     try {
-      if (muted) {
-        await _audioService.toggleMute();
-      } else {
-        await _audioService.playNotification();
-      }
+      await _audioService.toggleMute();
     } catch (e) {
       print('Error toggling mute: $e');
     }
   }
 
+  /// Switch camera
   Future<void> switchCamera() async {
     _isVideoEnabled = !_isVideoEnabled;
     try {
@@ -155,71 +267,7 @@ class KisanVideoCallService {
     }
   }
 
-  Future<void> endCall() async {
-    _callState = CallState.ending;
-    _callStateController.add(_callState);
-    _callDurationTimer?.cancel();
-
-    try {
-      await _audioService.playCallEnded();
-    } catch (e) {
-      print('Error playing call ended sound: $e');
-    }
-
-    // Add fade out effect
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    _callState = CallState.idle;
-    _callStateController.add(_callState);
-    _ringTimeoutTimer?.cancel();
-    _callDurationTimer?.cancel();
-    _callDuration = Duration.zero;
-    _currentCallId = null;
-    _isMuted = false;
-    _isVideoEnabled = true;
-    _callEndedController.add(null);
-  }
-
-  Future<void> declineCall() async {
-    _callState = CallState.idle;
-    _callStateController.add(_callState);
-    _ringTimeoutTimer?.cancel();
-    await _audioService.stopCallSound();
-    try {
-      await _audioService.playNotification();
-    } catch (e) {
-      print('Error playing notification: $e');
-    }
-    _callEndedController.add(null);
-  }
-
-  // Helper methods
-  String _getRingtoneForCaller(
-      String callerType, Map<String, dynamic>? context) {
-    // Keep ringtone names aligned with existing assets used by AudioService.
-    final normalizedType = callerType.toLowerCase();
-    final isUrgent = context != null && context['urgency'] == 'high';
-
-    if (isUrgent) return 'incomming_call_ringtone.mp3';
-    if (normalizedType.contains('doctor')) return 'incomming_call_ringtone.mp3';
-    if (normalizedType.contains('farmer')) return 'incomming_call_ringtone.mp3';
-    return 'incomming_call_ringtone.mp3';
-  }
-
-  Future<void> _sendBusySignal(String callerId) async {
-    // Placeholder for sending busy signal via socket/api
-    print('Sending busy signal to $callerId');
-  }
-
-  Future<bool> _establishConnection(
-      String recipientId, CallType callType) async {
-    // Simulate connection with actual network simulation
-    print('Establishing connection to $recipientId (${callType.name})...');
-    await Future.delayed(const Duration(seconds: 2));
-    // In real implementation, this would establish WebRTC connection
-    return true; // Simulate successful connection
-  }
-
+  /// Start call duration timer
   void _startCallDurationTimer() {
     _callDuration = Duration.zero;
     _callDurationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -239,31 +287,14 @@ class KisanVideoCallService {
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
-  bool get isMuted => _isMuted;
-  bool get isVideoEnabled => _isVideoEnabled;
-  CallState get currentState => _callState;
-  String? get currentCallId => _currentCallId;
-
+  /// Dispose and clean up
   void dispose() {
     _ringTimeoutTimer?.cancel();
     _callDurationTimer?.cancel();
-    _callConnectedController.close();
-    _callEndedController.close();
     _callStateController.close();
+    _callEndedController.close();
+    _callConnectedController.close();
     _callDurationController.close();
+    _socket = null;
   }
-}
-
-enum CallState {
-  idle,
-  ringingIncoming,
-  ringingOutgoing,
-  connected,
-  ending,
-  error,
-}
-
-enum CallType {
-  audio,
-  video,
 }

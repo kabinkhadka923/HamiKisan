@@ -20,7 +20,7 @@ class LoadingOverlay extends StatelessWidget {
         if (isLoading)
           ModalBarrier(
             dismissible: false,
-            color: Colors.black.withValues(alpha: 0.5),
+            color: Colors.black.withOpacity(0.5),
           ),
         if (isLoading)
           Center(
@@ -31,7 +31,7 @@ class LoadingOverlay extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),

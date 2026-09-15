@@ -82,7 +82,7 @@ class _SellProductScreenState extends State<SellProductScreen> {
 
               // Category & Subcategory Pickers
               DropdownButtonFormField<String>(
-                initialValue: _category,
+                value: _category,
                 decoration: const InputDecoration(
                   labelText: 'Category',
                   border: OutlineInputBorder(),
@@ -109,7 +109,7 @@ class _SellProductScreenState extends State<SellProductScreen> {
 
               if (_category != null)
                 DropdownButtonFormField<String>(
-                  initialValue: _subCategory,
+                  value: _subCategory,
                   decoration: const InputDecoration(
                     labelText: 'Sub-Category',
                     border: OutlineInputBorder(),
@@ -153,7 +153,7 @@ class _SellProductScreenState extends State<SellProductScreen> {
                   Expanded(
                     flex: 1,
                     child: DropdownButtonFormField<String>(
-                      initialValue: _unit,
+                      value: _unit,
                       decoration: const InputDecoration(
                         labelText: 'Unit',
                         border: OutlineInputBorder(),
@@ -197,7 +197,7 @@ class _SellProductScreenState extends State<SellProductScreen> {
               const SizedBox(height: 16),
 
               DropdownButtonFormField<String>(
-                initialValue: _district,
+                value: _district,
                 decoration: const InputDecoration(
                   labelText: 'District',
                   border: OutlineInputBorder(),
@@ -220,12 +220,12 @@ class _SellProductScreenState extends State<SellProductScreen> {
                 title: const Text('Organic Product'),
                 value: _isOrganic,
                 onChanged: (value) => setState(() => _isOrganic = value),
-                activeThumbColor: const Color(0xFF4CAF50),
+                activeColor: const Color(0xFF4CAF50),
               ),
               const SizedBox(height: 16),
 
               DropdownButtonFormField<String>(
-                initialValue: _qualityGrade,
+                value: _qualityGrade,
                 decoration: const InputDecoration(
                   labelText: 'Quality Grade',
                   border: OutlineInputBorder(),

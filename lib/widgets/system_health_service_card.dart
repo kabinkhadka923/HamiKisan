@@ -49,7 +49,7 @@ class SystemHealthServiceCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.1),
+                            color: Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
@@ -181,7 +181,7 @@ class SystemHealthServiceCard extends StatelessWidget {
     final info = statusInfo[status]!;
     return Chip(
       label: Text(info.$1),
-      backgroundColor: info.$2.withValues(alpha: 0.1),
+      backgroundColor: info.$2.withOpacity(0.1),
       labelStyle: TextStyle(
         color: info.$2,
         fontSize: 12,
@@ -191,9 +191,9 @@ class SystemHealthServiceCard extends StatelessWidget {
   }
 
   Color _getLatencyColor(int latencyMs) {
-    if (latencyMs < 200) return Colors.green.withValues(alpha: 0.1);
-    if (latencyMs < 500) return Colors.orange.withValues(alpha: 0.1);
-    return Colors.red.withValues(alpha: 0.1);
+    if (latencyMs < 200) return Colors.green.withOpacity(0.1);
+    if (latencyMs < 500) return Colors.orange.withOpacity(0.1);
+    return Colors.red.withOpacity(0.1);
   }
 
   String _timeAgo(DateTime time) {

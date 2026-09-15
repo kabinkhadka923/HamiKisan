@@ -806,7 +806,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           message['timestamp'],
                           style: TextStyle(
                             color: message['isUser']
-                                ? Colors.white.withValues(alpha: 0.7)
+                                ? Colors.white.withOpacity(0.7)
                                 : Colors.grey.shade600,
                             fontSize: 12,
                           ),
@@ -824,7 +824,7 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.3),
+                  color: Colors.grey.withOpacity(0.3),
                   spreadRadius: 1,
                   blurRadius: 3,
                 ),

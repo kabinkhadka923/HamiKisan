@@ -129,7 +129,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+        color: const Color(0xFF4CAF50).withOpacity(0.1),
         border: Border(
           bottom: BorderSide(color: Colors.grey.shade300),
         ),
@@ -269,7 +269,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                     Chip(
                       label: Text(price.category),
-                      backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                      backgroundColor: const Color(0xFF4CAF50).withOpacity(0.2),
                     ),
                   ],
                 ),

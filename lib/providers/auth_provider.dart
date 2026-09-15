@@ -30,6 +30,20 @@ class AuthProvider with ChangeNotifier {
   bool get isAdmin => _currentUser?.role == UserRole.kisanAdmin;
   bool get isSuperAdmin => _currentUser?.role == UserRole.superAdmin;
 
+  // Socket.IO client for real-time features
+  dynamic get socket => _socket;
+  dynamic _socket;
+
+  /// Set socket.io connection
+  void setSocket(dynamic socket) {
+    _socket = socket;
+  }
+
+  /// Clear socket connection
+  void clearSocket() {
+    _socket = null;
+  }
+
   Future<void> initialize() async {
     try {
       // Validate session security
@@ -57,7 +71,26 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> loginWithUsername(String username, String password,
+  
+  /// Auto-detects identifier type (phone, email, username) and logs in
+  Future<bool> login(String identifier, String password) async {
+    try {
+      final userData = await _authService.login(identifier, password);
+      if (userData == null) {
+        _error = 'Invalid credentials';
+        return false;
+      }
+      final user = User.fromJson(userData);
+      _currentUser = user;
+      await saveSession();
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = 'Login failed: $e';
+      return false;
+    }
+  }
+Future<bool> loginWithUsername(String username, String password,
       {UserRole? role}) async {
     _setLoading(true);
     _clearError();

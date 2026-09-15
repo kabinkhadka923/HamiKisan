@@ -4,12 +4,14 @@ import 'package:provider/provider.dart';
 
 import '../../models/kisan_doctor_models.dart';
 import '../../models/user.dart';
+import '../../services/call/kisan_video_call_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/kisan_doctor_provider.dart';
 import '../../utils/app_colors.dart';
 import '../consultation_chat_screen.dart';
 import '../consultation_contacts_screen.dart';
 import '../video_call_screen.dart';
+import '../../widgets/incoming_call_listener.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 
@@ -42,14 +44,15 @@ class _KisanDoctorDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<KisanDoctorProvider>(
-      builder: (context, provider, _) {
-        return Scaffold(
-          appBar: _buildGradientHeader(provider),
-          backgroundColor: const Color(0xFFF6F8F6),
-          body: provider.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _buildCurrentTab(provider),
+    return IncomingCallListener(
+      child: Consumer<KisanDoctorProvider>(
+        builder: (context, provider, _) {
+          return Scaffold(
+            appBar: _buildGradientHeader(provider),
+            backgroundColor: const Color(0xFFF6F8F6),
+            body: provider.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _buildCurrentTab(provider),
           floatingActionButton: _selectedIndex == 0
               ? FloatingActionButton.extended(
                   backgroundColor: _isOnline
@@ -95,7 +98,8 @@ class _KisanDoctorDashboardScreenState
             ],
           ),
         );
-      },
+        },
+      ),
     );
   }
 
@@ -189,10 +193,10 @@ class _KisanDoctorDashboardScreenState
           scale: 0.75,
           child: Switch(
             value: _isOnline,
-            activeThumbColor: Colors.white,
-            activeTrackColor: Colors.white.withValues(alpha: 0.4),
+            activeColor: Colors.white,
+            activeTrackColor: Colors.white.withOpacity(0.4),
             inactiveThumbColor: Colors.grey.shade200,
-            inactiveTrackColor: Colors.white.withValues(alpha: 0.25),
+            inactiveTrackColor: Colors.white.withOpacity(0.25),
             onChanged: (value) {
               setState(() => _isOnline = value);
             },
@@ -281,7 +285,7 @@ class _KisanDoctorDashboardScreenState
       label: Text(label),
       selected: selected,
       showCheckmark: false,
-      selectedColor: const Color(0xFF2E7D32).withValues(alpha: 0.16),
+      selectedColor: const Color(0xFF2E7D32).withOpacity(0.16),
       labelStyle: TextStyle(
         color: selected ? const Color(0xFF1B5E20) : Colors.grey.shade700,
         fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
@@ -315,7 +319,7 @@ class _KisanDoctorDashboardScreenState
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2E7D32).withValues(alpha: 0.12),
+                    color: const Color(0xFF2E7D32).withOpacity(0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child:
@@ -382,13 +386,15 @@ class _KisanDoctorDashboardScreenState
                           callId:
                               'call_${DateTime.now().millisecondsSinceEpoch}',
                           recipientId: farmer.id,
+                          isOutgoing: true,
+                          callType: CallType.video,
                         ),
                       ),
                     );
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor:
-                        const Color(0xFF2E7D32).withValues(alpha: 0.14),
+                        const Color(0xFF2E7D32).withOpacity(0.14),
                     foregroundColor: const Color(0xFF1B5E20),
                   ),
                   icon: const Icon(Icons.video_call, size: 16),
@@ -412,7 +418,7 @@ class _KisanDoctorDashboardScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: color.withOpacity(0.14),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -527,7 +533,7 @@ class _KisanDoctorDashboardScreenState
 
     return Chip(
       label: Text(label),
-      backgroundColor: color.withValues(alpha: 0.12),
+      backgroundColor: color.withOpacity(0.12),
       side: BorderSide.none,
       labelStyle: TextStyle(
         color: color.shade700,
@@ -555,7 +561,7 @@ class _KisanDoctorDashboardScreenState
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.18),
+                backgroundColor: AppColors.primaryGreen.withOpacity(0.18),
                 backgroundImage: doctor.profilePicture != null
                     ? NetworkImage(doctor.profilePicture!)
                     : null,

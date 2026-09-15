@@ -58,6 +58,60 @@ const registerSocketHandlers = (httpServer) => {
       }
     });
 
+    // ---- Call signaling (instant, per-user rooms) ----
+    socket.on('call_invite', ({ toUserId, callType, callerName, callId }) => {
+      if (!toUserId) return;
+      io.to(`user_${toUserId}`).emit('call_incoming', {
+        callId: callId,
+        from: userId,
+        fromName: callerName || null,
+        callType: callType || 'video',
+      });
+    });
+
+    socket.on('call_accept', ({ callId, toUserId }) => {
+      if (!toUserId) return;
+      io.to(`user_${toUserId}`).emit('call_accepted', {
+        callId: callId,
+        from: userId,
+      });
+    });
+
+    socket.on('call_decline', ({ callId, toUserId }) => {
+      if (!toUserId) return;
+      io.to(`user_${toUserId}`).emit('call_declined', {
+        callId: callId,
+        from: userId,
+      });
+    });
+
+    socket.on('call_end', ({ callId, toUserId }) => {
+      if (!toUserId) return;
+      io.to(`user_${toUserId}`).emit('call_ended', {
+        callId: callId,
+        from: userId,
+      });
+    });
+
+    socket.on('call_sdp', ({ callId, toUserId, sdp, sdpType }) => {
+      if (!toUserId || !sdp) return;
+      io.to(`user_${toUserId}`).emit('call_sdp', {
+        callId: callId,
+        from: userId,
+        sdp,
+        sdpType: sdpType,
+      });
+    });
+
+    socket.on('call_ice', ({ callId, toUserId, candidate }) => {
+      if (!toUserId || !candidate) return;
+      io.to(`user_${toUserId}`).emit('call_ice', {
+        callId: callId,
+        from: userId,
+        candidate,
+      });
+    });
+
     socket.on('typing', ({ roomId, isTyping }) => {
       if (!roomId) return;
       socket.to(roomId).emit('typing', { roomId, userId, isTyping: Boolean(isTyping) });

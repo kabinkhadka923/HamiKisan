@@ -80,7 +80,7 @@ class _SystemHealthScreenState extends State<SystemHealthScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Card(
-                color: summary.statusColor.withValues(alpha: 0.1),
+                color: summary.statusColor.withOpacity(0.1),
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
@@ -132,7 +132,7 @@ class _SystemHealthScreenState extends State<SystemHealthScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.1),
+                            color: Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
