@@ -42,6 +42,8 @@ class _KisanDoctorDashboardScreenState
     });
   }
 
+  // New tabs: 0=Cases, 1=Appointments, 2=Calling, 3=Farmers, 3=Profile (now index 4)
+
   @override
   Widget build(BuildContext context) {
     return IncomingCallListener(
@@ -78,6 +80,7 @@ class _KisanDoctorDashboardScreenState
             currentIndex: _selectedIndex,
             selectedItemColor: const Color(0xFF2E7D32),
             unselectedItemColor: Colors.grey.shade600,
+            type: BottomNavigationBarType.fixed,
             onTap: (index) => setState(() => _selectedIndex = index),
             items: const [
               BottomNavigationBarItem(
@@ -89,6 +92,16 @@ class _KisanDoctorDashboardScreenState
                 icon: Icon(Icons.calendar_today_outlined),
                 activeIcon: Icon(Icons.calendar_today),
                 label: 'Appointments',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.video_call_outlined),
+                activeIcon: Icon(Icons.video_call),
+                label: 'Calling',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.people_outline),
+                activeIcon: Icon(Icons.people),
+                label: 'Farmers',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_outline),
@@ -213,6 +226,10 @@ class _KisanDoctorDashboardScreenState
       case 1:
         return _buildAppointmentsTab(provider);
       case 2:
+        return _buildCallingTab(provider);
+      case 3:
+        return _buildFarmersTab(provider);
+      case 4:
         return _buildProfileTab();
       default:
         return _buildCasesTab(provider);
@@ -630,6 +647,470 @@ class _KisanDoctorDashboardScreenState
           label: const Text('Logout'),
         ),
       ],
+    );
+  }
+
+  Widget _buildCallingTab(KisanDoctorProvider provider) {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          const TabBar(
+            labelColor: Color(0xFF2E7D32),
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Color(0xFF2E7D32),
+            tabs: [
+              Tab(icon: Icon(Icons.dialpad), text: 'Dialer'),
+              Tab(icon: Icon(Icons.people), text: 'Connected Farmers'),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildDialerTab(),
+                _buildConnectedFarmersTab(provider),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDialerTab() {
+    final TextEditingController numberController = TextEditingController();
+    final isDoctor = context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.videocam, size: 50, color: Colors.white),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Start Video Consultation',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Enter farmer phone number to start consultation',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade300,
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: TextField(
+              controller: numberController,
+              style: const TextStyle(fontSize: 24, letterSpacing: 2, fontWeight: FontWeight.bold),
+              keyboardType: TextInputType.phone,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: '98XXXXXXXX',
+                hintStyle: TextStyle(color: Colors.grey.shade400, letterSpacing: 2),
+                border: InputBorder.none,
+                prefixIcon: const Icon(Icons.phone, color: Color(0xFF2E7D32)),
+                prefixText: '+977 ',
+                prefixStyle: const TextStyle(color: Color(0xFF2E7D32), fontSize: 24, fontWeight: FontWeight.bold),
+                contentPadding: const EdgeInsets.symmetric(vertical: 20),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                final number = numberController.text.trim();
+                if (number.length == 10 && number.startsWith('9')) {
+                  final authProvider = context.read<AuthProvider>();
+                  final currentUser = authProvider.currentUser;
+                  if (currentUser != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VideoCallScreen(
+                          callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+                          peerName: 'Farmer',
+                          callerName: currentUser.name,
+                          callerSpecialty: widget.doctor.specialization,
+                          role: CallRole.caller,
+                          callerId: currentUser.id,
+                          calleeId: number,
+                          isOutgoing: true,
+                          callType: CallType.video,
+                        ),
+                      ),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enter valid 10-digit Nepali number (9XXXXXXXXX)')),
+                  );
+                }
+              },
+              icon: const Icon(Icons.videocam, size: 24),
+              label: const Text('Start Video Call', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 56),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 4,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ConsultationContactsScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.contacts),
+            label: const Text('Select from Contacts'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              side: BorderSide(color: Colors.grey.shade300),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConnectedFarmersTab(KisanDoctorProvider provider) {
+    // Get farmers from ongoing cases
+    final connectedFarmers = provider.cases
+        .where((c) => c.status == CaseStatus.ongoing)
+        .toList();
+
+    if (connectedFarmers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline, size: 80, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            const Text('No connected farmers yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('Farmers will appear here when you accept their cases', style: TextStyle(color: Colors.grey.shade600)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: connectedFarmers.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final case_ = connectedFarmers[index];
+        final farmer = _farmerFromCase(case_);
+        return _buildFarmerConnectionCard(case_, farmer);
+      },
+    );
+  }
+
+  Widget _buildFarmerConnectionCard(Case case_, User farmer) {
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: const Color(0xFF2E7D32).withOpacity(0.12),
+                  child: const Icon(Icons.person, color: Color(0xFF2E7D32), size: 28),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(farmer.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 2),
+                      Text('Crop: ${case_.cropType}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                      const SizedBox(height: 2),
+                      Text('Since: ${DateFormat('dd MMM yyyy').format(case_.createdAt)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                _statusPill(case_.status),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ConsultationChatScreen(peer: farmer),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                    label: const Text('Chat'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 40),
+                      side: BorderSide(color: Colors.blue.shade300),
+                      foregroundColor: Colors.blue.shade700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VideoCallScreen(
+                            callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+                            peerName: farmer.name,
+                            callerName: widget.doctor.name,
+                            callerSpecialty: widget.doctor.specialization,
+                            role: CallRole.caller,
+                            callerId: widget.doctor.id,
+                            calleeId: farmer.id,
+                            isOutgoing: true,
+                            callType: CallType.video,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.videocam, size: 18),
+                    label: const Text('Call'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32).withOpacity(0.14),
+                      foregroundColor: const Color(0xFF1B5E20),
+                      minimumSize: const Size(double.infinity, 40),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFarmersTab(KisanDoctorProvider provider) {
+    // Get all unique farmers from cases (both ongoing and resolved)
+    final Map<String, User> farmerMap = {};
+    for (final case_ in provider.cases) {
+      if (!farmerMap.containsKey(case_.farmerId)) {
+        farmerMap[case_.farmerId] = _farmerFromCase(case_);
+      }
+    }
+    final farmers = farmerMap.values.toList();
+
+    if (farmers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline, size: 80, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            const Text('No farmers yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('Farmers will appear here after consultations', style: TextStyle(color: Colors.grey.shade600)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: farmers.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final farmer = farmers[index];
+        // Find cases for this farmer
+        final farmerCases = provider.cases.where((c) => c.farmerId == farmer.id).toList();
+        final ongoingCases = farmerCases.where((c) => c.status == CaseStatus.ongoing).length;
+        final resolvedCases = farmerCases.where((c) => c.status == CaseStatus.resolved).length;
+
+        return _buildFarmerProfileCard(farmer, ongoingCases, resolvedCases, farmerCases.first.cropType);
+      },
+    );
+  }
+
+  Widget _buildFarmerProfileCard(User farmer, int ongoingCount, int resolvedCount, String lastCrop) {
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: const Color(0xFF2E7D32).withOpacity(0.12),
+                  child: Text(
+                    farmer.name.isNotEmpty ? farmer.name[0].toUpperCase() : 'F',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(farmer.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          _buildStatChip('Ongoing', ongoingCount, Colors.blue),
+                          const SizedBox(width: 8),
+                          _buildStatChip('Resolved', resolvedCount, Colors.green),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text('Last crop: $lastCrop', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Divider(),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ConsultationChatScreen(peer: farmer),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                    label: const Text('Chat'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 40),
+                      side: BorderSide(color: Colors.blue.shade300),
+                      foregroundColor: Colors.blue.shade700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VideoCallScreen(
+                            callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+                            peerName: farmer.name,
+                            callerName: widget.doctor.name,
+                            callerSpecialty: widget.doctor.specialization,
+                            role: CallRole.caller,
+                            callerId: widget.doctor.id,
+                            calleeId: farmer.id,
+                            isOutgoing: true,
+                            callType: CallType.video,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.videocam, size: 18),
+                    label: const Text('Call'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32).withOpacity(0.14),
+                      foregroundColor: const Color(0xFF1B5E20),
+                      minimumSize: const Size(double.infinity, 40),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      // TODO: Navigate to farmer posts screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Farmer posts view coming soon')),
+                      );
+                    },
+                    icon: const Icon(Icons.article_outlined, size: 18),
+                    label: const Text('Posts'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 40),
+                      side: BorderSide(color: Colors.orange.shade300),
+                      foregroundColor: Colors.orange.shade700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatChip(String label, int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Text(
+        '$label: $count',
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+      ),
     );
   }
 
