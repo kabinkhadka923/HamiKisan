@@ -98,11 +98,12 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { email, username, identifier, phoneNumber, phone_number: phoneNumberSnake, password } = req.body;
-  const rawIdentifier = email || username || identifier || phoneNumber || phoneNumberSnake;
+  const { phoneNumber, phone_number: phoneNumberSnake, identifier, password } = req.body;
+  // Only accept phone number as identifier
+  const rawIdentifier = phoneNumber || phoneNumberSnake || identifier;
 
   if (!rawIdentifier || !password) {
-    return res.status(400).json({ error: 'identifier and password are required.' });
+    return res.status(400).json({ error: 'Phone number and password are required.' });
   }
 
   const normalizedIdentifier = String(rawIdentifier).trim();
@@ -118,11 +119,9 @@ const login = async (req, res) => {
     `SELECT id, name, email, role, username, phone, status, permissions,
             is_verified, has_selected_language, last_login_at, created_at, password_hash
      FROM users
-     WHERE LOWER(email) = LOWER($1)
-        OR LOWER(COALESCE(username, '')) = LOWER($1)
-        OR phone = ANY($2::text[])
+     WHERE phone = ANY($1::text[])
      LIMIT 1`,
-    [normalizedIdentifier, phoneCandidates],
+    [phoneCandidates],
   );
 
   if (result.rowCount === 0) {
