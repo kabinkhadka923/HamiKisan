@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HamiKisan</title>
+  <base href="/HamiKisan/">
+  <meta name="description" content="HamiKisan - Agriculture Platform for Nepal">
+</head>
+<body>
+  <script>
+    const serviceWorkerVersion = "1775983346";
+    var scriptLoaded = false;
+    function loadMainDartJs() {
+      if (scriptLoaded) return;
+      scriptLoaded = true;
+      var scriptTag = document.createElement('script');
+      scriptTag.src = 'main.dart.js';
+      scriptTag.type = 'application/javascript';
+      document.body.append(scriptTag);
+    }
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=' + serviceWorkerVersion);
+      });
+    }
+    window.addEventListener('load', function (ev) {
+      loadMainDartJs();
+    });
+  </script>
+</body>
+</html>
