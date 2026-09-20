@@ -9,6 +9,22 @@
 </head>
 <body>
   <script>
+    // Handle SPA redirect from 404.html (GitHub Pages SPA routing)
+    // The 404.html redirects /HamiKisan/some-route to /HamiKisan/?some-route
+    // This script restores the path so Flutter router can handle it
+    (function() {
+      try {
+        var search = window.location.search;
+        if (search && search.startsWith('?')) {
+          var path = search.substring(1);
+          if (path && !path.startsWith('~and~')) {
+            window.history.replaceState(null, '', '/' + path);
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;
     function loadMainDartJs() {
