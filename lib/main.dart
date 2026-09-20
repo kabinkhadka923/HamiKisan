@@ -88,6 +88,8 @@ class MyApp extends StatelessWidget {
           '/admin/login': (context) => const AdminLoginScreen(),
           '/HamiSuperAdmin': (context) => const AdminLoginScreen(),
           '/kisan-admin': (context) => const AdminLoginScreen(),
+          '/kisanadmin': (context) => const AdminLoginScreen(),
+          '/kisanadmin/': (context) => const AdminLoginScreen(),
           '/language-selection': (context) => const LanguageSelectionScreen(),
         },
       ),
