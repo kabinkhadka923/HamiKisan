@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import '../models/post_model.dart';
 import '../providers/post_provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -236,13 +237,20 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       final user = auth.currentUser;
       final postProvider = context.read<PostProvider>();
 
-      final success = await postProvider.createPost(
-        user?.id ?? '',
-        user?.name ?? 'User',
-        user?.role.name ?? 'farmer',
-        content,
-        _selectedImage?.path,
-      );
+      final success = await postProvider.createPost(Post(
+                      id: '',
+                      farmerId: auth.currentUser!.id,
+                      farmerName: auth.currentUser!.name,
+                      postType: PostType.crop_update,
+                      title: content,
+                      content: content,
+                      likes: 0,
+                      comments: 0,
+                      isLiked: false,
+                      shares: 0,
+                      authorRole: auth.currentUser!.role,
+                      createdAt: DateTime.now(),
+                    ));
 
       setState(() => _isPosting = false);
 

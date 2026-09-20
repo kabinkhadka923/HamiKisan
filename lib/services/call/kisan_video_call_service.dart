@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'package:flutter/widgets.dart';
 import '../audio_service.dart';
 
 enum CallState { idle, ringingIncoming, ringingOutgoing, connected, ending, error }
-enum CallType { video, voice }
+enum CallType { video, voice, audio }
 
 class KisanVideoCallService {
   final AudioService _audioService = AudioService();

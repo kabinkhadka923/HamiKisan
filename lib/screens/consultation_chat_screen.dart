@@ -4,11 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/user.dart';
+import '../models/chat_message.dart';
 import '../providers/auth_provider.dart';
 import '../services/audio_service.dart';
 import '../services/kisan_video_call_service.dart';
 import '../services/chat_service.dart';
-import '../services/encryption_service.dart';
+import '../security/encryption_service.dart';
 import '../services/media_service.dart';
 import '../services/location_service.dart';
 import '../services/reaction_service.dart';
@@ -38,7 +39,7 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen>
   final AudioService _audioService = AudioService();
 
   late StreamSubscription<ChatMessage>? _messageSub;
-  late StreamSubscription<ChatMessage>? _reactionSub;
+  late StreamSubscription<Map<String, dynamic>>? _reactionSub;
 
   late String _myUserId;
   late String _peerId;
@@ -59,6 +60,28 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen>
   String? _locationLat;
   String? _locationLng;
   bool _isSending = false;
+  late List<ChatMessage> _messages = [];
+  late ScrollController _scrollController;
+
+@override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_peerName ?? 'Chat'),
+      ),
+      body: Center(
+        child: Text('Chat Screen'),
+      ),
+    );
+  }
+
+  void _scrollToBottom() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.decelerate,
+    );
+  }
 
   @override
   void initState() {
@@ -215,6 +238,7 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen>
     _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
       duration: const Duration(milliseconds: 300),
+      curve: Curves.decelerate,
     );
   }
 
@@ -312,7 +336,7 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen>
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.close, size: 16, color: Colorsgrey),
+            icon: const Icon(Icons.close, size: 16, color: Colors.grey),
             onPressed: () {
               setState(() {
                 _chatMode = ChatMode.one_on_one;
@@ -359,7 +383,7 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen>
     );
   }
 
-  List<Widget> _buildMessageContent(
+  Widget _buildMessageContent(
       ChatMessageType type,
       ChatMessage message,
       bool isMe,
@@ -384,7 +408,7 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen>
 
   Widget _buildTextMessage(
       ChatMessage message, bool isMe, Map<String, dynamic> reactions,) {
-    final text = message.content;
+    final text = message.content ?? '';
     final timestamp = _formatTimestamp(message.timestamp);
 
     return Container(
@@ -460,44 +484,48 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen>
             isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               if (!isMe && message.groupId == null)
-                CircleAvatar(
-                  backgroundColor: Colors.grey[300],
-                  child: Text(
-                    _peerName.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 8.0),
+                Column(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.grey[300],
+                      child: Text(
+                        _peerName.substring(0, 1).toUpperCase(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 8.0),
 
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12.0),
-                  child: imageUrl != null
-                      ? Image.network(
-                          imageUrl,
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          height: 150,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const CircularProgressIndicator();
-                          },
-                        )
-                      : const Container(
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          height: 150,
-                          color: Colors.grey[200],
-                          child: Center(
-                            child: Text('Loading...'),
-                          ),
-                        ),
-                ),
-                const SizedBox(height: 4.0),
-                Text(
-                  _formatTimestamp(message.timestamp),
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: imageUrl != null
+                          ? Image.network(
+                              imageUrl,
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              height: 150,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const CircularProgressIndicator();
+                              },
+                            )
+                          : Container(
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              height: 150,
+                              color: Colors.grey[200],
+                              child: Center(
+                                child: Text('Loading...'),
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 4.0),
+                    Text(
+                      _formatTimestamp(message.timestamp),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -580,33 +608,31 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen>
 
     return Container(
       margin: const EdgeInsets.only(bottom: 4.0),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: Colors.blue[100],
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              text,
-              style: TextStyle(
-                color: Colors.blue[800],
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-              ),
+      decoration: BoxDecoration(
+        color: Colors.blue[100],
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              color: Colors.blue[800],
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
             ),
-            const SizedBox(height: 4.0),
-            Text(
-              _formatTimestamp(message.timestamp),
-              style: TextStyle(
-                color: Colors.blue[600],
-                fontSize: 11,
-              ),
+          ),
+          const SizedBox(height: 4.0),
+          Text(
+            _formatTimestamp(message.timestamp),
+            style: TextStyle(
+              color: Colors.blue[600],
+              fontSize: 11,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

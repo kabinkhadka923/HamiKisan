@@ -5,15 +5,18 @@ import '../../models/kisan_doctor_models.dart';
 import '../../providers/kisan_doctor_provider.dart';
 import '../../utils/app_colors.dart';
 import '../video_call_screen.dart';
+import '../../services/call/kisan_video_call_service.dart';
 
 class ConsultationScreen extends StatefulWidget {
   final User doctor;
   final CaseStatus? initialStatusFilter;
+  final Case? case_;
 
   const ConsultationScreen({
     super.key,
     required this.doctor,
     this.initialStatusFilter,
+    this.case_,
   });
 
   @override
@@ -114,15 +117,20 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.video_call),
-            onPressed: () {
+onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => VideoCallScreen(
-                    doctorName: widget.doctor.name,
-                    doctorSpecialty: 'Medical Consultant',
-                    callId: case_.caseId,
-                    recipientId: case_.farmerId,
+                    callId: widget.case_?.caseId ?? '',
+                    peerName: widget.doctor.name,
+                    callerName: widget.doctor.name,
+                    callerSpecialty: 'Medical Consultant',
+                    role: CallRole.caller,
+                    callerId: widget.case_?.farmerId ?? '',
+                    calleeId: widget.case_?.farmerId ?? '',
+                    isOutgoing: false,
+                    callType: CallType.video,
                   ),
                 ),
               );

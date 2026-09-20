@@ -88,9 +88,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: widget.post.userRole == 'farmer' ? Colors.green : Colors.orange,
+                  backgroundColor: widget.post.authorRole == 'farmer' ? Colors.green : Colors.orange,
                   child: Icon(
-                    widget.post.userRole == 'farmer' ? Icons.agriculture : Icons.medical_services,
+                    widget.post.authorRole == 'farmer' ? Icons.agriculture : Icons.medical_services,
                     color: Colors.white,
                   ),
                 ),
@@ -100,7 +100,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.post.userName,
+                        widget.post.farmerName,
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       Text(

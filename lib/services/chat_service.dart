@@ -7,11 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
 import '../models/chat_message.dart';
-import 'auth_service.dart';
-import 'backend_config.dart';
+import '../services/auth_service.dart';
+import '../services/backend_config.dart';
 
-enum ChatMessageType { text, image, video, voice, location, reaction }
-enum MessageStatus { sent, delivered, read, error }
 enum ChatPrivacyLevel { public, private, encrypted }
 enum ChatPrivacyStatus { active, paused, archived }
 
@@ -25,6 +23,8 @@ class ChatService {
 
   String? _currentUserId;
   bool _isConnected = false;
+
+  String? get currentUserId => _currentUserId;
 
   final StreamController<ChatMessage> _messageStreamController =
       StreamController<ChatMessage>.broadcast();
@@ -73,7 +73,7 @@ class ChatService {
     final result = <User>[];
 
     users.forEach((id, raw) {
-      if (id == current) return;
+      if (id != null && current != null && id == current) return;
 
       final roleValue = (raw['role'] ?? '').toString();
       final mappedRole = UserRole.values.firstWhere(
@@ -93,8 +93,36 @@ class ChatService {
     return result;
   }
 
-  /// Fetches approved users of the given role from the backend API.
-  /// Returns null when the backend is unreachable or errors.
+/// Load users from local storage
+  Future<Map<String, dynamic>> _loadUsers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? jsonString = prefs.getString(_usersKey);
+
+    if (jsonString == null) return {};
+
+    final Map<String, dynamic> userMap = json.decode(jsonString);
+    return userMap;
+  }
+
+  /// Map raw user data to User object
+  User _mapUser(String id, Map<String, dynamic> raw) {
+    return User(
+      id: id,
+      name: raw['name'] ?? '',
+      role: UserRole.values.firstWhere(
+        (r) => r.name == raw['role'],
+        orElse: () => UserRole.farmer,
+      ),
+      status: UserStatus.values.firstWhere(
+        (s) => s.name == raw['status'],
+        orElse: () => UserStatus.approved,
+      ),
+      email: raw['email'] ?? '',
+      phoneNumber: raw['phone'] ?? '',
+      profilePicture: raw['avatar'] ?? '',
+      createdAt: DateTime.tryParse(raw['createdAt'] ?? '') ?? DateTime.now(),
+    );
+  }
   Future<List<User>?> _fetchUsersFromBackend(UserRole role) async {
     if (_currentUserId == null) return null;
     try {
@@ -161,7 +189,7 @@ class ChatService {
       content: cleanedMessage,
       mediaUrl: mediaUrl,
       messageType: messageType,
-      timestamp: DateTime.now(),
+      timestamp: DateTime.now().millisecondsSinceEpoch,
       status: MessageStatus.sent,
     );
 
@@ -297,7 +325,66 @@ class ChatService {
     } catch (_) {}
 
     // Fallback to local storage
-    return _loadMessages().where((m) => m.senderId != null).toList();
+    final localMessages = await _loadMessages();
+    return localMessages
+        .where((m) => m.senderId != null && (m.senderId == _currentUserId || m.receiverId == _currentUserId))
+        .toList();
+  }
+
+  /// Get conversation with a specific doctor/ farmer
+  Future<List<ChatMessage>> getConversation(String userId) async {
+    // Try backend first
+    try {
+      final token = await AuthService.getAuthToken();
+      final response = await http.post(
+        BackendConfig.uri('/api/chat/conversation'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: {'userId': userId},
+      ).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        final List<dynamic> messages = data['messages'] ?? [];
+        return messages.map((m) => _mapMessageFromBackend(m)).toList();
+      }
+    } catch (_) {}
+
+    // Fallback to local storage
+    final localMessages = await _loadMessages();
+    return localMessages
+        .where((m) => m.senderId != null && (m.senderId == _currentUserId || m.receiverId == _currentUserId))
+        .toList();
+  }
+
+  /// Get conversation with a specific group
+  Future<List<ChatMessage>> getConversationWithGroup(String groupId) async {
+    // Try backend first
+    try {
+      final token = await AuthService.getAuthToken();
+      final response = await http.post(
+        BackendConfig.uri('/api/group/conversation'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: {'groupId': groupId},
+      ).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        final List<dynamic> messages = data['messages'] ?? [];
+        return messages.map((m) => _mapMessageFromBackend(m)).toList();
+      }
+    } catch (_) {}
+
+    // Fallback to local storage
+    final localMessages = await _loadMessages();
+    return localMessages
+        .where((m) => m.groupId == groupId)
+        .toList();
   }
 
   ChatMessage _mapMessageFromBackend(Map<String, dynamic> data) {
@@ -354,9 +441,10 @@ class ChatService {
     existingMessages.add(message);
 
     // Keep only last 1000 messages
-    final limited = existingMessages.length > 1000
-        ? existingMessages.sublist(existingMessages.length - 1000)
-        : existingMessages;
+    final limited =
+        existingMessages.length > 1000
+            ? existingMessages.sublist(existingMessages.length - 1000)
+            : existingMessages;
 
     final List<Map<String, dynamic>> jsonMessages =
         limited.map((m) => m.toMap()).toList();
@@ -372,8 +460,7 @@ class ChatService {
     return localMessages
         .where((m) =>
             m.senderId != null &&
-            (m.senderId == _currentUserId ||
-                m.receiverId == _currentUserId))
+            (m.senderId == _currentUserId || m.receiverId == _currentUserId))
         .toList();
   }
 
@@ -400,15 +487,13 @@ class ChatService {
     } else if (difference.inDays > 0) {
       return '${date.day}d ago';
     } else if (difference.inHours > 0) {
-      return '${date.inHours}h ago';
+      return '${difference.inHours}h ago';
     } else if (difference.inMinutes > 0) {
-      return '${date.inMinutes}min ago';
+      return '${difference.inMinutes}min ago';
     } else {
       return 'Just now';
     }
   }
-}
-
 /// Create a new group chat
 /// Returns the group ID
 Future<String> createGroup({
@@ -463,7 +548,7 @@ Future<List<Map<String, dynamic>>> getGroups() async {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body) as Map<String, dynamic>;
-      return data['groups'] as List<dynamic>? ?? [];
+      return data['groups'] as List<Map<String, dynamic>>? ?? [];
     }
     return [];
   } catch (_) {
@@ -488,12 +573,12 @@ Future<bool> sendMessageToGroup({
   final chatMessage = ChatMessage(
     id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
     senderId: _currentUserId!,
-    receiverId: '', // Empty for group messages, groupId identifies the group
+    receiverId: '',
     groupId: groupId,
     content: cleanedMessage,
     mediaUrl: mediaUrl,
     messageType: messageType,
-    timestamp: DateTime.now(),
+    timestamp: DateTime.now().millisecondsSinceEpoch,
     status: MessageStatus.sent,
   );
 
@@ -623,214 +708,19 @@ Future<List<User>> getGroupMembers(String groupId) async {
           orElse: () => UserRole.farmer,
         ),
         email: m['email'] ?? '',
-        phone: m['phone'] ?? '',
-        avatar: m['avatar'] ?? '',
-      )).toList();
-    }
-    return [];
-  } catch (_) {
-    return [];
-  }
-}
-
-/// Send message to a group chat
-Future<bool> sendMessageToGroup({
-  required String groupId,
-  required String message,
-  required ChatMessageType messageType,
-  String? mediaUrl,
-}) async {
-  if (!_isConnected || _currentUserId == null) {
-    throw Exception('Chat service not connected');
-  }
-
-  final cleanedMessage = message.trim();
-  if (cleanedMessage.isEmpty && mediaUrl == null) return false;
-
-  final chatMessage = ChatMessage(
-    id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-    senderId: _currentUserId!,
-    receiverId: '', // Empty for group messages
-    groupId: groupId,
-    content: cleanedMessage,
-    mediaUrl: mediaUrl,
-    messageType: messageType,
-    timestamp: DateTime.now(),
-    status: MessageStatus.sent,
-  );
-
-  // Store locally
-  await _storeMessageLocally(chatMessage);
-
-  // Broadcast to UI
-  _messageStreamController.add(chatMessage);
-
-  // Call backend
-  try {
-    final token = await AuthService.getAuthToken();
-    final response = await http.post(
-      BackendConfig.uri('/api/group/message'),
-      headers: {
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: {
-        'groupId': groupId,
-        'senderId': _currentUserId!,
-        'content': cleanedMessage,
-        'messageType': messageType.name,
-        if (mediaUrl != null) 'mediaUrl': mediaUrl,
-      },
-    ).timeout(const Duration(seconds: 10));
-
-    if (response.statusCode == 200) {
-      chatMessage.status = MessageStatus.delivered;
-      _messageStreamController.add(chatMessage);
-      return true;
-    } else {
-      chatMessage.status = MessageStatus.error;
-      _messageStreamController.add(chatMessage);
-      return false;
-    }
-  } catch (e) {
-    chatMessage.status = MessageStatus.error;
-    _messageStreamController.add(chatMessage);
-    return false;
-  }
-}
-
-/// Add participant to group
-Future<bool> addGroupMember({
-  required String groupId,
-  required String userId,
-}) async {
-  if (!_isConnected || _currentUserId == null) {
-    return false;
-  }
-
-  try {
-    final token = await AuthService.getAuthToken();
-    final response = await http.post(
-      BackendConfig.uri('/api/group/member/add'),
-      headers: {
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: {
-        'groupId': groupId,
-        'userId': userId,
-      },
-    ).timeout(const Duration(seconds: 8));
-
-    if (response.statusCode == 200) {
-      // Broadcast updated member list
-      final groups = await getGroups();
-      _reactionStreamController.add({'type': 'group_members', 'groups': groups});
-      return true;
-    }
-    return false;
-  } catch (_) {
-    return false;
-  }
-}
-
-/// Remove participant from group
-Future<bool> removeGroupMember({
-  required String groupId,
-  required String userId,
-}) async {
-  if (!_isConnected || _currentUserId == null) {
-    return false;
-  }
-
-  try {
-    final token = await AuthService.getAuthToken();
-    final response = await http.post(
-      BackendConfig.uri('/api/group/member/remove'),
-      headers: {
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: {
-        'groupId': groupId,
-        'userId': userId,
-      },
-    ).timeout(const Duration(seconds: 8));
-
-    if (response.statusCode == 200) {
-      final groups = await getGroups();
-      _reactionStreamController.add({'type': 'group_members', 'groups': groups});
-      return true;
-    }
-    return false;
-  } catch (_) {
-    return false;
-  }
-}
-
-/// Get group members
-Future<List<User>> getGroupMembers(String groupId) async {
-  if (!_isConnected || _currentUserId == null) {
-    return [];
-  }
-
-  try {
-    final token = await AuthService.getAuthToken();
-    final response = await http.post(
-      BackendConfig.uri('/api/group/members'),
-      headers: {
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: {'groupId': groupId},
-    ).timeout(const Duration(seconds: 8));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body) as Map<String, dynamic>;
-      final List<dynamic> members = data['members'] ?? [];
-      return members.map((m) => User(
-        id: m['id'] ?? '',
-        name: m['name'] ?? '',
-        role: UserRole.values.firstWhere(
-          (r) => r.name == m['role'],
-          orElse: () => UserRole.farmer,
+        phoneNumber: m['phone'] ?? '',
+        profilePicture: m['avatar'] ?? '',
+        status: UserStatus.values.firstWhere(
+          (s) => s.name == m['status'],
+          orElse: () => UserStatus.approved,
         ),
-        email: m['email'] ?? '',
-        phone: m['phone'] ?? '',
-        avatar: m['avatar'] ?? '',
+        createdAt: DateTime.tryParse(m['createdAt'] ?? '') ?? DateTime.now(),
       )).toList();
     }
     return [];
   } catch (_) {
     return [];
   }
-}
-
-/// Get conversation with a specific group
-Future<List<ChatMessage>> getConversationWithGroup(String groupId) async {
-  try {
-    final token = await AuthService.getAuthToken();
-    final response = await http.post(
-      BackendConfig.uri('/api/group/conversation'),
-      headers: {
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: {'groupId': groupId},
-    ).timeout(const Duration(seconds: 8));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body) as Map<String, dynamic>;
-      final List<dynamic> messages = data['messages'] ?? [];
-      return messages.map((m) => ChatMessage._mapMessageFromBackend(m)).toList();
-    }
-  } catch (_) {}
-
-  // Fallback to local storage
-  final localMessages = await _loadMessages();
-  return localMessages
-      .where((m) => m.groupId == groupId && m.senderId != null)
-      .toList();
 }
 
 /// Forward a message to a recipient or group
@@ -846,9 +736,15 @@ Future<String> forwardMessage({
 
   try {
     // Get original message details
-    final originalMessage = _messages.firstWhere(
+    final localMessages = await _loadMessages();
+    final originalMessage = localMessages.firstWhere(
       (m) => m.id == originalMessageId,
-      orElse: () => ChatMessage(id: '', senderId: '', messageType: ChatMessageType.text),
+      orElse: () => ChatMessage(
+        id: '', 
+        senderId: '', 
+        messageType: ChatMessageType.text,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      ),
     );
 
     final cleanedContent = originalMessage.content ?? '';
@@ -863,7 +759,7 @@ Future<String> forwardMessage({
       content: cleanedContent,
       mediaUrl: mediaUrl,
       messageType: targetType,
-      timestamp: DateTime.now(),
+      timestamp: DateTime.now().millisecondsSinceEpoch,
       status: MessageStatus.sent,
       forwardedFromMessageId: originalMessageId,
       forwardedByName: originalMessage.senderId,
@@ -940,7 +836,7 @@ Future<List<ChatMessage>> searchMessages({
     if (response.statusCode == 200) {
       final data = json.decode(response.body) as Map<String, dynamic>;
       final List<dynamic> results = data['results'] ?? [];
-      return results.map((m) => ChatMessage._mapMessageFromBackend(m)).toList();
+      return results.map((m) => _mapMessageFromBackend(m)).toList();
     }
     return [];
   } catch (_) {
@@ -948,7 +844,7 @@ Future<List<ChatMessage>> searchMessages({
     final localMessages = await _loadMessages();
     final lowerQuery = query.toLowerCase();
     return localMessages
-        .where((m) => 
+        .where((m) =>
             (m.content ?? '').toLowerCase().contains(lowerQuery) ||
             (m.mediaUrl != null) ||
             (m.groupId != null))

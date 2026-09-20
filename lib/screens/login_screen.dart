@@ -1296,7 +1296,6 @@ class _LoginScreenState extends State<LoginScreen>
       final success = await authProvider.login(
         _phoneController.text.trim(),
         _passwordController.text.trim(),
-        role: _selectedRole,
       );
 
       if (!success) {

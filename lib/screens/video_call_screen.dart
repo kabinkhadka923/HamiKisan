@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/kisan_video_call_service.dart';
 import '../services/audio_service.dart';
-import 'video_call_screen.dart';
 
 enum CallRole { caller, callee }
 
@@ -44,9 +43,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   late KisanVideoCallService _callService;
   late AudioService _audioService;
 
-  late StreamSubscription<CallState>? _stateSubscription;
-  late StreamSubscription<void>? _callConnectedSubscription;
-  late StreamSubscription<void>? _callEndedSubscription;
+  late VoidCallback? _stateListener;
+  late VoidCallback? _callConnectedListener;
+  late VoidCallback? _callEndedListener;
 
   @override
   void initState() {
@@ -56,9 +55,15 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
   @override
   void dispose() {
-    _stateSubscription?.cancel();
-    _callConnectedSubscription?.cancel();
-    _callEndedSubscription?.cancel();
+    if (_stateListener != null) {
+      _callService.onStateChanged.removeListener(_stateListener!);
+    }
+    if (_callConnectedListener != null) {
+      _callService.onCallConnected.removeListener(_callConnectedListener!);
+    }
+    if (_callEndedListener != null) {
+      _callService.onCallEnded.removeListener(_callEndedListener!);
+    }
     _callService.dispose();
     super.dispose();
   }
@@ -75,28 +80,32 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     await _callService.init(socket: authProvider.socket);
 
     // Subscribe to call state changes
-    _stateSubscription = _callService.onStateChanged.listen((state) {
+    _stateListener = () {
+      final state = _callService.onStateChanged.value;
       if (!mounted) return;
       setState(() {
         // Update UI based on state
       });
-      _handleCallStateChange(state);
-    });
+      _handleCallStateChange(_callService.onStateChanged.value);
+    };
+    _callService.onStateChanged.addListener(_stateListener!);
 
-    _callConnectedSubscription = _callService.onCallConnected.listen((_) {
+    _callConnectedListener = () {
       if (!mounted) return;
       setState(() {
         // Call connected
       });
-    });
+    };
+    _callService.onCallConnected.addListener(_callConnectedListener!);
 
-    _callEndedSubscription = _callService.onCallEnded.listen((_) {
+    _callEndedListener = () {
       if (!mounted) return;
       setState(() {
         // Call ended
       });
       _navigateBack();
-    });
+    };
+    _callService.onCallEnded.addListener(_callEndedListener!);
   }
 
   void _handleCallStateChange(CallState state) {
@@ -151,7 +160,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _declineCall();
+              _callService.declineCall();
             },
             child: const Text('Decline'),
           ),
@@ -226,6 +235,11 @@ class _VideoCallScreenState extends State<VideoCallScreen>
           'Call error',
           style: TextStyle(color: Colors.red, fontSize: 18),
         );
+      default:
+        return const Text(
+          'Unknown state',
+          style: TextStyle(color: Colors.grey, fontSize: 18),
+        );
     }
   }
 
@@ -261,7 +275,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         setState(() {});
       },
       icon: Icon(
-        _callService.isMuted ? Icons.unmute : Icons.mute,
+        _callService.isMuted ? Icons.mic_off : Icons.mic,
         color: Colors.white,
       ),
       label: Text(
@@ -295,9 +309,21 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       icon: const Icon(Icons.videocam, color: Colors.white),
       label: const Text(
         'Switch Camera',
-        style: Style(color: Colors.white),
+        style: TextStyle(color: Colors.white),
       ),
       style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Video Call'),
+      ),
+      body: Center(
+        child: Text('Video Call Screen'),
+      ),
     );
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../models/chat_message.dart';
 import '../services/chat_service.dart';
 import '../models/user.dart';
+import 'package:hamikisan/models/chat_message.dart' show ChatMessageType;
 
 class ChatProvider with ChangeNotifier {
   final ChatService _chatService = ChatService();
@@ -17,12 +19,19 @@ class ChatProvider with ChangeNotifier {
 
   ChatProvider() {
     _chatService.onNewMessage = (message) {
-      final otherId =
-          message.isFromFarmer ? message.receiverId : message.senderId;
-      if (_chats.containsKey(otherId)) {
-        _chats[otherId]!.add(message);
-        notifyListeners();
+      final sender = message.senderId;
+      final receiver = message.receiverId;
+      if (_chats.containsKey(sender)) {
+        _chats[sender] = [];
       }
+      if (receiver != null && !_chats.containsKey(receiver)) {
+        _chats[receiver] = [];
+      }
+      _chats[sender]!.add(message);
+      if (receiver != null) {
+        _chats[receiver]!.add(message);
+      }
+      notifyListeners();
     };
   }
 
@@ -56,12 +65,16 @@ class ChatProvider with ChangeNotifier {
   }
 
   Future<void> sendMessage(String doctorId, String text,
-      {String type = 'text', String? imagePath}) async {
+      {String type = 'text', String? mediaUrl}) async {
+    final messageType = ChatMessageType.values.firstWhere(
+      (t) => t.name == type,
+      orElse: () => ChatMessageType.text,
+    );
     final success = await _chatService.sendMessage(
       doctorId: doctorId,
       message: text,
-      messageType: type,
-      imagePath: imagePath,
+      messageType: messageType,
+      mediaUrl: mediaUrl,
     );
 
     if (success) {

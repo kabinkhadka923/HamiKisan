@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/post_model.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
-import '../backend_config.dart';
+import 'backend_config.dart';
 
 class PostService {
   static final PostService _instance = PostService._internal();
@@ -146,6 +146,75 @@ class PostService {
           if (token != null) 'Authorization': 'Bearer $token',
         },
         body: {'postId': post.id, 'farmerId': _currentFarmerId},
+      ).timeout(const Duration(seconds: 5));
+    } catch (_) {}
+  }
+
+  /// Get posts for a specific farmer
+  Future<List<Post>> getPostsByFarmer(String farmerId) async {
+    final localPosts = await _loadLocalPosts();
+    return localPosts.where((post) => post.farmerId == farmerId).toList();
+  }
+
+  /// Get all local posts (farmerId parameter not required)
+  Future<List<Post>> getPosts() async {
+    return await _loadLocalPosts();
+  }
+
+  /// Toggle like on a post
+  Future<void> toggleLike(Post post) async {
+    if (post.isLiked) {
+      await unlikePost(post);
+    } else {
+      await likePost(post);
+    }
+  }
+
+  /// Unlike a post
+  Future<void> unlikePost(Post post) async {
+    final updatedPost = post.copyWith(likes: post.likes - 1);
+
+    // Update locally
+    final currentPosts = await _loadLocalPosts();
+    final idx =
+        currentPosts.indexWhere((p) => p.id == post.id);
+    if (idx >= 0) {
+      currentPosts[idx] = updatedPost;
+      await _saveLocalPosts(currentPosts);
+      _postStreamController.add(updatedPost);
+    }
+
+    // Call backend
+    try {
+      final token = await AuthService.getAuthToken();
+      await http.post(
+        BackendConfig.uri('/api/posts/unlike'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: {'postId': post.id, 'farmerId': _currentFarmerId},
+      ).timeout(const Duration(seconds: 5));
+    } catch (_) {}
+  }
+
+  /// Delete a post
+  Future<void> deletePost(Post post) async {
+    // Remove locally
+    final currentPosts = await _loadLocalPosts();
+    currentPosts.removeWhere((p) => p.id == post.id);
+    await _saveLocalPosts(currentPosts);
+    _postStreamController.add(post);
+
+    // Call backend
+    try {
+      final token = await AuthService.getAuthToken();
+      await http.delete(
+        BackendConfig.uri('/api/posts/${post.id}'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
       ).timeout(const Duration(seconds: 5));
     } catch (_) {}
   }

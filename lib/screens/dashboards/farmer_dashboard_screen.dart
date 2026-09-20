@@ -791,8 +791,8 @@ class _HomeContentState extends State<_HomeContent>
             const SizedBox(height: 12),
             ...posts.map((post) {
               final now = DateTime.now();
-              final difference = now.difference(post.timestamp);
-              String timeStr = '${post.timestamp.day}/${post.timestamp.month}';
+              final difference = now.difference(post.createdAt);
+              String timeStr = '${post.createdAt.day}/${post.createdAt.month}';
               if (difference.inDays == 0) {
                 timeStr = difference.inHours == 0
                     ? '${difference.inMinutes}m ago'
@@ -847,10 +847,10 @@ class _HomeContentState extends State<_HomeContent>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(post.authorName,
+                      Text(post.farmerName,
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text(post.authorRole,
+                      Text(post.authorRole?.name ?? '',
                           style:
                               TextStyle(fontSize: 12, color: Colors.grey[600])),
                     ],
@@ -1507,7 +1507,7 @@ class _CommunityContentState extends State<_CommunityContent> {
 
   void _createPost() {
     final contentController = TextEditingController();
-    String postType = 'General';
+    PostType postType = PostType.crop_update;
 
     showDialog(
       context: context,
@@ -1518,13 +1518,12 @@ class _CommunityContentState extends State<_CommunityContent> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                DropdownButtonFormField<String>(
+                DropdownButtonFormField<PostType>(
                   value: postType,
                   decoration: const InputDecoration(labelText: 'Post Type'),
                   items: const [
-                    DropdownMenuItem(value: 'General', child: Text('General')),
-                    DropdownMenuItem(
-                        value: 'Question', child: Text('Question')),
+                    DropdownMenuItem(value: PostType.crop_update, child: Text('General')),
+                    DropdownMenuItem(value: PostType.question, child: Text('Question')),
                   ],
                   onChanged: (v) => setState(() => postType = v!),
                 ),
@@ -1551,18 +1550,21 @@ class _CommunityContentState extends State<_CommunityContent> {
                 if (contentController.text.isEmpty) return;
 
                 final auth = context.read<AuthProvider>();
-                final district =
-                    auth.currentUser?.address ?? _selectedDistrict ?? 'Unknown';
 
-                final success = await context.read<PostProvider>().createPost(
-                      auth.currentUser!.id,
-                      auth.currentUser!.name,
-                      auth.currentUser!.role.name,
-                      contentController.text,
-                      null, // No image for now
+                final success = await context.read<PostProvider>().createPost(Post(
+                      id: '',
+                      farmerId: auth.currentUser!.id,
+                      farmerName: auth.currentUser!.name,
                       postType: postType,
-                      district: district,
-                    );
+                      title: contentController.text,
+                      content: contentController.text,
+                      likes: 0,
+                      comments: 0,
+                      isLiked: false,
+                      shares: 0,
+                      authorRole: auth.currentUser!.role,
+                      createdAt: DateTime.now(),
+                    ));
 
                 if (!context.mounted) return;
                 Navigator.pop(context);
@@ -1861,19 +1863,19 @@ class _CommunityContentState extends State<_CommunityContent> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(post.authorName,
+                                              Text(post.farmerName,
                                                   style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
                                                       fontSize: 14)),
-                                              Text(post.authorRole,
+                                              Text(post.authorRole?.name ?? '',
                                                   style: TextStyle(
                                                       fontSize: 12,
                                                       color: Colors.grey[600])),
                                             ],
                                           ),
                                         ),
-                                        Text(_formatTimeAgo(post.timestamp),
+                                        Text(_formatTimeAgo(post.createdAt),
                                             style: TextStyle(
                                                 fontSize: 11,
                                                 color: Colors.grey[500])),

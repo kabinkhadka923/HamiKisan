@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'video_call_screen.dart';
+import '../services/kisan_video_call_service.dart';
 
 class DoctorScreen extends StatefulWidget {
   const DoctorScreen({super.key});
@@ -603,10 +604,15 @@ class _DoctorScreenState extends State<DoctorScreen>
                 context,
                 MaterialPageRoute(
                   builder: (context) => VideoCallScreen(
-                    doctorName: doctor['name'],
-                    doctorSpecialty: doctor['specialization'],
                     callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
-                    recipientId: doctor['id'],
+                    peerName: doctor['name'],
+                    callerName: doctor['name'],
+                    callerSpecialty: doctor['specialization'],
+                    role: CallRole.caller,
+                    callerId: doctor['id'],
+                    calleeId: doctor['id'],
+                    isOutgoing: true,
+                    callType: CallType.video,
                   ),
                 ),
               );
@@ -659,10 +665,16 @@ class _DoctorScreenState extends State<DoctorScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const VideoCallScreen(
-                      doctorName: 'Expert Consultant',
-                      doctorSpecialty: 'Agriculture Expert',
+                    builder: (context) => VideoCallScreen(
                       callId: 'new_request',
+                      peerName: 'Expert Consultant',
+                      callerName: 'Expert Consultant',
+                      callerSpecialty: 'Agriculture Expert',
+                      role: CallRole.caller,
+                      callerId: 'expert_1',
+                      calleeId: 'expert_1',
+                      isOutgoing: true,
+                      callType: CallType.video,
                     ),
                   ),
                 );
@@ -755,10 +767,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => VideoCallScreen(
-                    doctorName: widget.doctorName,
-                    doctorSpecialty: 'Specialist',
                     callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
-                    recipientId: widget.doctorId,
+                    peerName: widget.doctorName,
+                    callerName: widget.doctorName,
+                    callerSpecialty: 'Specialist',
+                    role: CallRole.caller,
+                    callerId: widget.doctorId,
+                    calleeId: widget.doctorId,
+                    isOutgoing: true,
+                    callType: CallType.video,
                   ),
                 ),
               );

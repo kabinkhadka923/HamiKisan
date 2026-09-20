@@ -8,10 +8,8 @@ import '../models/post_model.dart';
 import '../providers/auth_provider.dart';
 import '../services/post_service.dart';
 import '../services/media_service.dart';
-import '../services/encryption_service.dart';
+import '../security/encryption_service.dart';
 import 'video_call_screen.dart';
-
-enum PostCreationType { cropUpdate, priceAlert, availability, question, successStory, resourceShare }
 
 class FarmerPostScreen extends StatefulWidget {
   final User farmer;
@@ -36,15 +34,17 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
   // State for creating post
   late TextEditingController _titleController;
   late TextEditingController _contentController;
-  PostCreationType _selectedType = PostCreationType.cropUpdate;
+  PostType _selectedType = PostType.crop_update;
   String? _mediaPath;
   bool _isLoading = true;
   bool _isSending = false;
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
+    _scrollController = ScrollController();
   }
 
   @override
@@ -52,6 +52,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
     _postSub?.cancel();
     _titleController.dispose();
     _contentController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -82,6 +83,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
     _scrollController.animateTo(
       _scrollController.position.minScrollExtent,
       duration: const Duration(milliseconds: 300),
+      curve: Curves.decelerate,
     );
   }
 
@@ -89,12 +91,12 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        children: PostCreationType.values.map((type) => Expanded(
+        children: PostType.values.map((type) => Expanded(
           child: FilterChip(
-            label: _typeLabel(type),
+            label: Text(_typeLabel(type)),
             selected: _selectedType == type,
             onSelected: (selected) {
-              setState(() => _selectedType = selected ? type : PostCreationType.cropUpdate);
+              setState(() => _selectedType = type);
             },
             backgroundColor: Colors.grey[200],
             selectedColor: Theme.of(context).colorScheme.primary,
@@ -104,24 +106,24 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
                   : Colors.black87,
             ),
           ),
-        )),
+        )).toList(),
       ),
     );
   }
 
-  String _typeLabel(PostCreationType type) {
+  String _typeLabel(PostType type) {
     switch (type) {
-      case PostCreationType.cropUpdate:
+      case PostType.crop_update:
         return 'Crop Update';
-      case PostCreationType.priceAlert:
+      case PostType.price_alert:
         return 'Price Alert';
-      case PostCreationType.availability:
+      case PostType.availability:
         return 'Availability';
-      case PostCreationType.question:
+      case PostType.question:
         return 'Question';
-      case PostCreationType.successStory:
+      case PostType.success_story:
         return 'Success Story';
-      case PostCreationType.resourceShare:
+      case PostType.resource_share:
         return 'Resource Share';
     }
   }
@@ -203,7 +205,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
 
   Widget _buildQuickFields() {
     switch (_selectedType) {
-      case PostCreationType.priceAlert:
+      case PostType.price_alert:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -230,7 +232,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
             ),
           ],
         );
-      case PostCreationType.availability:
+      case PostType.availability:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -257,7 +259,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
             ),
           ],
         );
-      case PostCreationType.resourceShare:
+      case PostType.resource_share:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -309,8 +311,8 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
     }
   }
 
-  ChatReactionType? _showMediaTypeDialog() {
-    return showDialog<ChatReactionType>(
+  Future<String?> _showMediaTypeDialog() async {
+    return await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Attach'),
@@ -321,6 +323,16 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
               leading: const Icon(Icons.image),
               title: const Text('Photo'),
               onTap: () => Navigator.of(context).pop('image'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.mic),
+              title: const Text('Voice Message'),
+              onTap: () => Navigator.of(context).pop('voice'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('Location'),
+              onTap: () => Navigator.of(context).pop('location'),
             ),
           ],
         ),
@@ -356,13 +368,12 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
         imageUrls: _mediaPath != null
             ? ['https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg']
             : [],
-        price: _selectedType == PostCreationType.priceAlert ? _quickPrice : null,
-        unit: _selectedType == PostCreationType.priceAlert ? _quickUnit : null,
+        price: _selectedType == PostType.price_alert ? _quickPrice : null,
+        unit: _selectedType == PostType.price_alert ? _quickUnit : null,
         cropName:
-            _selectedType == PostCreationType.availability ? _quickCrop : null,
-        quantity: _selectedType == PostCreationType.availability ? _quickQuantity : null,
-        isOrganic: _selectedType == PostCreationType.cropUpdate,
-        qualityGrade: _selectedType == PostCreationType.cropUpdate ? 'A' : null,
+            _selectedType == PostType.availability ? _quickCrop : null,
+        isOrganic: _selectedType == PostType.crop_update,
+        qualityGrade: _selectedType == PostType.crop_update ? 'A' : null,
         createdAt: DateTime.now(),
       );
 
@@ -442,7 +453,6 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
                             return _buildPost(_posts[index]);
                           },
                         ),
-                ),
               ],
             ),
       ),
@@ -563,7 +573,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
               Row(
                 children: [
                   Icon(
-                    Icons.comment_border,
+                    Icons.comment_outlined,
                     size: 18,
                     color: Colors.grey[400],
                   ),
@@ -605,9 +615,9 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
 
   Color _getTypeColor(PostType type) {
     switch (type) {
-      case PostType.cropUpdate:
+      case PostType.crop_update:
         return Colors.green;
-      case PostType.priceAlert:
+      case PostType.price_alert:
         return Colors.orange;
       case PostType.availability:
         return Colors.blue;

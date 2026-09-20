@@ -27,6 +27,9 @@ class Post {
   final DateTime? updatedAt;
   final bool isOrganic;
   final String? qualityGrade;
+  final bool isLiked;
+  final int shares;
+  final UserRole? authorRole;
 
   Post({
     required this.id,
@@ -46,6 +49,9 @@ class Post {
     this.status = PostStatus.active,
     this.likes = 0,
     this.comments = 0,
+    this.isLiked = false,
+    this.shares = 0,
+    this.authorRole,
     required this.createdAt,
     this.updatedAt,
     this.isOrganic = false,
@@ -111,6 +117,8 @@ class Post {
       ),
       likes: map['likes'] ?? 0,
       comments: map['comments'] ?? 0,
+      isLiked: map['isLiked'] ?? false,
+      shares: map['shares'] ?? 0,
       createdAt: created ?? DateTime.now(),
       updatedAt: updated,
       isOrganic: map['isOrganic'] ?? false,
@@ -137,6 +145,9 @@ class Post {
       'status': status.name,
       'likes': likes,
       'comments': comments,
+      'isLiked': isLiked,
+      'shares': shares,
+      'authorRole': authorRole?.name,
       'createdAt': createdAt.toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
       'isOrganic': isOrganic,
@@ -161,7 +172,9 @@ class Post {
     String? district,
     PostStatus? status,
     int? likes,
-    int? comments,
+int? comments,
+    bool? isLiked,
+    int? shares,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isOrganic,
@@ -185,6 +198,8 @@ class Post {
       status: status ?? this.status,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
+      isLiked: isLiked ?? this.isLiked,
+      shares: shares ?? this.shares,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isOrganic: isOrganic ?? this.isOrganic,

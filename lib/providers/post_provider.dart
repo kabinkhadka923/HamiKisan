@@ -28,16 +28,14 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> createPost(String userId, String userName, String userRole, String content, String? imageUrl, {String postType = 'General', String? district}) async {
+Future<bool> createPost(Post post) async {
     try {
-
-      final post = await _postService.createPost(userId, userName, userRole, content, imageUrl, postType: postType, district: district);
-      _posts.insert(0, post);
+      final createdPost = await _postService.createPost(post);
+      _posts.insert(0, createdPost);
       notifyListeners();
 
       return true;
     } catch (e) {
-
       _error = e.toString();
       notifyListeners();
       return false;
@@ -49,22 +47,28 @@ class PostProvider with ChangeNotifier {
     if (postIndex == -1) return;
 
     final post = _posts[postIndex];
-    post.isLiked = !post.isLiked;
-    post.likes += post.isLiked ? 1 : -1;
+    // Toggle like: if likes > 0, already liked; otherwise like it
+    final updatedPost = post.copyWith(
+      likes: post.likes > 0 ? post.likes - 1 : 1,
+    );
+    _posts[postIndex] = updatedPost;
     notifyListeners();
 
     try {
-      await _postService.toggleLike(postId);
+      await _postService.toggleLike(updatedPost);
     } catch (e) {
-      post.isLiked = !post.isLiked;
-      post.likes += post.isLiked ? 1 : -1;
+      final revertPost = _posts[postIndex].copyWith(
+        likes: updatedPost.likes,
+      );
+      _posts[postIndex] = revertPost;
       notifyListeners();
     }
   }
 
   Future<bool> deletePost(String postId) async {
     try {
-      await _postService.deletePost(postId);
+      final postToDelete = _posts.firstWhere((p) => p.id == postId);
+      await _postService.deletePost(postToDelete);
       _posts.removeWhere((p) => p.id == postId);
       notifyListeners();
       return true;

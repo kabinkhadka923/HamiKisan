@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:flutter/material.dart';
 import '../models/user.dart';
 
 enum ChatMessageType { text, image, video, voice, location, reaction, group_announcement, forward }
@@ -89,8 +89,27 @@ class ChatMessage {
       if (groupSenderName != null) 'groupSenderName': groupSenderName,
       if (forwardedFromMessageId != null) 'forwardedFromMessageId': forwardedFromMessageId,
       if (forwardedByName != null) 'forwardedByName': forwardedByName,
-      if (forwardedTimestamp != null) 'forwardedTimestamp': forwardedTimestamp.toIso8601String(),
+      if (forwardedTimestamp != null) 'forwardedTimestamp': formattedTimestamp,
     };
+  }
+
+  /// Get formatted timestamp string
+  String get formattedTimestamp {
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 7) {
+      return '${date.day}/${date.month}/${date.year}';
+    } else if (difference.inDays > 0) {
+      return '${date.day}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}min ago';
+    } else {
+      return 'Just now';
+    }
   }
 
   /// Create from map (JSON deserialization)
@@ -181,25 +200,5 @@ class ChatMessage {
   }
 
   /// Get formatted time
-  String get formattedTime {
-    return _formatTimestamp(timestamp);
-  }
-
-  String _formatTimestamp(int timestamp) {
-    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays > 7) {
-      return '${date.day}/${date.month}/${date.year}';
-    } else if (difference.inDays > 0) {
-      return '${date.day}d ago';
-    } else if (difference.inHours > 0) {
-      return '${date.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${date.inMinutes}min ago';
-    } else {
-      return 'Just now';
-    }
-  }
+  String get formattedTime => formattedTimestamp;
 }

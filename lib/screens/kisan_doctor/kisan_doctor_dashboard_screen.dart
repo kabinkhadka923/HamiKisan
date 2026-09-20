@@ -381,11 +381,14 @@ class _KisanDoctorDashboardScreenState
                       context,
                       MaterialPageRoute(
                         builder: (_) => VideoCallScreen(
-                          doctorName: farmer.name,
-                          doctorSpecialty: 'Farmer Consultation',
                           callId:
                               'call_${DateTime.now().millisecondsSinceEpoch}',
-                          recipientId: farmer.id,
+                          peerName: farmer.name,
+                          callerName: farmer.name,
+                          callerSpecialty: 'Farmer Consultation',
+                          role: CallRole.caller,
+                          callerId: farmer.id,
+                          calleeId: farmer.id,
                           isOutgoing: true,
                           callType: CallType.video,
                         ),
