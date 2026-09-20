@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'video_call_screen.dart';
-import '../services/kisan_video_call_service.dart';
+import '../services/call/kisan_video_call_service.dart';
 
 class DoctorScreen extends StatefulWidget {
   const DoctorScreen({super.key});

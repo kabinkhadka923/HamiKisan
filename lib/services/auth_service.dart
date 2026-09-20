@@ -76,34 +76,27 @@ class AuthService {
     };
   }
 
-  /// Auto-detects identifier type (phone, email, or username) and logs in
-  /// The backend SQL query matches against email, username, OR phone
-  Future<Map<String, dynamic>?> login(String identifier, String password) async {
-    final trimmedIdentifier = identifier.trim();
+  /// Login with phone number and password
+  /// Backend matches against phone number only
+  Future<Map<String, dynamic>?> login(String phoneNumber, String password) async {
+    final trimmedPhone = phoneNumber.trim();
 
-    // Auto-detect identifier type for local DB
-    final phoneRegex = RegExp(r'^[987][0-9]{7,9}$');
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    final usernameRegex = RegExp(r'^[a-zA-Z0-9_]{3,20}$');
-
-    final isPhone = phoneRegex.hasMatch(trimmedIdentifier);
-    final isEmail = emailRegex.hasMatch(trimmedIdentifier);
-    final isUsername = usernameRegex.hasMatch(trimmedIdentifier);
-
-    // For local DB: determine which field to check
-    final useEmailForLocalDb = isEmail || (isUsername && !isPhone);
-
-    if (_useLocalDb) {
-      return await _loginWithLocalDb(trimmedIdentifier, password, useEmail: useEmailForLocalDb);
+    // Normalize phone number
+    String normalizedPhone = trimmedPhone;
+    if (!trimmedPhone.startsWith('+')) {
+      normalizedPhone = '+977$trimmedPhone';
     }
 
-    // Backend: pass identifier as-is; backend SQL matches against email, username, OR phone
+    if (_useLocalDb) {
+      return await _loginWithLocalDb(normalizedPhone, password, useEmail: false);
+    }
+
     try {
       final response = await http.post(
         BackendConfig.uri('/api/auth/login'),
         headers: _headers,
         body: json.encode({
-          'identifier': trimmedIdentifier,
+          'phoneNumber': normalizedPhone,
           'password': password,
         }),
       ).timeout(const Duration(seconds: 10));
@@ -216,6 +209,20 @@ class AuthService {
       );
     }
 
+    // Map Flutter role to backend role
+    String backendRole;
+    switch (role) {
+      case UserRole.kisanDoctor:
+        backendRole = 'doctor';
+        break;
+      case UserRole.kisanAdmin:
+      case UserRole.superAdmin:
+        backendRole = 'admin';
+        break;
+      default:
+        backendRole = 'farmer';
+    }
+
     try {
       final response = await http.post(
         BackendConfig.uri('/api/auth/register'),
@@ -225,12 +232,8 @@ class AuthService {
           'email': email,
           'phoneNumber': phoneNumber,
           'name': name,
-          'role': role.name,
+          'role': backendRole,
           'password': password,
-          'address': address,
-          'language': language,
-          'farmingCategory': farmingCategory,
-          'specialization': specialization,
         }),
       );
 
@@ -239,11 +242,12 @@ class AuthService {
         await _saveAuthToken(data['token']?.toString());
         return _normalizeBackendUser(data['user'] as Map<String, dynamic>);
       } else {
-        return null;
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['error'] ?? 'Registration failed');
       }
     } catch (e) {
       throw Exception(
-          'Registration failed: Please check your connection and try again');
+          'Registration failed: ${e.toString().replaceAll("Exception: ", "")}');
     }
   }
 

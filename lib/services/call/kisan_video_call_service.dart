@@ -16,6 +16,7 @@ class KisanVideoCallService {
 
   // Call tracking
   String? _currentCallId;
+  String? _myUserId;
   bool _isMuted = false;
   bool _isVideoEnabled = true;
   bool _isCallEstablished = false;
@@ -54,7 +55,6 @@ class KisanVideoCallService {
     setSocket(socket);
     // Listen for incoming calls via socket.io
     _listenForIncomingCalls();
-    _listenForCallEvents();
   }
 
   /// Listen for incoming calls via socket.io
@@ -151,14 +151,15 @@ class KisanVideoCallService {
     });
   }
 
-  /// Handle outgoing call - emit socket.io call_invite
   Future<void> makeCall({
     required String recipientId,
     required String recipientName,
+    required String myUserId,
     CallType callType = CallType.video,
   }) async {
     if (_callState != CallState.idle) return;
 
+    _myUserId = myUserId;
     _currentCallId = recipientId;
     _callState = CallState.ringingOutgoing;
     _callStateController.add(_callState);

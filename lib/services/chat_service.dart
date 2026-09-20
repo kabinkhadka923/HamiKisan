@@ -851,3 +851,4 @@ Future<List<ChatMessage>> searchMessages({
         .toList();
   }
 }
+}

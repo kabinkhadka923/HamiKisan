@@ -3,83 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HamiKisan - Agriculture Platform for Nepal</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a2a3a; line-height: 1.6; }
-    .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-    .hero { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #2e7d32, #4caf50); color: white; border-radius: 16px; margin-bottom: 40px; }
-    .hero h1 { font-size: 3rem; margin-bottom: 16px; }
-    .hero p { font-size: 1.25rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
-    .status { display: inline-block; background: #4caf50; color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-top: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
-    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
-    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-    .card h3 { color: #2e7d32; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .card .icon { width: 24px; height: 24px; }
-    .endpoint { font-family: 'Monaco', 'Menlo', monospace; background: #f0f4f8; padding: 4px 8px; border-radius: 4px; font-size: 0.9rem; color: #2e7d32; }
-    .api-list { margin-top: 16px; }
-    .api-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eef0f2; }
-    .api-item:last-child { border-bottom: none; }
-    .method { font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
-    .get { background: #e8f5e9; color: #2e7d32; }
-    .post { background: #e3f2fd; color: #1565c0; }
-    .footer { text-align: center; color: #6b7a8a; padding: 20px; font-size: 0.9rem; }
-  </style>
+  <title>HamiKisan</title>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta name="description" content="HamiKisan - Agriculture Platform for Nepal">
 </head>
 <body>
-  <div class="container">
-    <div class="hero">
-      <h1>🌾 HamiKisan</h1>
-      <p>Digital agriculture platform connecting Nepalese farmers with experts, markets, and resources.</p>
-      <span class="status">✅ API Server Live</span>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg> Backend API</h3>
-        <p>REST API server with PostgreSQL + Redis, deployed on Render.</p>
-        <div class="api-list">
-          <div class="api-item"><span>Base URL</span><code class="endpoint">https://hamikisan.onrender.com</code></div>
-          <div class="api-item"><span class="method get">GET</span><code class="endpoint">/api/posts</code></div>
-          <div class="api-item"><span class="method post">POST</span><code class="endpoint">/api/posts</code></div>
-          <div class="api-item"><span class="method get">GET</span><code class="endpoint">/api/chat/conversation/:id</code></div>
-          <div class="api-item"><span class="method post">POST</span><code class="endpoint">/api/chat/message</code></div>
-          <div class="api-item"><span class="method get">GET</span><code class="endpoint">/api/products</code></div>
-          <div class="api-item"><span class="method post">POST</span><code class="endpoint">/api/orders</code></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg> Flutter App</h3>
-        <p>Mobile & web frontend for farmers and agriculture consultants. <strong>Web build in progress</strong> — full Flutter app compilation has syntax errors to resolve.</p>
-        <p style="margin-top: 12px; font-size: 0.9rem; color: #6b7a8a;">Once fixed, the web app will be available at:<br><code class="endpoint">https://kabinkhadka923.github.io/HamiKisan/</code></p>
-      </div>
-
-      <div class="card">
-        <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> WebSocket (Real-time)</h3>
-        <p>Socket.io server for video calls and live chat.</p>
-        <div class="api-list">
-          <div class="api-item"><span>Socket URL</span><code class="endpoint">wss://hamikisan.onrender.com</code></div>
-          <div class="api-item"><span class="method get">EVENT</span><code class="endpoint">call_incoming</code></div>
-          <div class="api-item"><span class="method get">EVENT</span><code class="endpoint">call_accepted</code></div>
-          <div class="api-item"><span class="method get">EVENT</span><code class="endpoint">chat_message</code></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="max-width: 600px; margin: 0 auto;">
-      <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Deployment Status</h3>
-      <ul style="margin-top: 16px; padding-left: 20px; color: #4a5a6a;">
-        <li>✅ Backend API: <strong>Live</strong> at <a href="https://hamikisan.onrender.com" target="_blank" style="color: #2e7d32;">https://hamikisan.onrender.com</a></li>
-        <li>✅ Database: <strong>Connected</strong> (Neon PostgreSQL)</li>
-        <li>✅ Redis: <strong>Disabled</strong> for free tier</li>
-        <li>⚠️ Flutter Web: <strong>Build errors</strong> — fixing compilation issues</li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer">
-    HamiKisan • Open source agriculture platform for Nepal • <a href="https://github.com/kabinkhadka923/HamiKisan" target="_blank" style="color: #2e7d32;">GitHub</a>
-  </div>
+  <script>
+    var serviceWorkerVersion = null;
+    var scriptLoaded = false;
+    function loadMainDartJs() {
+      if (scriptLoaded) return;
+      scriptLoaded = true;
+      var scriptTag = document.createElement('script');
+      scriptTag.src = 'main.dart.js';
+      scriptTag.type = 'application/javascript';
+      document.body.append(scriptTag);
+    }
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=' + serviceWorkerVersion);
+      });
+    }
+    window.addEventListener('load', function (ev) {
+      loadMainDartJs();
+    });
+  </script>
 </body>
 </html>

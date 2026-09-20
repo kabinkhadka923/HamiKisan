@@ -12,6 +12,7 @@ import '../utils/security_utils.dart';
 import 'home_screen.dart';
 import 'language_selection_screen.dart';
 import 'kisan_doctor/kisan_doctor_dashboard_screen.dart';
+import 'admin/admin_dashboard_screen.dart';
 import '../widgets/localized_text.dart';
 import '../widgets/password_strength_meter.dart';
 
@@ -136,6 +137,12 @@ class _LoginScreenState extends State<LoginScreen>
                   builder: (context) =>
                       KisanDoctorDashboardScreen(doctor: user!)),
             );
+          } else if (user?.role == UserRole.kisanAdmin ||
+              user?.role == UserRole.superAdmin) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (context) => const AdminDashboardScreen()),
+            );
           } else {
             _navigateToHome();
           }
@@ -152,6 +159,11 @@ class _LoginScreenState extends State<LoginScreen>
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
             builder: (context) => KisanDoctorDashboardScreen(doctor: user)),
+      );
+    } else if (user.role == UserRole.kisanAdmin || user.role == UserRole.superAdmin) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+            builder: (context) => const AdminDashboardScreen()),
       );
     } else {
       Navigator.of(context).pushReplacement(

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/audio_service.dart';
 import '../services/call/call_signaling_service.dart';
+import '../services/call/kisan_video_call_service.dart';
 import '../screens/video_call_screen.dart';
 
 /// Polls the backend for incoming calls and shows a ringing screen when the
@@ -71,13 +72,20 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
     setState(() {});
 
     if (accepted) {
+      final authProvider = context.read<AuthProvider>();
+      final currentUser = authProvider.currentUser;
       navigator.push(
         MaterialPageRoute(
           builder: (_) => VideoCallScreen(
-            doctorName: call.fromName ?? 'Incoming Caller',
-            doctorSpecialty: 'Video Consultation',
             callId: call.callId,
+            peerName: call.fromName ?? 'Unknown Caller',
+            callerName: call.fromName ?? 'Unknown Caller',
+            callerSpecialty: 'Video Consultation',
+            role: CallRole.callee,
+            callerId: call.from,
+            calleeId: currentUser?.id ?? '',
             isOutgoing: false,
+            callType: call.callType == 'voice' ? CallType.voice : CallType.video,
             callContext: {'callerType': 'doctor'},
           ),
         ),
