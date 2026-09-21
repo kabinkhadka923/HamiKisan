@@ -37,6 +37,9 @@ class KisanVideoCallService {
   bool get isVideoEnabled => _isVideoEnabled;
   bool get isCallEstablished => _isCallEstablished;
 
+  // Socket getter for WebRTC signaling
+  dynamic get socket => _socket;
+
   // Streams
   Stream<void> get onCallConnected => _callConnectedController.stream;
   Stream<void> get onCallEnded => _callEndedController.stream;
@@ -287,6 +290,14 @@ class KisanVideoCallService {
       return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     }
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  /// Update call state (for WebRTC connection state changes)
+  void updateCallState(CallState newState) {
+    if (_callState != newState) {
+      _callState = newState;
+      _callStateController.add(_callState);
+    }
   }
 
   /// Dispose and clean up

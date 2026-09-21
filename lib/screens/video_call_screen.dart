@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html' as html if (dart.library.html) 'dart-html';
 import 'package:flutter/material.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/user.dart';
@@ -48,10 +49,25 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   StreamSubscription<void>? _connectedSub;
   StreamSubscription<void>? _endedSub;
 
+  // WebRTC
+  RTCVideoRenderer _localRenderer = RTCVideoRenderer();
+  RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
+  RTCPeerConnection? _peerConnection;
+  MediaStream? _localStream;
+  bool _isMuted = false;
+  bool _isVideoEnabled = true;
+  bool _isFrontCamera = true;
+
   @override
   void initState() {
     super.initState();
+    _initializeRenderers();
     _initializeServices();
+  }
+
+  Future<void> _initializeRenderers() async {
+    await _localRenderer.initialize();
+    await _remoteRenderer.initialize();
   }
 
   @override
@@ -59,6 +75,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     _stateSub?.cancel();
     _connectedSub?.cancel();
     _endedSub?.cancel();
+    _localRenderer.dispose();
+    _remoteRenderer.dispose();
+    _localStream?.dispose();
+    _peerConnection?.close();
     _callService.dispose();
     super.dispose();
   }
@@ -88,12 +108,42 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       setState(() {});
       _navigateBack();
     });
+
+    _setupSignaling();
+  }
+
+  void _setupSignaling() {
+    final socket = _callService.socket;
+    if (socket == null) return;
+
+    socket.on('call:offer', (data) async {
+      if (!mounted) return;
+      await _handleIncomingOffer(data);
+    });
+
+    socket.on('call:answer', (data) async {
+      if (!mounted) return;
+      await _handleAnswer(data);
+    });
+
+    socket.on('call:ice', (data) async {
+      if (!mounted) return;
+      await _handleIceCandidate(data);
+    });
+
+    socket.on('call:decline', (data) {
+      if (!mounted) return;
+      _handleCallDeclined();
+    });
+
+    socket.on('call:end', (data) {
+      if (!mounted) return;
+      _handleCallEnded();
+    });
   }
 
   void _handleCallStateChange(CallState state) {
-    setState(() {
-      // Update UI based on state
-    });
+    setState(() {});
     switch (state) {
       case CallState.idle:
         break;
@@ -116,10 +166,253 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     }
   }
 
-  /// Show incoming call dialog
-  void _showIncomingCallDialog(dynamic callData) {
-    final callerName = callData['fromName'] ?? widget.callerName ?? 'Doctor';
-    final callType = callData['callType'] ?? 'video';
+  Future<void> _startLocalStream() async {
+    try {
+      final Map<String, dynamic> mediaConstraints = {
+        'audio': true,
+        'video': widget.callType == CallType.video
+            ? {
+                'facingMode': _isFrontCamera ? 'user' : 'environment',
+                'width': {'ideal': 1280},
+                'height': {'ideal': 720},
+              }
+            : false,
+      };
+
+      _localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+      _localRenderer.srcObject = _localStream;
+
+      if (mounted) setState(() {});
+    } catch (e) {
+      print('Error starting local stream: $e');
+    }
+  }
+
+  Future<void> _createPeerConnection() async {
+    final configuration = {
+      'iceServers': [
+        {'urls': 'stun:stun.l.google.com:19302'},
+        {'urls': 'stun:stun1.l.google.com:19302'},
+      ],
+    };
+
+    _peerConnection = await createPeerConnection(configuration);
+
+    if (_localStream != null) {
+      _localStream!.getTracks().forEach((track) {
+        _peerConnection!.addTrack(track, _localStream!);
+      });
+    }
+
+    _peerConnection!.onTrack = (event) {
+      if (event.streams.isNotEmpty) {
+        _remoteRenderer.srcObject = event.streams[0];
+        if (mounted) setState(() {});
+      }
+    };
+
+    _peerConnection!.onIceCandidate = (candidate) {
+      if (candidate != null) {
+        _sendIceCandidate(candidate);
+      }
+    };
+  }
+
+  Future<void> _makeCall() async {
+    await _startLocalStream();
+    await _createPeerConnection();
+
+    final offer = await _peerConnection!.createOffer();
+    await _peerConnection!.setLocalDescription(offer);
+
+    _callService.socket?.emit('call:offer', {
+      'callId': widget.callId,
+      'offer': offer.toMap(),
+      'callerId': widget.callerId,
+      'calleeId': widget.calleeId,
+      'callType': widget.callType.name,
+    });
+  }
+
+  Future<void> _handleIncomingOffer(Map<String, dynamic> data) async {
+    await _startLocalStream();
+    await _createPeerConnection();
+
+    final offer = RTCSessionDescription(
+      data['offer']['sdp'],
+      data['offer']['type'],
+    );
+
+    await _peerConnection!.setRemoteDescription(offer);
+
+    final answer = await _peerConnection!.createAnswer();
+    await _peerConnection!.setLocalDescription(answer);
+
+    _callService.socket?.emit('call:answer', {
+      'callId': widget.callId,
+      'answer': (await _peerConnection!.getLocalDescription())?.toMap(),
+      'callerId': data['callerId'],
+      'calleeId': widget.calleeId,
+    });
+
+    _showIncomingCallDialog(data);
+  }
+
+  Future<void> _handleAnswer(Map<String, dynamic> data) async {
+    if (_peerConnection != null) {
+      final answer = RTCSessionDescription(
+        data['answer']['sdp'],
+        data['answer']['type'],
+      );
+      await _peerConnection!.setRemoteDescription(answer);
+    }
+  }
+
+  Future<void> _handleIceCandidate(Map<String, dynamic> data) async {
+    final candidate = RTCIceCandidate(
+      data['candidate']['candidate'],
+      data['candidate']['sdpMid'],
+      data['candidate']['sdpMLineIndex'],
+    );
+
+    if (_peerConnection != null) {
+      await _peerConnection!.addCandidate(candidate);
+    }
+  }
+
+  void _sendIceCandidate(RTCIceCandidate candidate) {
+    _callService.socket?.emit('call:ice', {
+      'callId': widget.callId,
+      'candidate': candidate.toMap(),
+      'callerId': widget.callerId,
+      'calleeId': widget.calleeId,
+    });
+  }
+
+  Future<void> _answerCall() async {
+    if (_callService.currentCallId != null) {
+      await _callService.answerCall();
+    }
+  }
+
+  Future<void> _endCall() async {
+    await _cleanupCall();
+    _callService.socket?.emit('call:end', {
+      'callId': widget.callId,
+      'callerId': widget.callerId,
+      'calleeId': widget.calleeId,
+    });
+    await _callService.endCall();
+    _navigateBack();
+  }
+
+  Future<void> _declineCall() async {
+    await _cleanupCall();
+    _callService.socket?.emit('call:decline', {
+      'callId': widget.callId,
+      'callerId': widget.callerId,
+      'calleeId': widget.calleeId,
+    });
+    await _callService.declineCall();
+  }
+
+  void _handleCallDeclined() {
+    _cleanupCall();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Call declined')),
+      );
+      _navigateBack();
+    }
+  }
+
+  void _handleCallEnded() {
+    _cleanupCall();
+    if (mounted) {
+      _navigateBack();
+    }
+  }
+
+  Future<void> _cleanupCall() async {
+    await _localStream?.dispose();
+    _localStream = null;
+    await _peerConnection?.close();
+    _peerConnection = null;
+    _localRenderer.srcObject = null;
+    _remoteRenderer.srcObject = null;
+  }
+
+  Future<void> _navigateBack() async {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    });
+  }
+
+  void _toggleMute() {
+    setState(() {
+      _isMuted = !_isMuted;
+      _localStream?.getAudioTracks().forEach((track) {
+        track.enabled = !_isMuted;
+      });
+    });
+  }
+
+  Future<void> _toggleVideo() async {
+    setState(() {
+      _isVideoEnabled = !_isVideoEnabled;
+    });
+    final videoTracks = _localStream?.getVideoTracks();
+    if (videoTracks != null) {
+      for (var track in videoTracks) {
+        track.enabled = _isVideoEnabled;
+      }
+    }
+  }
+
+  Future<void> _switchCamera() async {
+    if (_localStream == null) return;
+
+    final videoTracks = _localStream!.getVideoTracks();
+    if (videoTracks.isEmpty) return;
+
+    videoTracks[0].stop();
+
+    _isFrontCamera = !_isFrontCamera;
+
+    try {
+      final newStream = await navigator.mediaDevices.getUserMedia({
+        'video': {
+          'facingMode': _isFrontCamera ? 'user' : 'environment',
+          'width': {'ideal': 1280},
+          'height': {'ideal': 720},
+        },
+        'audio': false,
+      });
+
+      final newVideoTrack = newStream.getVideoTracks()[0];
+      _localStream!.removeTrack(_localStream!.getVideoTracks()[0]);
+      _localStream!.addTrack(newVideoTrack);
+
+      if (_peerConnection != null) {
+        final senders = await _peerConnection!.getSenders();
+        final sender = senders.firstWhere(
+          (s) => s.track != null && s.track!.kind == 'video',
+        );
+        await sender.replaceTrack(newVideoTrack);
+      }
+
+      _localRenderer.srcObject = _localStream;
+      setState(() => _isFrontCamera = !_isFrontCamera);
+    } catch (e) {
+      print('Error switching camera: $e');
+    }
+  }
+
+  void _showIncomingCallDialog(Map<String, dynamic> data) {
+    final callerName = data['callerName'] ?? widget.callerName ?? 'Doctor';
+    final callType = data['callType'] ?? 'video';
 
     showDialog(
       context: context,
@@ -146,7 +439,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _callService.declineCall();
+              _declineCall();
             },
             child: const Text('Decline'),
           ),
@@ -162,71 +455,78 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     );
   }
 
-  Future<void> _answerCall() async {
-    if (_callService.currentCallId != null) {
-      await _callService.answerCall();
-      // Socket.io answer already emitted in answerCall()
-    }
-  }
-
-  Future<void> _endCall() async {
-    await _callService.endCall();
-    _navigateBack();
-  }
-
-  void _navigateBack() {
-    // Add delay to let the end animation play
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    });
-  }
-
   Widget _buildVideoArea() {
-    // Placeholder for local/remote video streams
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: _buildCallStateWidget(),
-      ),
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: RTCVideoView(_remoteRenderer),
+        ),
+        Positioned(
+          top: 100,
+          right: 16,
+          width: 120,
+          height: 160,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white, width: 2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: RTCVideoView(_localRenderer, mirror: true),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 100,
+          left: 16,
+          right: 16,
+          child: Center(child: _buildCallStateWidget()),
+        ),
+      ],
     );
   }
 
   Widget _buildCallStateWidget() {
+    Color color;
+    String text;
     switch (_callService.callState) {
       case CallState.idle:
-        return const Text(
-          'Ready for call',
-          style: TextStyle(color: Colors.white, fontSize: 18),
-        );
+        color = Colors.white;
+        text = 'Ready for call';
+        break;
       case CallState.ringingIncoming:
       case CallState.ringingOutgoing:
-        return const Text(
-          'Ringling...',
-          style: TextStyle(color: Colors.orange, fontSize: 18),
-        );
+        color = Colors.orange;
+        text = 'Ringing...';
+        break;
       case CallState.connected:
-        return const Text(
-          'Connected',
-          style: TextStyle(color: Colors.green, fontSize: 18),
-        );
+        color = Colors.green;
+        text = 'Connected';
+        break;
       case CallState.ending:
-        return const Text(
-          'Ending call...',
-          style: TextStyle(color: Colors.orange, fontSize: 18),
-        );
+        color = Colors.orange;
+        text = 'Ending call...';
+        break;
       case CallState.error:
-        return const Text(
-          'Call error',
-          style: TextStyle(color: Colors.red, fontSize: 18),
-        );
+        color = Colors.red;
+        text = 'Call error';
+        break;
       default:
-        return const Text(
-          'Unknown state',
-          style: TextStyle(color: Colors.grey, fontSize: 18),
-        );
+        color = Colors.grey;
+        text = 'Unknown state';
     }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    );
   }
 
   Widget _buildCallControls() {
@@ -237,74 +537,85 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Mute button
-            _buildMuteButton(),
-            const SizedBox(height: 16),
-            // End call button
-            _buildEndCallButton(),
-            const SizedBox(height: 16),
-            // Video toggle (only for caller)
-            if (widget.isOutgoing && widget.role == CallRole.caller) ...[
-              _buildVideoToggle(),
-              const SizedBox(height: 16),
-            ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildControlButton(
+                  icon: _isMuted ? Icons.mic_off : Icons.mic,
+                  label: _isMuted ? 'Unmute' : 'Mute',
+                  onPressed: _toggleMute,
+                  backgroundColor: _isMuted ? Colors.orange : Colors.green,
+                ),
+                const SizedBox(width: 16),
+                _buildControlButton(
+                  icon: _isVideoEnabled ? Icons.videocam_off : Icons.videocam,
+                  label: _isVideoEnabled ? 'Video Off' : 'Video On',
+                  onPressed: _toggleVideo,
+                  backgroundColor: _isVideoEnabled ? Colors.green : Colors.orange,
+                ),
+                const SizedBox(width: 16),
+                if (widget.callType == CallType.video)
+                  _buildControlButton(
+                    icon: Icons.flip_camera_android,
+                    label: 'Flip',
+                    onPressed: _switchCamera,
+                    backgroundColor: Colors.blue,
+                  ),
+                const SizedBox(width: 16),
+                _buildControlButton(
+                  icon: Icons.call_end,
+                  label: 'End',
+                  onPressed: _endCall,
+                  backgroundColor: Colors.red,
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMuteButton() {
-    return ElevatedButton.icon(
-      onPressed: () async {
-        await _callService.muteCall(!_callService.isMuted);
-        setState(() {});
-      },
-      icon: Icon(
-        _callService.isMuted ? Icons.mic_off : Icons.mic,
-        color: Colors.white,
-      ),
-      label: Text(
-        _callService.isMuted ? 'Unmute' : 'Mute',
-        style: const TextStyle(color: Colors.white),
-      ),
-      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-    );
-  }
-
-  Widget _buildEndCallButton() {
-    return ElevatedButton(
-      onPressed: _endCall,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.red,
-        minimumSize: const Size(double.infinity, 50),
-      ),
-      child: const Text(
-        'End Call',
-        style: TextStyle(color: Colors.white, fontSize: 18),
-      ),
-    );
-  }
-
-  Widget _buildVideoToggle() {
-    return ElevatedButton.icon(
-      onPressed: () async {
-        await _callService.switchCamera();
-        setState(() {});
-      },
-      icon: const Icon(Icons.videocam, color: Colors.white),
-      label: const Text(
-        'Switch Camera',
-        style: TextStyle(color: Colors.white),
-      ),
-      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+  Widget _buildControlButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required Color backgroundColor,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: Icon(icon, color: Colors.white, size: 28),
+            onPressed: onPressed,
+            iconSize: 28,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 
   Widget _buildDialer() {
-    final TextEditingController _numberController = TextEditingController();
+    final TextEditingController numberController = TextEditingController();
     final isDoctor = context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
-    
+
     return Container(
       color: Colors.black,
       child: Center(
@@ -343,7 +654,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: TextField(
-                  controller: _numberController,
+                  controller: numberController,
                   style: const TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 2),
                   keyboardType: TextInputType.phone,
                   textAlign: TextAlign.center,
@@ -376,14 +687,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        final number = _numberController.text.trim();
+                        final number = numberController.text.trim();
                         if (number.length == 10 && number.startsWith('9')) {
-                          _callService.makeCall(
-                            recipientId: number,
-                            recipientName: 'Contact',
-                            myUserId: context.read<AuthProvider>().currentUser?.id ?? '',
-                            callType: widget.callType,
-                          );
+                          _makeCall();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Enter valid 10-digit Nepali number')),
@@ -411,22 +717,26 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   @override
   Widget build(BuildContext context) {
     final isDoctor = context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isDoctor ? 'Video Consultation' : 'Video Call'),
-        backgroundColor: isDoctor ? Colors.blue.shade700 : Colors.green.shade700,
-      ),
+      backgroundColor: Colors.black,
+      appBar: _callService.callState == CallState.idle && widget.isOutgoing
+          ? AppBar(
+              title: Text(isDoctor ? 'Video Consultation' : 'Video Call'),
+              backgroundColor: isDoctor ? Colors.blue.shade700 : Colors.green.shade700,
+              leading: widget.isOutgoing
+                  ? IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
+                    )
+                  : null,
+            )
+          : null,
       body: Stack(
         children: [
-          // Video area
           _buildVideoArea(),
-          
-          // Outgoing call dialer (when idle and outgoing)
           if (_callService.callState == CallState.idle && widget.isOutgoing)
             _buildDialer(),
-          
-          // Call controls overlay
           if (_callService.callState != CallState.idle)
             _buildCallControls(),
         ],
