@@ -18,6 +18,7 @@ class VideoCallScreen extends StatefulWidget {
   final CallRole role;
   final String callerId;
   final String calleeId;
+  final String? calleePhoneNumber;
   final bool isOutgoing;
   final CallType callType;
   final Map<String, dynamic>? callContext;
@@ -30,6 +31,7 @@ class VideoCallScreen extends StatefulWidget {
     required this.role,
     required this.callerId,
     required this.calleeId,
+    this.calleePhoneNumber,
     required this.isOutgoing,
     required this.callType,
     this.callContext,
@@ -615,6 +617,14 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   Widget _buildDialer() {
     final TextEditingController numberController = TextEditingController();
     final isDoctor = context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
+
+    // Pre-fill with callee's phone number if available
+    if (widget.calleePhoneNumber != null && widget.calleePhoneNumber!.isNotEmpty) {
+      final phone = widget.calleePhoneNumber!;
+      // Remove +977 prefix if present
+      String cleanNumber = phone.startsWith('+977') ? phone.substring(4) : phone;
+      numberController.text = cleanNumber;
+    }
 
     return Container(
       color: Colors.black,

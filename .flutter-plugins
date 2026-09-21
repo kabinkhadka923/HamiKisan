@@ -10,6 +10,7 @@ file_selector_linux=/home/kali/.pub-cache/hosted/pub.dev/file_selector_linux-0.9
 file_selector_macos=/home/kali/.pub-cache/hosted/pub.dev/file_selector_macos-0.9.4+2/
 file_selector_windows=/home/kali/.pub-cache/hosted/pub.dev/file_selector_windows-0.9.3+4/
 flutter_plugin_android_lifecycle=/home/kali/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.22/
+flutter_webrtc=/home/kali/.pub-cache/hosted/pub.dev/flutter_webrtc-0.12.12+hotfix.1/
 geolocator=/home/kali/.pub-cache/hosted/pub.dev/geolocator-10.1.1/
 geolocator_android=/home/kali/.pub-cache/hosted/pub.dev/geolocator_android-4.6.1/
 geolocator_apple=/home/kali/.pub-cache/hosted/pub.dev/geolocator_apple-2.3.9/
