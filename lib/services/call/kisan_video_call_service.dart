@@ -17,6 +17,7 @@ class KisanVideoCallService {
   // Call tracking
   String? _currentCallId;
   String? _myUserId;
+  String? _peerUserId;
   bool _isMuted = false;
   bool _isVideoEnabled = true;
   bool _isCallEstablished = false;
@@ -67,6 +68,7 @@ class KisanVideoCallService {
       final callerName = data['fromName'] ?? 'Doctor';
       final callType = data['callType'] ?? 'video';
       final callId = data['callId'] ?? '';
+      _peerUserId = data['from']?.toString();
 
       _currentCallId = callId;
       _callState = CallState.ringingIncoming;
@@ -159,11 +161,13 @@ class KisanVideoCallService {
     required String recipientName,
     required String myUserId,
     CallType callType = CallType.video,
+    String? callId,
   }) async {
     if (_callState != CallState.idle) return;
 
     _myUserId = myUserId;
-    _currentCallId = recipientId;
+    _peerUserId = recipientId;
+    _currentCallId = callId ?? recipientId;
     _callState = CallState.ringingOutgoing;
     _callStateController.add(_callState);
 
@@ -200,9 +204,9 @@ class KisanVideoCallService {
       _isCallEstablished = true;
 
       // Emit socket.io call_accepted
-      _socket?.emit('call_accepted', {
+      _socket?.emit('call_accept', {
         'callId': _currentCallId,
-        'toUserId': _currentCallId,
+        'toUserId': _peerUserId,
       });
     }
   }
@@ -219,7 +223,7 @@ class KisanVideoCallService {
       // Emit socket.io call_decline
       _socket?.emit('call_decline', {
         'callId': _currentCallId,
-        'toUserId': _currentCallId,
+        'toUserId': _peerUserId,
       });
     }
   }
@@ -232,7 +236,7 @@ class KisanVideoCallService {
     // Emit socket.io call_end
     _socket?.emit('call_end', {
       'callId': _currentCallId,
-      'toUserId': _myUserId,
+      'toUserId': _peerUserId,
     });
 
     try {

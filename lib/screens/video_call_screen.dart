@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/user.dart';
 import '../services/call/kisan_video_call_service.dart';
+import '../services/call/call_signaling_service.dart';
 import '../services/audio_service.dart';
 
 enum CallRole { caller, callee }
@@ -44,6 +45,7 @@ class VideoCallScreen extends StatefulWidget {
 
 class _VideoCallScreenState extends State<VideoCallScreen>
     with TickerProviderStateMixin {
+  late String _activeCallId;
   late KisanVideoCallService _callService;
   late AudioService _audioService;
 
@@ -63,6 +65,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   @override
   void initState() {
     super.initState();
+    _activeCallId = widget.callId;
     _initializeRenderers();
     _initializeServices();
   }
@@ -112,6 +115,25 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     });
 
     _setupSignaling();
+    if (widget.isOutgoing) {
+      await _prepareOutgoingCall(authProvider);
+    }
+  }
+
+  Future<void> _prepareOutgoingCall(AuthProvider authProvider) async {
+    final callId = await CallSignalingService().inviteCall(
+      receiverId: widget.calleeId,
+      callerName: authProvider.currentUser?.name ?? 'HamiKisan user',
+      callType: widget.callType == CallType.voice ? 'voice' : 'video',
+    );
+    if (!mounted || callId == null) return;
+    _activeCallId = callId;
+    authProvider.socket?.emit('call_invite', {
+      'toUserId': widget.calleeId,
+      'callId': callId,
+      'callType': widget.callType.name,
+      'callerName': authProvider.currentUser?.name,
+    });
   }
 
   void _setupSignaling() {
@@ -228,7 +250,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     await _peerConnection!.setLocalDescription(offer);
 
     _callService.socket?.emit('call:offer', {
-      'callId': widget.callId,
+      'callId': _activeCallId,
       'offer': offer.toMap(),
       'callerId': widget.callerId,
       'calleeId': widget.calleeId,
@@ -251,7 +273,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     await _peerConnection!.setLocalDescription(answer);
 
     _callService.socket?.emit('call:answer', {
-      'callId': widget.callId,
+      'callId': _activeCallId,
       'answer': (await _peerConnection!.getLocalDescription())?.toMap(),
       'callerId': data['callerId'],
       'calleeId': widget.calleeId,
@@ -284,7 +306,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
   void _sendIceCandidate(RTCIceCandidate candidate) {
     _callService.socket?.emit('call:ice', {
-      'callId': widget.callId,
+      'callId': _activeCallId,
       'candidate': candidate.toMap(),
       'callerId': widget.callerId,
       'calleeId': widget.calleeId,
@@ -300,7 +322,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   Future<void> _endCall() async {
     await _cleanupCall();
     _callService.socket?.emit('call:end', {
-      'callId': widget.callId,
+      'callId': _activeCallId,
       'callerId': widget.callerId,
       'calleeId': widget.calleeId,
     });
@@ -311,7 +333,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   Future<void> _declineCall() async {
     await _cleanupCall();
     _callService.socket?.emit('call:decline', {
-      'callId': widget.callId,
+      'callId': _activeCallId,
       'callerId': widget.callerId,
       'calleeId': widget.calleeId,
     });

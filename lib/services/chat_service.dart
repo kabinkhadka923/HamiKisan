@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import '../models/user.dart';
 import '../models/chat_message.dart';
@@ -23,6 +24,7 @@ class ChatService {
 
   String? _currentUserId;
   bool _isConnected = false;
+  IO.Socket? _socket;
 
   String? get currentUserId => _currentUserId;
 
@@ -44,12 +46,33 @@ class ChatService {
   Future<void> initialize(String userId) async {
     _currentUserId = userId;
     _isConnected = true;
+    await _connectSocket();
     onConnectionStatusChanged?.call('connected');
 
     final messages = await _getMessagesForCurrentUser();
     onMessagesReceived?.call(messages);
     final doctors = await getAvailableDoctors();
     onDoctorsListReceived?.call(doctors);
+  }
+
+  Future<void> _connectSocket() async {
+    final token = await AuthService.getAuthToken();
+    if (token == null || token.isEmpty || _socket != null) return;
+    _socket = IO.io(
+      BackendConfig.baseUrl,
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setAuth({'token': 'Bearer $token'})
+          .enableAutoConnect()
+          .build(),
+    );
+    _socket!.on('receive_message', (data) {
+      if (data is Map) {
+        _messageStreamController.add(
+          _mapMessageFromBackend(Map<String, dynamic>.from(data)),
+        );
+      }
+    });
   }
 
   Future<List<User>> getAvailableDoctors() async {
@@ -203,20 +226,19 @@ class ChatService {
     try {
       final token = await AuthService.getAuthToken();
       final response = await http.post(
-        BackendConfig.uri('/api/chat/message'),
+        BackendConfig.uri('/api/chat/messages'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-        body: {
+        body: json.encode({
           'receiverId': receiverId,
-          'content': cleanedMessage,
-          'messageType': messageType.name,
-          if (mediaUrl != null) 'mediaUrl': mediaUrl,
-        },
+          'message': cleanedMessage,
+        }),
       ).timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         chatMessage.status = MessageStatus.delivered;
         _messageStreamController.add(chatMessage);
         return true;
@@ -305,16 +327,15 @@ class ChatService {
 
   /// Get conversation with a specific user
   Future<List<ChatMessage>> getConversationWithUser(String userId) async {
-    // Try backend first
     try {
+      _joinDirectRoom(userId);
       final token = await AuthService.getAuthToken();
-      final response = await http.post(
-        BackendConfig.uri('/api/chat/conversation'),
+      final response = await http.get(
+        BackendConfig.uri('/api/chat/rooms/${_directRoomId(userId)}/messages'),
         headers: {
           'Accept': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-        body: {'userId': userId},
       ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
@@ -335,14 +356,14 @@ class ChatService {
   Future<List<ChatMessage>> getConversation(String userId) async {
     // Try backend first
     try {
+      _joinDirectRoom(userId);
       final token = await AuthService.getAuthToken();
-      final response = await http.post(
-        BackendConfig.uri('/api/chat/conversation'),
+      final response = await http.get(
+        BackendConfig.uri('/api/chat/rooms/${_directRoomId(userId)}/messages'),
         headers: {
           'Accept': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-        body: {'userId': userId},
       ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
@@ -402,16 +423,18 @@ class ChatService {
     }
 
     return ChatMessage(
-      id: data['id'] ?? '',
-      senderId: data['senderId'] ?? '',
-      receiverId: data['receiverId'] ?? '',
-      content: data['content'] ?? '',
-      mediaUrl: data['mediaUrl'] ?? '',
+      id: (data['id'] ?? '').toString(),
+      senderId: (data['senderId'] ?? data['sender_id'] ?? '').toString(),
+      receiverId: (data['receiverId'] ?? data['receiver_id'] ?? '').toString(),
+      content: (data['content'] ?? data['message'] ?? '').toString(),
+      mediaUrl: data['mediaUrl']?.toString(),
       messageType: type,
       timestamp: data['timestamp'] != null
           ? data['timestamp'] is int
               ? data['timestamp']
-              : DateTime.parse(data['timestamp']).millisecondsSinceEpoch
+                : DateTime.parse(data['timestamp'].toString()).millisecondsSinceEpoch
+              : data['sent_at'] != null
+                ? DateTime.parse(data['sent_at'].toString()).millisecondsSinceEpoch
           : DateTime.now().millisecondsSinceEpoch,
       status: MessageStatus.values.firstWhere(
         (s) => s.name == data['status'],
@@ -419,6 +442,22 @@ class ChatService {
       ),
       reactions: reactions,
     );
+  }
+
+  String _directRoomId(String otherUserId) {
+    final ids = [_currentUserId ?? '', otherUserId];
+    ids.sort((a, b) {
+      final first = int.tryParse(a);
+      final second = int.tryParse(b);
+      if (first != null && second != null) return first.compareTo(second);
+      return a.compareTo(b);
+    });
+    return 'dm_${ids[0]}_${ids[1]}';
+  }
+
+  void _joinDirectRoom(String otherUserId) {
+    final roomId = _directRoomId(otherUserId);
+    _socket?.emit('join_room', {'roomId': roomId});
   }
 
   /// Load messages from local storage

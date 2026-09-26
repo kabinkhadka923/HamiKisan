@@ -139,9 +139,9 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
                 children: [
                   FloatingActionButton(
                     heroTag: 'listener_decline',
-                    onPressed: () {
+                    onPressed: () async {
                       accepted = false;
-                      CallSignalingService()
+                      await CallSignalingService()
                           .answerCall(callId: call.callId, accept: false);
                       Navigator.pop(dialogContext);
                     },
@@ -151,8 +151,10 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
                   const SizedBox(width: 40),
                   FloatingActionButton(
                     heroTag: 'listener_accept',
-                    onPressed: () {
+                    onPressed: () async {
                       accepted = true;
+                      await CallSignalingService()
+                          .answerCall(callId: call.callId, accept: true);
                       Navigator.pop(dialogContext);
                     },
                     backgroundColor: Colors.green.shade600,

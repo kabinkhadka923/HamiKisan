@@ -49,6 +49,7 @@ const sendMessage = async (req, res) => {
   const payload = result.rows[0];
   const io = req.app.get('io');
   io.to(finalRoomId).emit('receive_message', payload);
+  io.to(`user_${receiverId}`).emit('receive_message', payload);
 
   return res.status(201).json({ message: payload });
 };

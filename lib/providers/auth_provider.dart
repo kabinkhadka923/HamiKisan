@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../models/user.dart';
 import '../services/auth_service.dart';
+import '../services/backend_config.dart';
 import '../services/security_service.dart';
 
 class AuthResult {
@@ -41,7 +43,22 @@ class AuthProvider with ChangeNotifier {
 
   /// Clear socket connection
   void clearSocket() {
+    (_socket as IO.Socket?)?.dispose();
     _socket = null;
+  }
+
+  Future<void> _connectSocket() async {
+    final token = await AuthService.getAuthToken();
+    if (token == null || token.isEmpty) return;
+    clearSocket();
+    _socket = IO.io(
+      BackendConfig.baseUrl,
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setAuth({'token': 'Bearer $token'})
+          .enableAutoConnect()
+          .build(),
+    );
   }
 
   Future<void> initialize() async {
@@ -58,6 +75,7 @@ class AuthProvider with ChangeNotifier {
       if (userData != null) {
         _currentUser = User.fromJson(userData);
         await _currentUser?.loadPreferences();
+        await _connectSocket();
 
         // Log session restoration
         unawaited(SecurityService.logSecurityEvent(
@@ -83,6 +101,7 @@ class AuthProvider with ChangeNotifier {
       final user = User.fromJson(userData);
       _currentUser = user;
       await saveSession();
+      await _connectSocket();
       notifyListeners();
       return true;
     } catch (e) {

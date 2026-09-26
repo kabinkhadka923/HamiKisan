@@ -112,6 +112,21 @@ const registerSocketHandlers = (httpServer) => {
       });
     });
 
+    const relayCallEvent = (event, payload = {}) => {
+      const targetUserId = payload.toUserId || payload.calleeId || payload.callerId;
+      if (!targetUserId) return;
+      io.to(`user_${targetUserId}`).emit(event, {
+        ...payload,
+        from: userId,
+      });
+    };
+
+    socket.on('call:offer', (payload) => relayCallEvent('call:offer', payload));
+    socket.on('call:answer', (payload) => relayCallEvent('call:answer', payload));
+    socket.on('call:ice', (payload) => relayCallEvent('call:ice', payload));
+    socket.on('call:end', (payload) => relayCallEvent('call:end', payload));
+    socket.on('call:decline', (payload) => relayCallEvent('call:decline', payload));
+
     socket.on('typing', ({ roomId, isTyping }) => {
       if (!roomId) return;
       socket.to(roomId).emit('typing', { roomId, userId, isTyping: Boolean(isTyping) });
