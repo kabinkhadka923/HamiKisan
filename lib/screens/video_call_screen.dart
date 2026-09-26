@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:html' as html if (dart.library.html) 'dart-html';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
@@ -66,7 +65,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   void initState() {
     super.initState();
     _activeCallId = widget.callId;
-    _initializeRenderers();
     _initializeServices();
   }
 
@@ -89,6 +87,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   Future<void> _initializeServices() async {
+    await _initializeRenderers();
     _callService = KisanVideoCallService();
     _audioService = AudioService();
 
@@ -116,17 +115,27 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
     _setupSignaling();
     if (widget.isOutgoing) {
-      await _prepareOutgoingCall(authProvider);
+      final invited = await _prepareOutgoingCall(authProvider);
+      if (invited && mounted) {
+        await _makeCall();
+      }
     }
   }
 
-  Future<void> _prepareOutgoingCall(AuthProvider authProvider) async {
+  Future<bool> _prepareOutgoingCall(AuthProvider authProvider) async {
     final callId = await CallSignalingService().inviteCall(
       receiverId: widget.calleeId,
       callerName: authProvider.currentUser?.name ?? 'HamiKisan user',
       callType: widget.callType == CallType.voice ? 'voice' : 'video',
     );
-    if (!mounted || callId == null) return;
+    if (!mounted || callId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to start the call. Please try again.')),
+        );
+      }
+      return false;
+    }
     _activeCallId = callId;
     authProvider.socket?.emit('call_invite', {
       'toUserId': widget.calleeId,
@@ -134,6 +143,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       'callType': widget.callType.name,
       'callerName': authProvider.currentUser?.name,
     });
+    return true;
   }
 
   void _setupSignaling() {
@@ -236,9 +246,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     };
 
     _peerConnection!.onIceCandidate = (candidate) {
-      if (candidate != null) {
-        _sendIceCandidate(candidate);
-      }
+      _sendIceCandidate(candidate);
     };
   }
 
@@ -536,9 +544,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         color = Colors.red;
         text = 'Call error';
         break;
-      default:
-        color = Colors.grey;
-        text = 'Unknown state';
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -636,116 +641,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     );
   }
 
-  Widget _buildDialer() {
-    final TextEditingController numberController = TextEditingController();
-    final isDoctor = context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
-
-    // Pre-fill with callee's phone number if available
-    if (widget.calleePhoneNumber != null && widget.calleePhoneNumber!.isNotEmpty) {
-      final phone = widget.calleePhoneNumber!;
-      // Remove +977 prefix if present
-      String cleanNumber = phone.startsWith('+977') ? phone.substring(4) : phone;
-      numberController.text = cleanNumber;
-    }
-
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.videocam,
-                size: 80,
-                color: Colors.white.withOpacity(0.8),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Start Video Call',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Enter the phone number to call',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.7),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: TextField(
-                  controller: numberController,
-                  style: const TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 2),
-                  keyboardType: TextInputType.phone,
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(
-                    hintText: '98XXXXXXXX',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.phone, color: Colors.white.withOpacity(0.7)),
-                    prefixText: '+977 ',
-                    prefixStyle: TextStyle(color: Colors.white, fontSize: 24),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      label: const Text('Cancel', style: TextStyle(color: Colors.white, fontSize: 18)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.withOpacity(0.8),
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        final number = numberController.text.trim();
-                        if (number.length == 10 && number.startsWith('9')) {
-                          _makeCall();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Enter valid 10-digit Nepali number')),
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.videocam, color: Colors.white),
-                      label: const Text('Video Call', style: TextStyle(color: Colors.white, fontSize: 18)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDoctor = context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
@@ -767,8 +662,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       body: Stack(
         children: [
           _buildVideoArea(),
-          if (_callService.callState == CallState.idle && widget.isOutgoing)
-            _buildDialer(),
           if (_callService.callState != CallState.idle)
             _buildCallControls(),
         ],
