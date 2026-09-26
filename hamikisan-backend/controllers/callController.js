@@ -86,6 +86,13 @@ const answer = async (req, res) => {
   call.status = accept ? 'connected' : 'declined';
   call.answeredAt = Date.now();
 
+  const io = req.app.get('io');
+  io.to(`user_${call.from}`).emit(accept ? 'call:accepted' : 'call:declined', {
+    callId: call.id,
+    from: call.to,
+    callType: call.callType,
+  });
+
   return res.json({ callId: call.id, status: call.status });
 };
 
@@ -107,6 +114,11 @@ const end = async (req, res) => {
 
   call.status = 'ended';
   call.endedAt = Date.now();
+  const io = req.app.get('io');
+  io.to(`user_${call.from === me ? call.to : call.from}`).emit('call:ended', {
+    callId: call.id,
+    from: me,
+  });
   setTimeout(() => calls.delete(String(callId)), 10 * 1000);
 
   return res.json({ callId: call.id, status: call.status });

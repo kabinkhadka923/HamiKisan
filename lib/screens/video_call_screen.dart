@@ -115,10 +115,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
     _setupSignaling();
     if (widget.isOutgoing) {
+      _callService.updateCallState(CallState.ringingOutgoing);
       final invited = await _prepareOutgoingCall(authProvider);
-      if (invited && mounted) {
-        await _makeCall();
-      }
+      if (!invited && mounted) _callService.updateCallState(CallState.idle);
     }
   }
 
@@ -158,6 +157,23 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     socket.on('call:answer', (data) async {
       if (!mounted) return;
       await _handleAnswer(data);
+    });
+
+    socket.on('call:accepted', (data) async {
+      if (!mounted || data['callId']?.toString() != _activeCallId) return;
+      await Future<void>.delayed(const Duration(milliseconds: 800));
+      if (!mounted) return;
+      await _makeCall();
+    });
+
+    socket.on('call:declined', (data) {
+      if (!mounted || data['callId']?.toString() != _activeCallId) return;
+      _handleCallDeclined();
+    });
+
+    socket.on('call:ended', (data) {
+      if (!mounted || data['callId']?.toString() != _activeCallId) return;
+      _handleCallEnded();
     });
 
     socket.on('call:ice', (data) async {
