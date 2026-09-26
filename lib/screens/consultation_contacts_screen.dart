@@ -188,7 +188,55 @@ class _ConsultationContactsScreenState
               ),
             ),
           ),
+          _buildPendingRequestsBanner(),
           Expanded(child: _buildBody()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPendingRequestsBanner() {
+    final currentUser = context.read<AuthProvider>().currentUser;
+    final requests = _connections.where((connection) {
+      return connection.status == 'pending' &&
+          connection.receiverId == currentUser?.id;
+    }).toList();
+    if (requests.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8E1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFFCA28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Connection Requests',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          ...requests.map((request) {
+            final name = request.otherUserName ?? 'A user';
+            return Row(
+              children: [
+                Expanded(child: Text('$name wants to connect with you.')),
+                IconButton(
+                  tooltip: 'Reject',
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  onPressed: () => _updateConnection(request.id, 'reject'),
+                ),
+                IconButton(
+                  tooltip: 'Accept',
+                  icon: const Icon(Icons.check, color: Colors.green),
+                  onPressed: () => _updateConnection(request.id, 'accept'),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );
