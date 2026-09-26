@@ -1,6 +1,6 @@
 # 🏠 HamiKisan - Nepal's Revolutionary Agricultural Platform
 
-** https://kabinkhadka923.github.io/HamiKisan/ **
+https://kabinkhadka923.github.io/HamiKisan/
 
 ## 🌱 **Complete Agricultural Technology Solution**
 
