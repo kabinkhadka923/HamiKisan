@@ -123,7 +123,23 @@ const registerSocketHandlers = (httpServer) => {
     });
 
     const relayCallEvent = async (event, payload = {}) => {
-      const targetUserId = payload.toUserId || payload.calleeId || payload.callerId;
+      let targetUserId = payload.toUserId;
+      if (!targetUserId && event === 'call:offer') {
+        targetUserId = payload.calleeId;
+      }
+      if (!targetUserId && event === 'call:answer') {
+        targetUserId = payload.callerId;
+      }
+      if (!targetUserId && event === 'call:ice') {
+        targetUserId = String(userId) === String(payload.callerId)
+            ? payload.calleeId
+            : payload.callerId;
+      }
+      if (!targetUserId && (event === 'call:end' || event === 'call:decline')) {
+        targetUserId = String(userId) === String(payload.callerId)
+            ? payload.calleeId
+            : payload.callerId;
+      }
       if (!targetUserId) return;
       if (!await hasAcceptedConnection(userId, targetUserId)) return;
       io.to(`user_${targetUserId}`).emit(event, {
