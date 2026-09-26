@@ -131,6 +131,7 @@ Future<bool> loginWithUsername(String username, String password,
 
       _currentUser = user;
       await saveSession();
+      await _connectSocket();
 
       // Create secure session
       await SecurityService.createSecureSession(_currentUser!.id);

@@ -25,24 +25,53 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
   final AudioService _audioService = AudioService();
   Timer? _pollTimer;
   bool _isShowingCall = false;
-  SignalCall? _currentCall;
+  bool _socketListenerAttached = false;
 
   @override
   void initState() {
     super.initState();
     _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _checkIncomingCall());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _attachSocketListener());
+  }
+
+  void _attachSocketListener() {
+    if (!mounted || _socketListenerAttached) return;
+    final socket = context.read<AuthProvider>().socket;
+    if (socket == null) return;
+    socket.on('call_incoming', (data) {
+      if (!mounted || _isShowingCall || data is! Map) return;
+      final call = SignalCall.fromBackend({
+        'id': data['callId'],
+        'from': data['from'],
+        'fromName': data['fromName'],
+        'to': context.read<AuthProvider>().currentUser?.id,
+        'callType': data['callType'],
+        'status': 'ringing',
+      });
+      if (call.callId.isEmpty) return;
+      _presentIncomingCall(call);
+    });
+    _socketListenerAttached = true;
+  }
+
+  void _presentIncomingCall(SignalCall call) {
+    if (!mounted || _isShowingCall) return;
+    setState(() {
+      _isShowingCall = true;
+    });
+    _showIncomingCallSheet(call);
   }
 
   @override
   void dispose() {
     _pollTimer?.cancel();
-    _currentCall = null;
     _audioService.stopCallSound();
     super.dispose();
   }
 
   Future<void> _checkIncomingCall() async {
     if (!mounted || _isShowingCall) return;
+    _attachSocketListener();
 
     final auth = context.read<AuthProvider>();
     if (auth.currentUser == null) return;
@@ -50,11 +79,7 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
     final call = await _signaling.getIncomingCall();
     if (call == null || !mounted || _isShowingCall) return;
 
-    setState(() {
-      _isShowingCall = true;
-      _currentCall = call;
-    });
-    _showIncomingCallSheet(call);
+    _presentIncomingCall(call);
   }
 
   Future<void> _showIncomingCallSheet(SignalCall call) async {
@@ -65,7 +90,6 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
     final navigator = Navigator.of(context);
     final accepted = await _showRingingDialog(call);
 
-    _currentCall = null;
     _audioService.stopCallSound();
     _isShowingCall = false;
     if (!mounted) return;
