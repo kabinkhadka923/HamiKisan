@@ -251,6 +251,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   Future<void> _makeCall() async {
+    _callService.updateCallState(CallState.ringingOutgoing);
     await _startLocalStream();
     await _createPeerConnection();
 
@@ -279,6 +280,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
     final answer = await _peerConnection!.createAnswer();
     await _peerConnection!.setLocalDescription(answer);
+    _callService.updateCallState(CallState.connected);
 
     _callService.socket?.emit('call:answer', {
       'callId': _activeCallId,
@@ -287,7 +289,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       'calleeId': widget.calleeId,
     });
 
-    _showIncomingCallDialog(data);
   }
 
   Future<void> _handleAnswer(Map<String, dynamic> data) async {
@@ -297,6 +298,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         data['answer']['type'],
       );
       await _peerConnection!.setRemoteDescription(answer);
+      _callService.updateCallState(CallState.connected);
     }
   }
 
@@ -321,14 +323,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     });
   }
 
-  Future<void> _answerCall() async {
-    if (_callService.currentCallId != null) {
-      await _callService.answerCall();
-    }
-  }
-
   Future<void> _endCall() async {
     await _cleanupCall();
+    await CallSignalingService().endCall(callId: _activeCallId);
     _callService.socket?.emit('call:end', {
       'callId': _activeCallId,
       'callerId': widget.callerId,
@@ -336,16 +333,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     });
     await _callService.endCall();
     _navigateBack();
-  }
-
-  Future<void> _declineCall() async {
-    await _cleanupCall();
-    _callService.socket?.emit('call:decline', {
-      'callId': _activeCallId,
-      'callerId': widget.callerId,
-      'calleeId': widget.calleeId,
-    });
-    await _callService.declineCall();
   }
 
   void _handleCallDeclined() {
@@ -440,51 +427,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     } catch (e) {
       print('Error switching camera: $e');
     }
-  }
-
-  void _showIncomingCallDialog(Map<String, dynamic> data) {
-    final callerName = data['callerName'] ?? widget.callerName ?? 'Doctor';
-    final callType = data['callType'] ?? 'video';
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Incoming Call'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.call, size: 64, color: Colors.green),
-            const SizedBox(height: 16),
-            Text(
-              '$callerName is calling',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Call Type: $callType',
-              style: const TextStyle(fontSize: 14, color: Colors.green),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _declineCall();
-            },
-            child: const Text('Decline'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _answerCall();
-            },
-            child: const Text('Accept'),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildVideoArea() {
