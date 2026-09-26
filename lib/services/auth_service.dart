@@ -37,7 +37,7 @@ class AuthService {
   Map<String, dynamic> _normalizeBackendUser(Map<String, dynamic> rawUser) {
     final backendRole = (rawUser['role'] ?? 'farmer').toString().toLowerCase();
     final appRole = switch (backendRole) {
-      'doctor' => 'kisanDoctor',
+      'doctor' || 'kisandoctor' || 'kisan_doctor' => 'kisanDoctor',
       'admin' => 'kisanAdmin',
       _ => 'farmer',
     };
