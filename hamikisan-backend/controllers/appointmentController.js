@@ -1,10 +1,15 @@
 const db = require('../config/db');
+const { requireAcceptedConnection } = require('../utils/connections');
 
 const VALID_STATUS = new Set(['pending', 'confirmed', 'completed', 'cancelled']);
 
 const createAppointment = async (req, res) => {
   const { doctorId, scheduledAt, notes = '' } = req.body;
   const farmerId = req.user.id;
+
+  if (req.user.role !== 'farmer') {
+    return res.status(403).json({ error: 'Only farmers can request appointments.' });
+  }
 
   if (!doctorId || !scheduledAt) {
     return res.status(400).json({ error: 'doctorId and scheduledAt are required.' });
@@ -14,12 +19,19 @@ const createAppointment = async (req, res) => {
   if (doctor.rowCount === 0) {
     return res.status(404).json({ error: 'Doctor not found.' });
   }
+  if (!await requireAcceptedConnection(res, farmerId, doctorId)) return;
 
   const result = await db.query(
     `INSERT INTO appointments (farmer_id, doctor_id, scheduled_at, notes)
      VALUES ($1, $2, $3, $4)
      RETURNING id, farmer_id, doctor_id, scheduled_at, status, notes, created_at`,
     [farmerId, doctorId, scheduledAt, notes],
+  );
+
+  await db.query(
+    `INSERT INTO notifications (user_id, title, message, type)
+     VALUES ($1, $2, $3, $4)`,
+    [doctorId, 'New appointment request', 'A connected farmer requested an appointment.', 'appointment'],
   );
 
   return res.status(201).json({ appointment: result.rows[0] });

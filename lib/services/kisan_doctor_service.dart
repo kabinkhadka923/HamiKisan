@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/kisan_doctor_models.dart';
+import 'auth_service.dart';
+import 'backend_config.dart';
 
 class KisanDoctorService {
   static const String _casesKey = 'kisan_doctor_cases';
@@ -14,10 +17,35 @@ class KisanDoctorService {
   Future<List<Case>> getDoctorCases(String doctorId, {CaseStatus? status}) async {
     final prefs = await SharedPreferences.getInstance();
     final casesStr = prefs.getString(_casesKey);
-    if (casesStr == null) return [];
-
-    final cases = (json.decode(casesStr) as List<dynamic>)
+    final localCases = casesStr == null ? <Case>[] : (json.decode(casesStr) as List<dynamic>)
         .map((e) => Case.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    final appointmentCases = (await getDoctorAppointments(doctorId)).map((appointment) {
+      final caseStatus = appointment.status == AppointmentStatus.accepted
+          ? CaseStatus.ongoing
+          : appointment.status == AppointmentStatus.completed
+              ? CaseStatus.resolved
+              : CaseStatus.new_;
+      return Case(
+        caseId: 'appointment_${appointment.appointmentId}',
+        farmerId: appointment.farmerId,
+        doctorId: appointment.doctorId,
+        cropType: 'Consultation',
+        problemDescription: appointment.notes?.isNotEmpty == true
+            ? appointment.notes!
+            : 'Farmer consultation request',
+        status: caseStatus,
+        createdAt: appointment.dateTime,
+        updatedAt: appointment.dateTime,
+      );
+    });
+    final cases = [...localCases, ...appointmentCases]
+        .fold<Map<String, Case>>({}, (map, item) {
+          map[item.caseId] = item;
+          return map;
+        })
+        .values
         .toList();
 
     return cases
@@ -93,6 +121,37 @@ class KisanDoctorService {
   // ============= APPOINTMENT MANAGEMENT =============
 
   Future<List<Appointment>> getDoctorAppointments(String doctorId) async {
+    try {
+      final token = await AuthService.getAuthToken();
+      final response = await http.get(
+        BackendConfig.uri('/api/appointments/mine'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        final rows = data['appointments'] as List<dynamic>? ?? [];
+        return rows.whereType<Map<String, dynamic>>().map((row) {
+          final rawStatus = (row['status'] ?? 'pending').toString();
+          return Appointment(
+            appointmentId: (row['id'] ?? '').toString(),
+            doctorId: (row['doctor_id'] ?? row['doctorId']).toString(),
+            farmerId: (row['farmer_id'] ?? row['farmerId']).toString(),
+            dateTime: DateTime.parse((row['scheduled_at'] ?? row['dateTime']).toString()),
+            status: rawStatus == 'confirmed'
+                ? AppointmentStatus.accepted
+                : AppointmentStatus.values.firstWhere(
+                    (value) => value.name == rawStatus,
+                    orElse: () => AppointmentStatus.pending,
+                  ),
+            notes: row['notes']?.toString(),
+          );
+        }).toList();
+      }
+    } catch (_) {}
+
     final prefs = await SharedPreferences.getInstance();
     final appointmentsStr = prefs.getString(_appointmentsKey);
     if (appointmentsStr == null) return [];
@@ -105,11 +164,31 @@ class KisanDoctorService {
   }
 
   Future<void> approveAppointment(String appointmentId) async {
+    if (await _updateAppointmentOnBackend(appointmentId, 'confirmed')) return;
     await _updateAppointmentStatus(appointmentId, AppointmentStatus.accepted);
   }
 
   Future<void> rejectAppointment(String appointmentId) async {
+    if (await _updateAppointmentOnBackend(appointmentId, 'cancelled')) return;
     await _updateAppointmentStatus(appointmentId, AppointmentStatus.rejected);
+  }
+
+  Future<bool> _updateAppointmentOnBackend(String appointmentId, String status) async {
+    try {
+      final token = await AuthService.getAuthToken();
+      final response = await http.patch(
+        BackendConfig.uri('/api/appointments/$appointmentId/status'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: json.encode({'status': status}),
+      ).timeout(const Duration(seconds: 8));
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _updateAppointmentStatus(String appointmentId, AppointmentStatus status) async {

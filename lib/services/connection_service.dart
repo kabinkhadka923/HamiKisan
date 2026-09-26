@@ -111,6 +111,26 @@ class ConnectionService {
     }
   }
 
+  Future<void> requestAppointment({
+    required String doctorId,
+    required DateTime scheduledAt,
+    String notes = '',
+  }) async {
+    final token = await AuthService.getAuthToken();
+    final response = await http.post(
+      BackendConfig.uri('/api/appointments'),
+      headers: _headers(token: token, json: true),
+      body: json.encode({
+        'doctorId': doctorId,
+        'scheduledAt': scheduledAt.toUtc().toIso8601String(),
+        'notes': notes,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_errorMessage(response));
+    }
+  }
+
   String _errorMessage(http.Response response) {
     try {
       final data = json.decode(response.body) as Map<String, dynamic>;

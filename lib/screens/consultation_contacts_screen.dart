@@ -242,6 +242,45 @@ class _ConsultationContactsScreenState
     );
   }
 
+  Future<void> _requestAppointment(User doctor) async {
+    final date = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 60)),
+      initialDate: DateTime.now().add(const Duration(days: 1)),
+    );
+    if (!mounted || date == null) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 10, minute: 0),
+    );
+    if (!mounted || time == null) return;
+    try {
+      await _connectionService.requestAppointment(
+        doctorId: doctor.id,
+        scheduledAt: DateTime(
+          date.year,
+          date.month,
+          date.day,
+          time.hour,
+          time.minute,
+        ),
+        notes: 'Consultation requested from HamiKisan.',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Appointment request sent.')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    }
+  }
+
   Widget _buildBody() {
     final currentUser = context.read<AuthProvider>().currentUser;
     if (_isLoading) {
@@ -336,9 +375,17 @@ class _ConsultationContactsScreenState
                       tooltip: 'Accept request',
                       onPressed: () => _updateConnection(connection!.id, 'accept'),
                     ),
-                  ] else if (isAccepted)
+                  ] else if (isAccepted) ...[
+                    if (currentUser?.role != UserRole.kisanDoctor)
+                      IconButton(
+                        icon: const Icon(Icons.calendar_month,
+                            color: Color(0xFF2E7D32)),
+                        tooltip: 'Request appointment',
+                        onPressed: () => _requestAppointment(user),
+                      ),
                     const Icon(Icons.chat_bubble_outline,
-                        color: Color(0xFF2E7D32))
+                        color: Color(0xFF2E7D32)),
+                  ]
                   else if (status == null)
                     IconButton(
                       icon: const Icon(Icons.person_add_alt_1,
