@@ -91,9 +91,17 @@ class AuthProvider with ChangeNotifier {
 
   
   /// Auto-detects identifier type (phone, email, username) and logs in
-  Future<bool> login(String identifier, String password) async {
+  Future<bool> login(
+    String identifier,
+    String password, {
+    UserRole? expectedRole,
+  }) async {
     try {
-      final userData = await _authService.login(identifier, password);
+      final userData = await _authService.login(
+        identifier,
+        password,
+        expectedRole: expectedRole,
+      );
       if (userData == null) {
         _error = 'Invalid credentials';
         return false;

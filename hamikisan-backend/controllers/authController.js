@@ -98,7 +98,13 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { phoneNumber, phone_number: phoneNumberSnake, identifier, password } = req.body;
+  const {
+    phoneNumber,
+    phone_number: phoneNumberSnake,
+    identifier,
+    password,
+    role,
+  } = req.body;
   // Only accept phone number as identifier
   const rawIdentifier = phoneNumber || phoneNumberSnake || identifier;
 
@@ -136,6 +142,11 @@ const login = async (req, res) => {
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) {
     return res.status(401).json({ error: 'Invalid credentials.' });
+  }
+
+  const requestedRole = role ? normalizeRole(role) : null;
+  if (role && (!requestedRole || requestedRole !== user.role)) {
+    return res.status(403).json({ error: 'This account does not belong to the selected role.' });
   }
 
   await db.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);

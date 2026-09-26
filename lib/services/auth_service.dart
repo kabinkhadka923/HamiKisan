@@ -78,7 +78,11 @@ class AuthService {
 
   /// Login with phone number and password
   /// Backend matches against phone number only
-  Future<Map<String, dynamic>?> login(String phoneNumber, String password) async {
+  Future<Map<String, dynamic>?> login(
+    String phoneNumber,
+    String password, {
+    UserRole? expectedRole,
+  }) async {
     final trimmedPhone = phoneNumber.trim();
 
     // Normalize phone number
@@ -98,6 +102,8 @@ class AuthService {
         body: json.encode({
           'phoneNumber': normalizedPhone,
           'password': password,
+          if (expectedRole != null)
+            'role': expectedRole == UserRole.kisanDoctor ? 'doctor' : 'farmer',
         }),
       ).timeout(const Duration(seconds: 10));
 

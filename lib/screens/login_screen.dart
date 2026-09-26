@@ -563,53 +563,7 @@ class _LoginScreenState extends State<LoginScreen>
     return Column(
       children: [
         // Role Selector
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF3DA35D).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF3DA35D).withOpacity(0.3)),
-          ),
-          child: Row(
-            children: [
-              Image.asset(
-                'assets/icons/icons.png',
-                width: 20,
-                height: 20,
-                color: Colors.white,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.person_outline,
-                      color: Colors.white);
-                },
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '${context.tr('login_as')} ' ,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w500),
-              ),
-              DropdownButton<UserRole>(
-                value: _selectedRole,
-                underline: const SizedBox(),
-                items: _roles.map((role) {
-                  return DropdownMenuItem<UserRole>(
-                    value: role['role'],
-                    child: Text(
-                      role['title'].split(' / ')[0],
-                      style: TextStyle(
-                          color: role['color'], fontWeight: FontWeight.w600),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (UserRole? newRole) {
-                  if (newRole != null) {
-                    setState(() => _selectedRole = newRole);
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
+        _buildLoginRoleSelector(),
         const SizedBox(height: 20),
 
         // Phone Number
@@ -734,6 +688,68 @@ class _LoginScreenState extends State<LoginScreen>
               ],
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _buildLoginRoleSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.tr('login_as'),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: _roles.map((role) {
+            final selected = _selectedRole == role['role'];
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: role['role'] == UserRole.farmer ? 8 : 0,
+                ),
+                child: InkWell(
+                  onTap: () => setState(() => _selectedRole = role['role']),
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: selected ? role['color'] : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: selected ? role['color'] : Colors.white70,
+                        width: 2,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          role['icon'],
+                          color: selected ? Colors.white : role['color'],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          role['title'].split(' / ')[0],
+                          style: TextStyle(
+                            color: selected ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ],
     );
   }
@@ -1308,6 +1324,7 @@ class _LoginScreenState extends State<LoginScreen>
       final success = await authProvider.login(
         _phoneController.text.trim(),
         _passwordController.text.trim(),
+        expectedRole: _selectedRole,
       );
 
       if (!success) {
