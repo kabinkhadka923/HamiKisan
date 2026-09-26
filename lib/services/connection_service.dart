@@ -131,6 +131,18 @@ class ConnectionService {
     }
   }
 
+  Future<void> setAvailability(bool isOnline) async {
+    final token = await AuthService.getAuthToken();
+    final response = await http.patch(
+      BackendConfig.uri('/api/users/me/availability'),
+      headers: _headers(token: token, json: true),
+      body: json.encode({'isOnline': isOnline}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_errorMessage(response));
+    }
+  }
+
   String _errorMessage(http.Response response) {
     try {
       final data = json.decode(response.body) as Map<String, dynamic>;

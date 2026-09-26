@@ -18,6 +18,7 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'lastLoginAt': instance.lastLoginAt?.millisecondsSinceEpoch,
       'isVerified': instance.isVerified,
       'hasSelectedLanguage': instance.hasSelectedLanguage,
+      'isOnline': instance.isOnline,
     };
 
 User _$UserFromJson(Map<String, dynamic> json) => User(
@@ -47,6 +48,7 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
           : DateTime.fromMillisecondsSinceEpoch(json['lastLoginAt'] as int),
       isVerified: json['isVerified'] as bool? ?? false,
       hasSelectedLanguage: json['hasSelectedLanguage'] as bool? ?? false,
+      isOnline: json['isOnline'] as bool? ?? json['is_online'] as bool? ?? false,
     );
 
 enum UserRole {
@@ -89,6 +91,7 @@ class User {
   final DateTime? lastLoginAt;
   final bool isVerified;
   final bool hasSelectedLanguage;
+  final bool isOnline;
 
   const User({
     required this.id,
@@ -107,6 +110,7 @@ class User {
     this.lastLoginAt,
     this.isVerified = false,
     this.hasSelectedLanguage = false,
+    this.isOnline = false,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
@@ -127,6 +131,7 @@ class User {
     DateTime? lastLoginAt,
     bool? isVerified,
     bool? hasSelectedLanguage,
+    bool? isOnline,
     String? address,
     String? language,
     String? farmingCategory,
@@ -150,6 +155,7 @@ class User {
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
       isVerified: isVerified ?? this.isVerified,
       hasSelectedLanguage: hasSelectedLanguage ?? this.hasSelectedLanguage,
+      isOnline: isOnline ?? this.isOnline,
     );
   }
 

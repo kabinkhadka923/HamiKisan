@@ -38,7 +38,20 @@ const updateProfile = async (req, res) => {
   return res.json({ user: result.rows[0] });
 };
 
-const USER_LIST_FIELDS = `id, name, email, role, phone, location, specialty, created_at`;
+const updateAvailability = async (req, res) => {
+  const isOnline = Boolean(req.body.isOnline);
+  const result = await db.query(
+    `UPDATE users
+     SET is_online = $1, last_seen_at = NOW()
+     WHERE id = $2
+     RETURNING id, is_online, last_seen_at`,
+    [isOnline, req.user.id],
+  );
+  if (result.rowCount === 0) return res.status(404).json({ error: 'User not found.' });
+  return res.json({ availability: result.rows[0] });
+};
+
+const USER_LIST_FIELDS = `id, name, email, role, phone, location, specialty, is_online, last_seen_at, created_at`;
 
 const listDoctors = async (_req, res) => {
   const result = await db.query(
@@ -63,6 +76,7 @@ const listFarmers = async (_req, res) => {
 module.exports = {
   getProfile,
   updateProfile,
+  updateAvailability,
   listDoctors,
   listFarmers,
 };

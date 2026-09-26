@@ -73,6 +73,7 @@ class AuthService {
           : parseDate(rawUser['lastLoginAt']),
       'isVerified': rawUser['isVerified'] ?? true,
       'hasSelectedLanguage': rawUser['hasSelectedLanguage'] ?? true,
+      'isOnline': rawUser['isOnline'] ?? rawUser['is_online'] ?? false,
     };
   }
 

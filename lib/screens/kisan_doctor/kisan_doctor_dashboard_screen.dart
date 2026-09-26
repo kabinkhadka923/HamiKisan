@@ -12,6 +12,7 @@ import '../consultation_chat_screen.dart';
 import '../consultation_contacts_screen.dart';
 import '../video_call_screen.dart';
 import '../../widgets/incoming_call_listener.dart';
+import '../../services/connection_service.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 
@@ -33,10 +34,12 @@ class _KisanDoctorDashboardScreenState
   int _selectedIndex = 0;
   CaseStatus _selectedFilter = CaseStatus.new_;
   bool _isOnline = true;
+  final ConnectionService _connectionService = ConnectionService();
 
   @override
   void initState() {
     super.initState();
+    _isOnline = widget.doctor.isOnline;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<KisanDoctorProvider>().initialize(widget.doctor.id);
     });
@@ -208,8 +211,13 @@ class _KisanDoctorDashboardScreenState
             activeTrackColor: Colors.white.withOpacity(0.4),
             inactiveThumbColor: Colors.grey.shade200,
             inactiveTrackColor: Colors.white.withOpacity(0.25),
-            onChanged: (value) {
+            onChanged: (value) async {
               setState(() => _isOnline = value);
+              try {
+                await _connectionService.setAvailability(value);
+              } catch (_) {
+                if (mounted) setState(() => _isOnline = !value);
+              }
             },
           ),
         ),

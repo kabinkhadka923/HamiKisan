@@ -31,6 +31,7 @@ const sanitizeUser = (user) => ({
   permissions: user.permissions || null,
   isVerified: user.is_verified !== false,
   hasSelectedLanguage: user.has_selected_language !== false,
+  isOnline: user.is_online === true,
   createdAt: new Date(user.created_at).getTime(),
   lastLoginAt: user.last_login_at ? new Date(user.last_login_at).getTime() : null,
 });

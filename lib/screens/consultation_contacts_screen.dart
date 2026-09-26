@@ -343,6 +343,13 @@ class _ConsultationContactsScreenState
                       color: Colors.grey,
                     ),
                   ),
+                Text(
+                  user.isOnline ? 'Online now' : 'Offline',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: user.isOnline ? Colors.green : Colors.grey,
+                  ),
+                ),
                   Text(
                     status == null
                         ? 'No connection'
