@@ -132,7 +132,7 @@ class _KisanDoctorDashboardScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'नमस्ते ${widget.doctor.name}',
+            'Kisan Doctor Workspace',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -140,9 +140,7 @@ class _KisanDoctorDashboardScreenState
             ),
           ),
           Text(
-            widget.doctor.specialization?.isNotEmpty == true
-                ? widget.doctor.specialization!
-                : 'Kisan Doctor Workspace',
+            'Dr. ${widget.doctor.name}${widget.doctor.specialization?.isNotEmpty == true ? ' • ${widget.doctor.specialization}' : ''}',
             style: const TextStyle(
               fontSize: 12,
               color: Colors.white,
