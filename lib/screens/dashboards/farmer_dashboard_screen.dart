@@ -353,7 +353,7 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                     },
                   ),
                   const SizedBox(width: 8),
-                  const Text('HamiKisan',
+                  const Text('Farmer Workspace',
                       style: TextStyle(color: Colors.white)),
                 ],
               ),

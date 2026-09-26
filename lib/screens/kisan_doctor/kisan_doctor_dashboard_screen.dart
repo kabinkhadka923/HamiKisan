@@ -51,14 +51,14 @@ class _KisanDoctorDashboardScreenState
         builder: (context, provider, _) {
           return Scaffold(
             appBar: _buildGradientHeader(provider),
-            backgroundColor: const Color(0xFFF6F8F6),
+                backgroundColor: const Color(0xFFF4F7FB),
             body: provider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _buildCurrentTab(provider),
           floatingActionButton: _selectedIndex == 0
               ? FloatingActionButton.extended(
                   backgroundColor: _isOnline
-                      ? const Color(0xFF2E7D32)
+                          ? const Color(0xFF1565C0)
                       : Colors.grey.shade500,
                   foregroundColor: Colors.white,
                   icon: const Icon(Icons.video_call),
@@ -78,8 +78,8 @@ class _KisanDoctorDashboardScreenState
               : null,
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _selectedIndex,
-            selectedItemColor: const Color(0xFF2E7D32),
-            unselectedItemColor: Colors.grey.shade600,
+            selectedItemColor: const Color(0xFF1565C0),
+                  unselectedItemColor: Colors.grey.shade500,
             type: BottomNavigationBarType.fixed,
             onTap: (index) => setState(() => _selectedIndex = index),
             items: const [
@@ -122,7 +122,7 @@ class _KisanDoctorDashboardScreenState
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+            colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -142,7 +142,7 @@ class _KisanDoctorDashboardScreenState
           Text(
             widget.doctor.specialization?.isNotEmpty == true
                 ? widget.doctor.specialization!
-                : 'Agriculture Specialist',
+                : 'Kisan Doctor Workspace',
             style: const TextStyle(
               fontSize: 12,
               color: Colors.white,
@@ -651,158 +651,41 @@ class _KisanDoctorDashboardScreenState
   }
 
   Widget _buildCallingTab(KisanDoctorProvider provider) {
-    return DefaultTabController(
-      length: 2,
-      child: Column(
-        children: [
-          const TabBar(
-            labelColor: Color(0xFF2E7D32),
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Color(0xFF2E7D32),
-            tabs: [
-              Tab(icon: Icon(Icons.dialpad), text: 'Dialer'),
-              Tab(icon: Icon(Icons.people), text: 'Connected Farmers'),
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE3F2FD),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.video_call, color: Color(0xFF1565C0), size: 32),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Call an accepted farmer connection',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Choose farmer',
+                icon: const Icon(Icons.arrow_forward, color: Color(0xFF1565C0)),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ConsultationContactsScreen(),
+                  ),
+                ),
+              ),
             ],
           ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                _buildDialerTab(),
-                _buildConnectedFarmersTab(provider),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDialerTab() {
-    final TextEditingController numberController = TextEditingController();
-    final isDoctor = context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
-
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.videocam, size: 50, color: Colors.white),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Start Video Consultation',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Enter farmer phone number to start consultation',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TextField(
-              controller: numberController,
-              style: const TextStyle(fontSize: 24, letterSpacing: 2, fontWeight: FontWeight.bold),
-              keyboardType: TextInputType.phone,
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: '98XXXXXXXX',
-                hintStyle: TextStyle(color: Colors.grey.shade400, letterSpacing: 2),
-                border: InputBorder.none,
-                prefixIcon: const Icon(Icons.phone, color: Color(0xFF2E7D32)),
-                prefixText: '+977 ',
-                prefixStyle: const TextStyle(color: Color(0xFF2E7D32), fontSize: 24, fontWeight: FontWeight.bold),
-                contentPadding: const EdgeInsets.symmetric(vertical: 20),
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                final number = numberController.text.trim();
-                if (number.length == 10 && number.startsWith('9')) {
-                  final authProvider = context.read<AuthProvider>();
-                  final currentUser = authProvider.currentUser;
-                  if (currentUser != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => VideoCallScreen(
-                          callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
-                          peerName: 'Farmer',
-                          callerName: currentUser.name,
-                          callerSpecialty: widget.doctor.specialization,
-                          role: CallRole.caller,
-                          callerId: currentUser.id,
-                          calleeId: number,
-                          isOutgoing: true,
-                          callType: CallType.video,
-                        ),
-                      ),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Enter valid 10-digit Nepali number (9XXXXXXXXX)')),
-                  );
-                }
-              },
-              icon: const Icon(Icons.videocam, size: 24),
-              label: const Text('Start Video Call', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 4,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ConsultationContactsScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.contacts),
-            label: const Text('Select from Contacts'),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-              side: BorderSide(color: Colors.grey.shade300),
-            ),
-          ),
-        ],
-      ),
+        ),
+        Expanded(child: _buildConnectedFarmersTab(provider)),
+      ],
     );
   }
 
