@@ -42,6 +42,26 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   is_read BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE IF NOT EXISTS connections (
+  id BIGSERIAL PRIMARY KEY,
+  requester_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  receiver_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'accepted', 'rejected', 'blocked')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (requester_id <> receiver_id)
+);
+
+CREATE TABLE IF NOT EXISTS connection_reports (
+  id BIGSERIAL PRIMARY KEY,
+  connection_id BIGINT REFERENCES connections(id) ON DELETE SET NULL,
+  reporter_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  reported_user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  reason TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS notifications (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -57,6 +77,14 @@ CREATE INDEX IF NOT EXISTS idx_appointments_farmer ON appointments(farmer_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_doctor ON appointments(doctor_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_time ON appointments(scheduled_at);
 CREATE INDEX IF NOT EXISTS idx_chat_room_time ON chat_messages(room_id, sent_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_connections_pair
+  ON connections (LEAST(requester_id, receiver_id), GREATEST(requester_id, receiver_id));
+CREATE INDEX IF NOT EXISTS idx_connections_receiver_status
+  ON connections(receiver_id, status);
+CREATE INDEX IF NOT EXISTS idx_connections_requester_status
+  ON connections(requester_id, status);
+CREATE INDEX IF NOT EXISTS idx_connection_reports_reported
+  ON connection_reports(reported_user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);
 
 CREATE TABLE IF NOT EXISTS posts (

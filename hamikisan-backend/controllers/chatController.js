@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { buildRoomId } = require('../utils/chat');
+const { requireAcceptedConnection } = require('../utils/connections');
 
 const listMessages = async (req, res) => {
   const { roomId } = req.params;
@@ -11,6 +12,8 @@ const listMessages = async (req, res) => {
     if (Number(a) !== userId && Number(b) !== userId) {
       return res.status(403).json({ error: 'Forbidden.' });
     }
+    const otherUserId = Number(a) === userId ? b : a;
+    if (!await requireAcceptedConnection(res, userId, otherUserId)) return;
   }
 
   const result = await db.query(
@@ -37,6 +40,7 @@ const sendMessage = async (req, res) => {
   if (receiver.rowCount === 0) {
     return res.status(404).json({ error: 'Receiver not found.' });
   }
+  if (!await requireAcceptedConnection(res, senderId, receiverId)) return;
 
   const finalRoomId = roomId || buildRoomId(senderId, receiverId);
   const result = await db.query(

@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../models/user.dart';
 import '../providers/auth_provider.dart';
-import '../services/call/phone_call_service.dart';
 import '../services/chat_service.dart';
+import '../services/connection_service.dart';
 import 'consultation_chat_screen.dart';
 
 class ConsultationContactsScreen extends StatefulWidget {
@@ -18,12 +18,14 @@ class ConsultationContactsScreen extends StatefulWidget {
 class _ConsultationContactsScreenState
     extends State<ConsultationContactsScreen> {
   final ChatService _chatService = ChatService();
+  final ConnectionService _connectionService = ConnectionService();
   final TextEditingController _searchController = TextEditingController();
 
   List<User> _contacts = [];
   List<User> _filteredContacts = [];
   bool _isLoading = true;
   String? _error;
+  List<ConnectionRecord> _connections = [];
 
   @override
   void initState() {
@@ -53,6 +55,7 @@ class _ConsultationContactsScreenState
 
     try {
       await _chatService.initialize(currentUser.id);
+      final connections = await _connectionService.listConnections(currentUser.id);
 
       final contacts = currentUser.role == UserRole.kisanDoctor
           ? await _chatService.getAvailableFarmers()
@@ -61,6 +64,7 @@ class _ConsultationContactsScreenState
       setState(() {
         _contacts = contacts;
         _filteredContacts = contacts;
+        _connections = connections;
         _isLoading = false;
       });
     } catch (e) {
@@ -68,6 +72,73 @@ class _ConsultationContactsScreenState
         _error = 'Failed to load contacts: $e';
         _isLoading = false;
       });
+    }
+  }
+
+  ConnectionRecord? _connectionFor(String userId) {
+    for (final connection in _connections) {
+      if (connection.otherUserId == userId) return connection;
+    }
+    return null;
+  }
+
+  Future<void> _updateConnection(String connectionId, String action) async {
+    try {
+      await _connectionService.updateConnection(connectionId, action);
+      await _loadContacts();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
+  Future<void> _requestConnection(User user) async {
+    try {
+      await _connectionService.requestConnection(user.id);
+      await _loadContacts();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
+  Future<void> _showConnectionActions(ConnectionRecord connection) async {
+    final action = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Connection actions'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, 'block'),
+            child: const Text('Block user'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, 'report'),
+            child: const Text('Report user'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || action == null) return;
+    try {
+      if (action == 'block') {
+        await _connectionService.updateConnection(connection.id, 'block');
+      } else {
+        await _connectionService.reportConnection(
+          connection.id,
+          'Reported from consultation contacts.',
+        );
+      }
+      await _loadContacts();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+      );
     }
   }
 
@@ -124,6 +195,7 @@ class _ConsultationContactsScreenState
   }
 
   Widget _buildBody() {
+    final currentUser = context.read<AuthProvider>().currentUser;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -149,6 +221,11 @@ class _ConsultationContactsScreenState
         itemBuilder: (context, index) {
           final user = _filteredContacts[index];
           final hasPhone = user.phoneNumber?.isNotEmpty == true;
+            final connection = _connectionFor(user.id);
+            final status = connection?.status;
+            final isAccepted = status == 'accepted';
+            final isIncoming = status == 'pending' &&
+              connection?.receiverId == currentUser?.id;
           return ListTile(
             leading: CircleAvatar(
               backgroundColor: const Color(0xFF2E7D32).withOpacity(0.12),
@@ -179,31 +256,65 @@ class _ConsultationContactsScreenState
                       color: Colors.grey,
                     ),
                   ),
+                  Text(
+                    status == null
+                        ? 'No connection'
+                        : status == 'accepted'
+                            ? 'Connected'
+                            : status == 'pending' && isIncoming
+                                ? 'Wants to connect with you'
+                                : status == 'pending'
+                                    ? 'Request sent'
+                                    : 'Communication disabled',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isAccepted ? Colors.green : Colors.grey,
+                    ),
+                  ),
               ],
             ),
-            isThreeLine: user.specialization?.isNotEmpty == true,
+              isThreeLine: true,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (hasPhone)
+                  if (isIncoming) ...[
                   IconButton(
-                    icon: const Icon(Icons.call, color: Color(0xFF2E7D32)),
-                    tooltip: 'Call ${user.name}',
-                    onPressed: () =>
-                        PhoneCallService.makeCall(user.phoneNumber!),
+                      icon: const Icon(Icons.close, color: Colors.red),
+                      tooltip: 'Reject request',
+                      onPressed: () => _updateConnection(connection!.id, 'reject'),
                   ),
-                const Icon(Icons.chat_bubble_outline,
-                    color: Color(0xFF2E7D32)),
+                    IconButton(
+                      icon: const Icon(Icons.check, color: Colors.green),
+                      tooltip: 'Accept request',
+                      onPressed: () => _updateConnection(connection!.id, 'accept'),
+                    ),
+                  ] else if (isAccepted)
+                    const Icon(Icons.chat_bubble_outline,
+                        color: Color(0xFF2E7D32))
+                  else if (status == null)
+                    IconButton(
+                      icon: const Icon(Icons.person_add_alt_1,
+                          color: Color(0xFF2E7D32)),
+                      tooltip: 'Send connection request',
+                      onPressed: () => _requestConnection(user),
+                    )
+                  else
+                    const Icon(Icons.block, color: Colors.grey),
               ],
             ),
-            onTap: () {
+              onTap: isAccepted
+                  ? () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => ConsultationChatScreen(peer: user),
                 ),
               );
-            },
+              }
+                  : null,
+                onLongPress: connection == null
+                  ? null
+                  : () => _showConnectionActions(connection),
           );
         },
       ),

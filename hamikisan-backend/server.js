@@ -19,6 +19,7 @@ const postRoutes = require('./routes/postRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const callRoutes = require('./routes/callRoutes');
+const connectionRoutes = require('./routes/connectionRoutes');
 
 const PORT = Number(process.env.PORT) || 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -55,6 +56,7 @@ app.use('/api/posts', postRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/calls', callRoutes);
+app.use('/api/connections', connectionRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

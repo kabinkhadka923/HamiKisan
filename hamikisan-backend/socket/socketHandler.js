@@ -5,6 +5,7 @@ const db = require('../config/db');
 const { getTokenFromHeader } = require('../middleware/authMiddleware');
 const { getRedisClient } = require('../config/redis');
 const { buildRoomId } = require('../utils/chat');
+const { hasAcceptedConnection } = require('../utils/connections');
 
 const registerSocketHandlers = (httpServer) => {
   const io = new Server(httpServer, {
@@ -59,8 +60,12 @@ const registerSocketHandlers = (httpServer) => {
     });
 
     // ---- Call signaling (instant, per-user rooms) ----
-    socket.on('call_invite', ({ toUserId, callType, callerName, callId }) => {
+    socket.on('call_invite', async ({ toUserId, callType, callerName, callId }) => {
       if (!toUserId) return;
+      if (!await hasAcceptedConnection(userId, toUserId)) {
+        socket.emit('socket_error', { code: 'CONNECTION_REQUIRED', message: 'Accept the connection request before calling.' });
+        return;
+      }
       io.to(`user_${toUserId}`).emit('call_incoming', {
         callId: callId,
         from: userId,
@@ -69,32 +74,36 @@ const registerSocketHandlers = (httpServer) => {
       });
     });
 
-    socket.on('call_accept', ({ callId, toUserId }) => {
+    socket.on('call_accept', async ({ callId, toUserId }) => {
       if (!toUserId) return;
+      if (!await hasAcceptedConnection(userId, toUserId)) return;
       io.to(`user_${toUserId}`).emit('call_accepted', {
         callId: callId,
         from: userId,
       });
     });
 
-    socket.on('call_decline', ({ callId, toUserId }) => {
+    socket.on('call_decline', async ({ callId, toUserId }) => {
       if (!toUserId) return;
+      if (!await hasAcceptedConnection(userId, toUserId)) return;
       io.to(`user_${toUserId}`).emit('call_declined', {
         callId: callId,
         from: userId,
       });
     });
 
-    socket.on('call_end', ({ callId, toUserId }) => {
+    socket.on('call_end', async ({ callId, toUserId }) => {
       if (!toUserId) return;
+      if (!await hasAcceptedConnection(userId, toUserId)) return;
       io.to(`user_${toUserId}`).emit('call_ended', {
         callId: callId,
         from: userId,
       });
     });
 
-    socket.on('call_sdp', ({ callId, toUserId, sdp, sdpType }) => {
+    socket.on('call_sdp', async ({ callId, toUserId, sdp, sdpType }) => {
       if (!toUserId || !sdp) return;
+      if (!await hasAcceptedConnection(userId, toUserId)) return;
       io.to(`user_${toUserId}`).emit('call_sdp', {
         callId: callId,
         from: userId,
@@ -103,8 +112,9 @@ const registerSocketHandlers = (httpServer) => {
       });
     });
 
-    socket.on('call_ice', ({ callId, toUserId, candidate }) => {
+    socket.on('call_ice', async ({ callId, toUserId, candidate }) => {
       if (!toUserId || !candidate) return;
+      if (!await hasAcceptedConnection(userId, toUserId)) return;
       io.to(`user_${toUserId}`).emit('call_ice', {
         callId: callId,
         from: userId,
@@ -112,9 +122,10 @@ const registerSocketHandlers = (httpServer) => {
       });
     });
 
-    const relayCallEvent = (event, payload = {}) => {
+    const relayCallEvent = async (event, payload = {}) => {
       const targetUserId = payload.toUserId || payload.calleeId || payload.callerId;
       if (!targetUserId) return;
+      if (!await hasAcceptedConnection(userId, targetUserId)) return;
       io.to(`user_${targetUserId}`).emit(event, {
         ...payload,
         from: userId,
@@ -136,6 +147,10 @@ const registerSocketHandlers = (httpServer) => {
       try {
         const { roomId, receiverId, message } = payload || {};
         if (!receiverId || !message) return;
+        if (!await hasAcceptedConnection(userId, receiverId)) {
+          socket.emit('socket_error', { code: 'CONNECTION_REQUIRED', message: 'Accept the connection request before messaging.' });
+          return;
+        }
 
         const finalRoomId = roomId || buildRoomId(userId, receiverId);
         const result = await db.query(

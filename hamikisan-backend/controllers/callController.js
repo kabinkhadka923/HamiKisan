@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const CALL_TTL_MS = 90 * 1000;
 
 const calls = new Map();
+const { requireAcceptedConnection } = require('../utils/connections');
 
 const cleanupExpired = () => {
   const now = Date.now();
@@ -23,6 +24,7 @@ const invite = async (req, res) => {
   if (String(receiverId) === callerId) {
     return res.status(400).json({ error: 'You cannot call yourself.' });
   }
+  if (!await requireAcceptedConnection(res, callerId, receiverId)) return;
 
   cleanupExpired();
 
