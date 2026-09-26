@@ -104,6 +104,8 @@ class AuthProvider with ChangeNotifier {
       );
       if (userData == null) {
         _error = 'Invalid credentials';
+        clearSocket();
+        _currentUser = null;
         return false;
       }
       final user = User.fromJson(userData);
@@ -114,6 +116,8 @@ class AuthProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = 'Login failed: $e';
+      clearSocket();
+      _currentUser = null;
       return false;
     }
   }
@@ -463,6 +467,8 @@ Future<bool> loginWithUsername(String username, String password,
 
       _currentUser = null;
       _error = null;
+      clearSocket();
+      notifyListeners();
     } catch (e) {
       _error = 'Logout failed: $e';
     } finally {
