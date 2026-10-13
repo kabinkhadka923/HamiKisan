@@ -6,14 +6,15 @@ import '../widgets/system_health_log_viewer.dart';
 import '../models/user.dart';
 import '../providers/system_health_provider.dart' as health_provider;
 
+// ignore: library_private_types_in_public_api
 class SystemHealthScreen extends StatefulWidget {
   const SystemHealthScreen({super.key});
 
   @override
-  _SystemHealthScreenState createState() => _SystemHealthScreenState();
+  SystemHealthScreenState createState() => SystemHealthScreenState();
 }
 
-class _SystemHealthScreenState extends State<SystemHealthScreen> {
+class SystemHealthScreenState extends State<SystemHealthScreen> {
   bool _isCheckingAll = false;
   bool _showDetails = false;
 

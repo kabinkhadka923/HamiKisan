@@ -9,6 +9,7 @@ enum ChatMessageType {
   voice,
   location,
   reaction,
+  // ignore: constant_identifier_names
   group_announcement,
   forward
 }

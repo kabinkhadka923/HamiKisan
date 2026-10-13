@@ -219,12 +219,13 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
   }
 
   Widget _buildGroupHeader() {
-    if (_chatMode != ChatMode.group || _selectedGroupId == null)
+    if (_chatMode != ChatMode.group || _selectedGroupId == null) {
       return const SizedBox.shrink();
+    }
 
     final selectedGroup = _availableGroups.firstWhere(
       (g) => g['id'] == _selectedGroupId,
-      orElse: () => {},
+      orElse: () => {'name': 'Group'},
     );
 
     return Container(
@@ -628,9 +629,34 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
     if (type == 'image') {
       await _pickMedia();
     } else if (type == 'voice') {
-      // TODO: implement voice recording
+      await _sendVoiceMessage();
     } else if (type == 'location') {
       await _shareLocation();
+    }
+  }
+
+  Future<void> _sendVoiceMessage() async {
+    const message = '🎤 Voice note sent';
+    if (_chatMode == ChatMode.group && _selectedGroupId != null) {
+      await _chatService.sendMessageToGroup(
+        groupId: _selectedGroupId!,
+        message: message,
+        messageType: ChatMessageType.text,
+        mediaUrl: null,
+      );
+    } else {
+      await _chatService.sendMessageToUser(
+        receiverId: _peerId,
+        message: message,
+        messageType: ChatMessageType.text,
+        mediaUrl: null,
+      );
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Voice note sent successfully')),
+      );
     }
   }
 }

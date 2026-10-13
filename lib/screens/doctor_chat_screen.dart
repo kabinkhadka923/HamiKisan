@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'video_call_screen.dart';
+import '../services/call/kisan_video_call_service.dart';
+
 class Message {
   final String id;
   final String senderId;
@@ -111,6 +114,46 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
     });
   }
 
+  void _startVideoCall() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoCallScreen(
+          callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+          peerName: widget.doctorName,
+          callerName: 'Farmer',
+          callerSpecialty: widget.specialty,
+          role: CallRole.caller,
+          callerId: 'farmer_current_user',
+          calleeId: widget.doctorId,
+          calleePhoneNumber: null,
+          isOutgoing: true,
+          callType: CallType.video,
+        ),
+      ),
+    );
+  }
+
+  void _startAudioCall() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoCallScreen(
+          callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+          peerName: widget.doctorName,
+          callerName: 'Farmer',
+          callerSpecialty: widget.specialty,
+          role: CallRole.caller,
+          callerId: 'farmer_current_user',
+          calleeId: widget.doctorId,
+          calleePhoneNumber: null,
+          isOutgoing: true,
+          callType: CallType.voice,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,8 +208,15 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
               ),
             ],
             onSelected: (value) {
-              // Handle call options
               Navigator.pop(context);
+              switch (value) {
+                case 'video_call':
+                  _startVideoCall();
+                  break;
+                case 'audio_call':
+                  _startAudioCall();
+                  break;
+              }
             },
           ),
         ],

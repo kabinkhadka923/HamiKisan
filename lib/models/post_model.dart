@@ -3,11 +3,15 @@ import '../models/user.dart';
 // These enum names are persisted and sent over the API as snake_case values.
 // ignore: constant_identifier_names
 enum PostType {
+  // ignore: constant_identifier_names
   crop_update,
+  // ignore: constant_identifier_names
   price_alert,
   availability,
   question,
+  // ignore: constant_identifier_names
   success_story,
+  // ignore: constant_identifier_names
   resource_share
 }
 
