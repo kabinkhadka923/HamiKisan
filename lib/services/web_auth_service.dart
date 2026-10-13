@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import '../models/user.dart';
 import 'dart:convert';
+import '../utils/logger.dart';
 
 class WebAuthService {
   static final WebAuthService _instance = WebAuthService._internal();
@@ -16,9 +17,9 @@ class WebAuthService {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_sessionKey, json.encode(user.toJson()));
-      print('[AUTH] Session stored in SharedPreferences for web');
+      Logger.debug('Web user session stored', tag: 'Auth');
     } catch (e) {
-      print('[AUTH] Error storing current user: $e');
+      Logger.error('Could not store web user session', tag: 'Auth', error: e);
     }
   }
 
@@ -31,7 +32,7 @@ class WebAuthService {
       }
       return null;
     } catch (e) {
-      print('[AUTH] Error getting current user: $e');
+      Logger.error('Could not read web user session', tag: 'Auth', error: e);
       return null;
     }
   }
@@ -41,7 +42,7 @@ class WebAuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_sessionKey);
     } catch (e) {
-      print('[AUTH] Error during logout: $e');
+      Logger.error('Could not clear web user session', tag: 'Auth', error: e);
     }
   }
 
@@ -64,12 +65,9 @@ class WebAuthService {
 
       await prefs.setString(_emergencyAdminKey, json.encode(adminData));
 
-      print('================================================');
-      print('[SECURITY] Emergency admin created in SharedPreferences');
-      print('[SECURITY] THIS IS FOR DEBUGGING ONLY');
-      print('================================================');
+      Logger.debug('Emergency admin created for debug use', tag: 'Auth');
     } catch (e) {
-      print('[AUTH] Error creating emergency admin: $e');
+      Logger.error('Could not create emergency admin', tag: 'Auth', error: e);
     }
   }
 

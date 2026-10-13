@@ -73,6 +73,7 @@ dependencies:
   # Localization & Formatting
   nepali_date_converter: ^1.0.0
   google_fonts: ^8.0.0
+  yaml: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

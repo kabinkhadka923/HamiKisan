@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/user.dart';
@@ -12,7 +11,7 @@ import '../services/location_service.dart';
 import '../services/call/kisan_video_call_service.dart';
 import 'video_call_screen.dart';
 
-enum ChatMode { one_on_one, group }
+enum ChatMode { oneOnOne, group }
 
 class ConsultationChatScreen extends StatefulWidget {
   final User peer;
@@ -36,17 +35,15 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
   String _myUserId = '';
   String _peerId = '';
 
-  ChatMode _chatMode = ChatMode.one_on_one;
+  ChatMode _chatMode = ChatMode.oneOnOne;
   String? _selectedGroupId;
   List<ChatMessage> _messages = [];
   List<ChatMessage> _groupMessages = [];
   List<Map<String, dynamic>> _availableGroups = [];
-  bool _isLoadingGroups = false;
 
   TextEditingController _messageController = TextEditingController();
   bool _isComposing = false;
   bool _isSending = false;
-  String? _mediaPath;
   String? _locationLat;
   String? _locationLng;
   ScrollController _scrollController = ScrollController();
@@ -92,9 +89,10 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
 
     if (mounted) {
       setState(() {
-        if (_chatMode == ChatMode.one_on_one) {
+        if (_chatMode == ChatMode.oneOnOne) {
           if (!isGroupMsg &&
-              (message.senderId == _peerId || message.receiverId == _myUserId)) {
+              (message.senderId == _peerId ||
+                  message.receiverId == _myUserId)) {
             final index = _messages.indexWhere((m) => m.id == message.id);
             if (index >= 0) {
               _messages[index] = message;
@@ -131,7 +129,8 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
 
   Future<void> _loadConversation() async {
     if (_chatMode == ChatMode.group && _selectedGroupId != null) {
-      final messages = await _chatService.getConversationWithGroup(_selectedGroupId!);
+      final messages =
+          await _chatService.getConversationWithGroup(_selectedGroupId!);
       if (!mounted) return;
       setState(() {
         _groupMessages = messages;
@@ -162,19 +161,19 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
         children: [
           Expanded(
             child: ElevatedButton(
-              onPressed: _chatMode == ChatMode.one_on_one
+              onPressed: _chatMode == ChatMode.oneOnOne
                   ? null
                   : () {
-                      setState(() => _chatMode = ChatMode.one_on_one);
+                      setState(() => _chatMode = ChatMode.oneOnOne);
                       _selectedGroupId = null;
                       _groupMessages.clear();
                       _loadConversation();
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: _chatMode == ChatMode.one_on_one
+                backgroundColor: _chatMode == ChatMode.oneOnOne
                     ? Theme.of(context).colorScheme.primary
                     : Colors.grey[300],
-                foregroundColor: _chatMode == ChatMode.one_on_one
+                foregroundColor: _chatMode == ChatMode.oneOnOne
                     ? Colors.white
                     : Colors.black87,
               ),
@@ -191,9 +190,8 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
                 backgroundColor: _chatMode == ChatMode.group
                     ? Theme.of(context).colorScheme.primary
                     : Colors.grey[300],
-                foregroundColor: _chatMode == ChatMode.group
-                    ? Colors.white
-                    : Colors.black87,
+                foregroundColor:
+                    _chatMode == ChatMode.group ? Colors.white : Colors.black87,
               ),
               child: _availableGroups.isEmpty
                   ? const Text('No Groups')
@@ -221,7 +219,8 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
   }
 
   Widget _buildGroupHeader() {
-    if (_chatMode != ChatMode.group || _selectedGroupId == null) return const SizedBox.shrink();
+    if (_chatMode != ChatMode.group || _selectedGroupId == null)
+      return const SizedBox.shrink();
 
     final selectedGroup = _availableGroups.firstWhere(
       (g) => g['id'] == _selectedGroupId,
@@ -232,7 +231,7 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Theme.of(context).colorScheme.primary),
       ),
@@ -252,7 +251,7 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
             icon: const Icon(Icons.close, size: 16, color: Colors.grey),
             onPressed: () {
               setState(() {
-                _chatMode = ChatMode.one_on_one;
+                _chatMode = ChatMode.oneOnOne;
                 _selectedGroupId = null;
                 _groupMessages.clear();
               });
@@ -269,7 +268,9 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_chatMode == ChatMode.group
-            ? (_availableGroups.firstWhere((g) => g['id'] == _selectedGroupId, orElse: () => {'name': 'Group'})['name'] ?? 'Group')
+            ? (_availableGroups.firstWhere((g) => g['id'] == _selectedGroupId,
+                    orElse: () => {'name': 'Group'})['name'] ??
+                'Group')
             : 'Chat with ${widget.peer.name}'),
         actions: [
           IconButton(
@@ -401,13 +402,13 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
                     ),
                   ],
                 ),
-),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   String _formatTimestamp(int timestamp) {
     final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
@@ -434,7 +435,7 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -464,11 +465,12 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
                 setState(() => _isComposing = text.isNotEmpty);
               },
               onSubmitted: (_) => _sendMessage(),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Type a message...',
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -503,24 +505,24 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
       }
 
       if (result != null && mounted) {
-        final url = 'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final content = '';
-          if (_chatMode == ChatMode.group && _selectedGroupId != null) {
-            await _chatService.sendMessageToGroup(
-              groupId: _selectedGroupId!,
-              message: content,
-              messageType: ChatMessageType.image,
-              mediaUrl: url,
-            );
-          } else {
-            await _chatService.sendMessageToUser(
-              receiverId: _peerId,
-              message: content,
-              messageType: ChatMessageType.image,
-              mediaUrl: url,
-            );
-          }
-        setState(() => _mediaPath = null);
+        final url =
+            'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        const content = '';
+        if (_chatMode == ChatMode.group && _selectedGroupId != null) {
+          await _chatService.sendMessageToGroup(
+            groupId: _selectedGroupId!,
+            message: content,
+            messageType: ChatMessageType.image,
+            mediaUrl: url,
+          );
+        } else {
+          await _chatService.sendMessageToUser(
+            receiverId: _peerId,
+            message: content,
+            messageType: ChatMessageType.image,
+            mediaUrl: url,
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => _isSending = false);
@@ -534,22 +536,23 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
       _locationLng = position.longitude.toString();
     });
 
-    final content = 'latitude=${_locationLat},longitude=${_locationLng},address=Current Location';
-      if (_chatMode == ChatMode.group && _selectedGroupId != null) {
-        await _chatService.sendMessageToGroup(
-          groupId: _selectedGroupId!,
-          message: content,
-          messageType: ChatMessageType.location,
-          mediaUrl: null,
-        );
-      } else {
-        await _chatService.sendMessageToUser(
-          receiverId: _peerId,
-          message: content,
-          messageType: ChatMessageType.location,
-          mediaUrl: null,
-        );
-      }
+    final content =
+        'latitude=$_locationLat,longitude=$_locationLng,address=Current Location';
+    if (_chatMode == ChatMode.group && _selectedGroupId != null) {
+      await _chatService.sendMessageToGroup(
+        groupId: _selectedGroupId!,
+        message: content,
+        messageType: ChatMessageType.location,
+        mediaUrl: null,
+      );
+    } else {
+      await _chatService.sendMessageToUser(
+        receiverId: _peerId,
+        message: content,
+        messageType: ChatMessageType.location,
+        mediaUrl: null,
+      );
+    }
     setState(() {
       _locationLat = null;
       _locationLng = null;

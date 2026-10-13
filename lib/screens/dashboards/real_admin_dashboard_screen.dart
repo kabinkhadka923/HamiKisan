@@ -36,7 +36,8 @@ class RealAdminDashboardScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.admin_panel_settings, color: Colors.white, size: 32),
+                  const Icon(Icons.admin_panel_settings,
+                      color: Colors.white, size: 32),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -44,7 +45,10 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Welcome, ${auth.currentUser?.name ?? "Super Admin"}!',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
                         ),
                         const Text(
                           'Full System Access',
@@ -66,28 +70,43 @@ class RealAdminDashboardScreen extends StatelessWidget {
               childAspectRatio: 1.3,
               children: [
                 _buildCard('Users', '1,890', Icons.people, Colors.blue),
-                _buildCard('Admins', '12', Icons.admin_panel_settings, Colors.red),
+                _buildCard(
+                    'Admins', '12', Icons.admin_panel_settings, Colors.red),
                 _buildCard('Farmers', '1,234', Icons.agriculture, Colors.green),
-                _buildCard('Doctors', '56', Icons.medical_services, Colors.orange),
+                _buildCard(
+                    'Doctors', '56', Icons.medical_services, Colors.orange),
                 _buildCard('Products', '789', Icons.inventory, Colors.purple),
                 _buildCard('Posts', '432', Icons.article, Colors.teal),
               ],
             ),
             const SizedBox(height: 12),
-            const Text('System Management', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('System Management',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            _buildActionTile(Icons.admin_panel_settings, 'Admins', Colors.red, () => _showAdminsDialog(context)),
-            _buildActionTile(Icons.shield, 'Access Control', Colors.deepOrange, () => _showAccessControlDialog(context)),
-            _buildActionTile(Icons.people, 'All Users', Colors.blue, () => _showUsersDialog(context)),
-            _buildActionTile(Icons.security, 'Security', Colors.orange, () => _showSecurityDialog(context)),
-            _buildActionTile(Icons.health_and_safety, 'System Health', Colors.red, () => _showSystemHealthDialog(context)),
-            _buildActionTile(Icons.backup, 'Backup', Colors.green, () => _showBackupDialog(context)),
-            _buildActionTile(Icons.settings, 'Settings', Colors.grey, () => _showSettingsDialog(context)),
-            _buildActionTile(Icons.analytics, 'Analytics', Colors.purple, () => _showAnalyticsDialog(context)),
-            _buildActionTile(Icons.notifications_active, 'Broadcast', Colors.teal, () => _showBroadcastDialog(context)),
-            _buildActionTile(Icons.palette, 'App Design', Colors.pink, () => _showDesignDialog(context)),
-            _buildActionTile(Icons.image, 'Media', Colors.indigo, () => _showMediaDialog(context)),
-            _buildActionTile(Icons.code, 'API Config', Colors.cyan, () => _showAPIDialog(context)),
+            _buildActionTile(Icons.admin_panel_settings, 'Admins', Colors.red,
+                () => _showAdminsDialog(context)),
+            _buildActionTile(Icons.shield, 'Access Control', Colors.deepOrange,
+                () => _showAccessControlDialog(context)),
+            _buildActionTile(Icons.people, 'All Users', Colors.blue,
+                () => _showUsersDialog(context)),
+            _buildActionTile(Icons.security, 'Security', Colors.orange,
+                () => _showSecurityDialog(context)),
+            _buildActionTile(Icons.health_and_safety, 'System Health',
+                Colors.red, () => _showSystemHealthDialog(context)),
+            _buildActionTile(Icons.backup, 'Backup', Colors.green,
+                () => _showBackupDialog(context)),
+            _buildActionTile(Icons.settings, 'Settings', Colors.grey,
+                () => _showSettingsDialog(context)),
+            _buildActionTile(Icons.analytics, 'Analytics', Colors.purple,
+                () => _showAnalyticsDialog(context)),
+            _buildActionTile(Icons.notifications_active, 'Broadcast',
+                Colors.teal, () => _showBroadcastDialog(context)),
+            _buildActionTile(Icons.palette, 'App Design', Colors.pink,
+                () => _showDesignDialog(context)),
+            _buildActionTile(Icons.image, 'Media', Colors.indigo,
+                () => _showMediaDialog(context)),
+            _buildActionTile(Icons.code, 'API Config', Colors.cyan,
+                () => _showAPIDialog(context)),
           ],
         ),
       ),
@@ -104,15 +123,19 @@ class RealAdminDashboardScreen extends StatelessWidget {
           children: [
             Icon(icon, size: 24, color: color),
             const SizedBox(height: 4),
-            Text(count, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
-            Text(title, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(count,
+                style: TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.bold, color: color)),
+            Text(title,
+                style: const TextStyle(fontSize: 10, color: Colors.grey)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionTile(IconData icon, String title, Color color, VoidCallback onTap) {
+  Widget _buildActionTile(
+      IconData icon, String title, Color color, VoidCallback onTap) {
     return Card(
       margin: const EdgeInsets.only(bottom: 6),
       child: ListTile(
@@ -151,7 +174,8 @@ class RealAdminDashboardScreen extends StatelessWidget {
                     ElevatedButton.icon(
                       icon: const Icon(Icons.add),
                       label: const Text('Add'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
                       onPressed: () => _showAddAdminDialog(context),
                     ),
                   ],
@@ -165,8 +189,11 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: active ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
-                            child: Icon(Icons.admin_panel_settings, color: active ? Colors.green : Colors.grey),
+                            backgroundColor: active
+                                ? Colors.green.withValues(alpha: 0.2)
+                                : Colors.grey.withValues(alpha: 0.2),
+                            child: Icon(Icons.admin_panel_settings,
+                                color: active ? Colors.green : Colors.grey),
                           ),
                           title: Text('Admin ${index + 1}'),
                           subtitle: Column(
@@ -176,26 +203,42 @@ class RealAdminDashboardScreen extends StatelessWidget {
                               Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: active ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
+                                      color: active
+                                          ? Colors.green.withValues(alpha: 0.2)
+                                          : Colors.grey.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    child: Text(active ? 'Active' : 'Inactive', style: TextStyle(fontSize: 10, color: active ? Colors.green : Colors.grey)),
+                                    child: Text(active ? 'Active' : 'Inactive',
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: active
+                                                ? Colors.green
+                                                : Colors.grey)),
                                   ),
                                   const SizedBox(width: 8),
-                                  Text('Last login: ${index + 1}h ago', style: const TextStyle(fontSize: 11)),
+                                  Text('Last login: ${index + 1}h ago',
+                                      style: const TextStyle(fontSize: 11)),
                                 ],
                               ),
                             ],
                           ),
                           trailing: PopupMenuButton(
                             itemBuilder: (context) => [
-                              const PopupMenuItem(value: 'view', child: Text('View Details')),
-                              const PopupMenuItem(value: 'edit', child: Text('Edit Permissions')),
-                              const PopupMenuItem(value: 'reset', child: Text('Reset Password')),
-                              const PopupMenuItem(value: 'suspend', child: Text('Suspend')),
-                              const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                              const PopupMenuItem(
+                                  value: 'view', child: Text('View Details')),
+                              const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('Edit Permissions')),
+                              const PopupMenuItem(
+                                  value: 'reset',
+                                  child: Text('Reset Password')),
+                              const PopupMenuItem(
+                                  value: 'suspend', child: Text('Suspend')),
+                              const PopupMenuItem(
+                                  value: 'delete', child: Text('Delete')),
                             ],
                             onSelected: (value) {
                               setState(() {});
@@ -211,7 +254,11 @@ class RealAdminDashboardScreen extends StatelessWidget {
               ],
             ),
           ),
-          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'))
+          ],
         ),
       ),
     );
@@ -234,30 +281,38 @@ class RealAdminDashboardScreen extends StatelessWidget {
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Full Name', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Full Name', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Email', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: phoneController,
-                  decoration: const InputDecoration(labelText: 'Phone', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Phone', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedDistrict,
-                  decoration: const InputDecoration(labelText: 'District', border: OutlineInputBorder()),
-                  items: ['Kathmandu', 'Pokhara', 'Lalitpur', 'Bhaktapur'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                  initialValue: selectedDistrict,
+                  decoration: const InputDecoration(
+                      labelText: 'District', border: OutlineInputBorder()),
+                  items: ['Kathmandu', 'Pokhara', 'Lalitpur', 'Bhaktapur']
+                      .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                      .toList(),
                   onChanged: (v) => setState(() => selectedDistrict = v!),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -296,7 +351,10 @@ class RealAdminDashboardScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     DropdownButton<String>(
                       value: 'All',
-                      items: ['All', 'Farmers', 'Doctors', 'Admins'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                      items: ['All', 'Farmers', 'Doctors', 'Admins']
+                          .map(
+                              (s) => DropdownMenuItem(value: s, child: Text(s)))
+                          .toList(),
                       onChanged: (v) => setState(() {}),
                     ),
                   ],
@@ -306,15 +364,27 @@ class RealAdminDashboardScreen extends StatelessWidget {
                   child: ListView.builder(
                     itemCount: 15,
                     itemBuilder: (context, index) {
-                      final role = index % 3 == 0 ? 'Farmer' : index % 3 == 1 ? 'Doctor' : 'Admin';
-                      final color = role == 'Farmer' ? Colors.green : role == 'Doctor' ? Colors.blue : Colors.red;
+                      final role = index % 3 == 0
+                          ? 'Farmer'
+                          : index % 3 == 1
+                              ? 'Doctor'
+                              : 'Admin';
+                      final color = role == 'Farmer'
+                          ? Colors.green
+                          : role == 'Doctor'
+                              ? Colors.blue
+                              : Colors.red;
                       final active = index % 4 != 0;
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: color.withOpacity(0.2),
+                            backgroundColor: color.withValues(alpha: 0.2),
                             child: Icon(
-                              role == 'Farmer' ? Icons.agriculture : role == 'Doctor' ? Icons.medical_services : Icons.admin_panel_settings,
+                              role == 'Farmer'
+                                  ? Icons.agriculture
+                                  : role == 'Doctor'
+                                      ? Icons.medical_services
+                                      : Icons.admin_panel_settings,
                               color: color,
                               size: 20,
                             ),
@@ -327,28 +397,45 @@ class RealAdminDashboardScreen extends StatelessWidget {
                               Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: color.withOpacity(0.2),
+                                      color: color.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    child: Text(role, style: TextStyle(fontSize: 10, color: color)),
+                                    child: Text(role,
+                                        style: TextStyle(
+                                            fontSize: 10, color: color)),
                                   ),
                                   const SizedBox(width: 8),
-                                  Icon(active ? Icons.check_circle : Icons.cancel, size: 12, color: active ? Colors.green : Colors.red),
-                                  Text(active ? ' Active' : ' Inactive', style: const TextStyle(fontSize: 11)),
+                                  Icon(
+                                      active
+                                          ? Icons.check_circle
+                                          : Icons.cancel,
+                                      size: 12,
+                                      color:
+                                          active ? Colors.green : Colors.red),
+                                  Text(active ? ' Active' : ' Inactive',
+                                      style: const TextStyle(fontSize: 11)),
                                 ],
                               ),
                             ],
                           ),
                           trailing: PopupMenuButton(
                             itemBuilder: (context) => [
-                              const PopupMenuItem(value: 'view', child: Text('View Profile')),
-                              const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                              const PopupMenuItem(value: 'suspend', child: Text('Suspend')),
-                              const PopupMenuItem(value: 'activate', child: Text('Activate')),
-                              const PopupMenuItem(value: 'reset', child: Text('Reset Password')),
-                              const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                              const PopupMenuItem(
+                                  value: 'view', child: Text('View Profile')),
+                              const PopupMenuItem(
+                                  value: 'edit', child: Text('Edit')),
+                              const PopupMenuItem(
+                                  value: 'suspend', child: Text('Suspend')),
+                              const PopupMenuItem(
+                                  value: 'activate', child: Text('Activate')),
+                              const PopupMenuItem(
+                                  value: 'reset',
+                                  child: Text('Reset Password')),
+                              const PopupMenuItem(
+                                  value: 'delete', child: Text('Delete')),
                             ],
                             onSelected: (value) {
                               setState(() {});
@@ -370,7 +457,9 @@ class RealAdminDashboardScreen extends StatelessWidget {
               label: const Text('Export All'),
               onPressed: () => _showSnackbar(context, 'Exporting all users...'),
             ),
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close')),
           ],
         ),
       ),
@@ -402,7 +491,10 @@ class RealAdminDashboardScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     DropdownButton<String>(
                       value: 'All',
-                      items: ['All', 'Login', 'Failed', 'Suspicious', 'Admin'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                      items: ['All', 'Login', 'Failed', 'Suspicious', 'Admin']
+                          .map(
+                              (s) => DropdownMenuItem(value: s, child: Text(s)))
+                          .toList(),
                       onChanged: (v) => setState(() {}),
                     ),
                   ],
@@ -412,9 +504,27 @@ class RealAdminDashboardScreen extends StatelessWidget {
                   child: ListView.builder(
                     itemCount: 20,
                     itemBuilder: (context, index) {
-                      final type = index % 4 == 0 ? 'Failed Login' : index % 4 == 1 ? 'Successful Login' : index % 4 == 2 ? 'Suspicious Activity' : 'Admin Action';
-                      final color = type == 'Failed Login' ? Colors.red : type == 'Successful Login' ? Colors.green : type == 'Suspicious Activity' ? Colors.orange : Colors.blue;
-                      final icon = type == 'Failed Login' ? Icons.error : type == 'Successful Login' ? Icons.check_circle : type == 'Suspicious Activity' ? Icons.warning : Icons.admin_panel_settings;
+                      final type = index % 4 == 0
+                          ? 'Failed Login'
+                          : index % 4 == 1
+                              ? 'Successful Login'
+                              : index % 4 == 2
+                                  ? 'Suspicious Activity'
+                                  : 'Admin Action';
+                      final color = type == 'Failed Login'
+                          ? Colors.red
+                          : type == 'Successful Login'
+                              ? Colors.green
+                              : type == 'Suspicious Activity'
+                                  ? Colors.orange
+                                  : Colors.blue;
+                      final icon = type == 'Failed Login'
+                          ? Icons.error
+                          : type == 'Successful Login'
+                              ? Icons.check_circle
+                              : type == 'Suspicious Activity'
+                                  ? Icons.warning
+                                  : Icons.admin_panel_settings;
                       return Card(
                         child: ListTile(
                           leading: Icon(icon, color: color, size: 20),
@@ -422,8 +532,10 @@ class RealAdminDashboardScreen extends StatelessWidget {
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('User: user_${index + 1} • IP: 192.168.1.${index + 1}'),
-                              Text('${index + 1} minutes ago', style: const TextStyle(fontSize: 11)),
+                              Text(
+                                  'User: user_${index + 1} • IP: 192.168.1.${index + 1}'),
+                              Text('${index + 1} minutes ago',
+                                  style: const TextStyle(fontSize: 11)),
                             ],
                           ),
                           trailing: IconButton(
@@ -443,14 +555,17 @@ class RealAdminDashboardScreen extends StatelessWidget {
             TextButton.icon(
               icon: const Icon(Icons.download),
               label: const Text('Export Logs'),
-              onPressed: () => _showSnackbar(context, 'Exporting security logs...'),
+              onPressed: () =>
+                  _showSnackbar(context, 'Exporting security logs...'),
             ),
             TextButton.icon(
               icon: const Icon(Icons.delete_sweep),
               label: const Text('Clear Old'),
               onPressed: () => _showSnackbar(context, 'Clearing old logs...'),
             ),
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close')),
           ],
         ),
       ),
@@ -474,7 +589,11 @@ class RealAdminDashboardScreen extends StatelessWidget {
             _buildDetailRow('Timestamp', '2024-01-15 10:${30 + index}:00'),
           ],
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'))
+        ],
       ),
     );
   }
@@ -484,7 +603,10 @@ class RealAdminDashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SizedBox(width: 100, child: Text('$label:', style: const TextStyle(fontWeight: FontWeight.bold))),
+          SizedBox(
+              width: 100,
+              child: Text('$label:',
+                  style: const TextStyle(fontWeight: FontWeight.bold))),
           Expanded(child: Text(value)),
         ],
       ),
@@ -506,7 +628,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Row(
@@ -517,9 +639,11 @@ class RealAdminDashboardScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Last Backup', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('Last Backup',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                             Text('2024-01-15 08:30 AM • 2 hours ago'),
-                            Text('Size: 245 MB • Status: Success', style: TextStyle(fontSize: 12)),
+                            Text('Size: 245 MB • Status: Success',
+                                style: TextStyle(fontSize: 12)),
                           ],
                         ),
                       ),
@@ -533,7 +657,8 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.backup),
                         label: const Text('Create Backup'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green),
                         onPressed: () {
                           _showSnackbar(context, 'Creating backup...');
                           setState(() {});
@@ -551,7 +676,9 @@ class RealAdminDashboardScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Text('Backup History', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Text('Backup History',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 8),
                 Expanded(
                   child: ListView.builder(
@@ -565,20 +692,24 @@ class RealAdminDashboardScreen extends StatelessWidget {
                             color: success ? Colors.green : Colors.red,
                           ),
                           title: Text('Backup ${10 - index}'),
-                          subtitle: Text('2024-01-${15 - index} • ${200 + index * 10} MB'),
+                          subtitle: Text(
+                              '2024-01-${15 - index} • ${200 + index * 10} MB'),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.restore, size: 18),
-                                onPressed: () => _showRestoreConfirmation(context, index),
+                                onPressed: () =>
+                                    _showRestoreConfirmation(context, index),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.download, size: 18),
-                                onPressed: () => _showSnackbar(context, 'Downloading backup...'),
+                                onPressed: () => _showSnackbar(
+                                    context, 'Downloading backup...'),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                                icon: const Icon(Icons.delete,
+                                    size: 18, color: Colors.red),
                                 onPressed: () {
                                   setState(() {});
                                   _showSnackbar(context, 'Backup deleted');
@@ -594,7 +725,11 @@ class RealAdminDashboardScreen extends StatelessWidget {
               ],
             ),
           ),
-          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'))
+          ],
         ),
       ),
     );
@@ -603,36 +738,52 @@ class RealAdminDashboardScreen extends StatelessWidget {
   void _showScheduleBackupDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Schedule Automatic Backup'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Daily at 2:00 AM'),
-              leading: Radio(value: 1, groupValue: 1, onChanged: (v) {}),
+      builder: (context) {
+        var selectedSchedule = 1;
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Schedule Automatic Backup'),
+            content: RadioGroup<int>(
+              groupValue: selectedSchedule,
+              onChanged: (value) {
+                if (value != null) {
+                  setDialogState(() => selectedSchedule = value);
+                }
+              },
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile<int>(
+                    title: Text('Daily at 2:00 AM'),
+                    value: 1,
+                  ),
+                  RadioListTile<int>(
+                    title: Text('Weekly on Sunday'),
+                    value: 2,
+                  ),
+                  RadioListTile<int>(
+                    title: Text('Monthly on 1st'),
+                    value: 3,
+                  ),
+                ],
+              ),
             ),
-            ListTile(
-              title: const Text('Weekly on Sunday'),
-              leading: Radio(value: 2, groupValue: 1, onChanged: (v) {}),
-            ),
-            ListTile(
-              title: const Text('Monthly on 1st'),
-              leading: Radio(value: 3, groupValue: 1, onChanged: (v) {}),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showSnackbar(context, 'Backup schedule saved');
-            },
-            child: const Text('Save'),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel')),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showSnackbar(
+                      context, 'Backup schedule saved: $selectedSchedule');
+                },
+                child: const Text('Save'),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -641,9 +792,12 @@ class RealAdminDashboardScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Restore Backup?'),
-        content: const Text('This will restore the system to the selected backup point. Current data will be replaced. Continue?'),
+        content: const Text(
+            'This will restore the system to the selected backup point. Current data will be replaced. Continue?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             onPressed: () {
@@ -670,12 +824,14 @@ class RealAdminDashboardScreen extends StatelessWidget {
               SwitchListTile(
                 title: const Text('Maintenance Mode'),
                 value: false,
-                onChanged: (value) => _showSnackbar(context, 'Maintenance mode: $value'),
+                onChanged: (value) =>
+                    _showSnackbar(context, 'Maintenance mode: $value'),
               ),
               SwitchListTile(
                 title: const Text('User Registration'),
                 value: true,
-                onChanged: (value) => _showSnackbar(context, 'Registration: $value'),
+                onChanged: (value) =>
+                    _showSnackbar(context, 'Registration: $value'),
               ),
               SwitchListTile(
                 title: const Text('Email Notifications'),
@@ -685,7 +841,11 @@ class RealAdminDashboardScreen extends StatelessWidget {
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'))
+        ],
       ),
     );
   }
@@ -700,15 +860,24 @@ class RealAdminDashboardScreen extends StatelessWidget {
           height: 300,
           child: ListView(
             children: [
-              _buildAnalyticItem('Total Revenue', 'Rs. 1,25,000', Icons.attach_money, Colors.green),
-              _buildAnalyticItem('Active Users', '1,234', Icons.people, Colors.blue),
-              _buildAnalyticItem('Transactions', '567', Icons.receipt, Colors.orange),
-              _buildAnalyticItem('Growth Rate', '+23%', Icons.trending_up, Colors.teal),
-              _buildAnalyticItem('Server Uptime', '99.9%', Icons.cloud_done, Colors.purple),
+              _buildAnalyticItem('Total Revenue', 'Rs. 1,25,000',
+                  Icons.attach_money, Colors.green),
+              _buildAnalyticItem(
+                  'Active Users', '1,234', Icons.people, Colors.blue),
+              _buildAnalyticItem(
+                  'Transactions', '567', Icons.receipt, Colors.orange),
+              _buildAnalyticItem(
+                  'Growth Rate', '+23%', Icons.trending_up, Colors.teal),
+              _buildAnalyticItem(
+                  'Server Uptime', '99.9%', Icons.cloud_done, Colors.purple),
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'))
+        ],
       ),
     );
   }
@@ -727,13 +896,15 @@ class RealAdminDashboardScreen extends StatelessWidget {
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                    labelText: 'Title', border: OutlineInputBorder()),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: messageController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Message', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                    labelText: 'Message', border: OutlineInputBorder()),
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
@@ -748,18 +919,25 @@ class RealAdminDashboardScreen extends StatelessWidget {
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'))
+        ],
       ),
     );
   }
 
-  Widget _buildAnalyticItem(String title, String value, IconData icon, Color color) {
+  Widget _buildAnalyticItem(
+      String title, String value, IconData icon, Color color) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: Icon(icon, color: color),
         title: Text(title),
-        trailing: Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+        trailing: Text(value,
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: color)),
       ),
     );
   }
@@ -774,7 +952,8 @@ class RealAdminDashboardScreen extends StatelessWidget {
           height: 400,
           child: ListView(
             children: [
-              const Text('Theme Colors', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Theme Colors',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -786,21 +965,33 @@ class RealAdminDashboardScreen extends StatelessWidget {
                 ],
               ),
               const Divider(height: 24),
-              const Text('Button Styles', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Button Styles',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Expanded(child: ElevatedButton(onPressed: () {}, child: const Text('Rounded'))),
+                  Expanded(
+                      child: ElevatedButton(
+                          onPressed: () {}, child: const Text('Rounded'))),
                   const SizedBox(width: 8),
-                  Expanded(child: ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(shape: const RoundedRectangleBorder()), child: const Text('Square'))),
+                  Expanded(
+                      child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                              shape: const RoundedRectangleBorder()),
+                          child: const Text('Square'))),
                 ],
               ),
               const Divider(height: 24),
-              const Text('Typography', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Typography',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Font Family', border: OutlineInputBorder()),
-                items: ['Roboto', 'Open Sans', 'Lato'].map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
+                decoration: const InputDecoration(
+                    labelText: 'Font Family', border: OutlineInputBorder()),
+                items: ['Roboto', 'Open Sans', 'Lato']
+                    .map((f) => DropdownMenuItem(value: f, child: Text(f)))
+                    .toList(),
                 onChanged: (v) {},
               ),
               const SizedBox(height: 16),
@@ -816,7 +1007,11 @@ class RealAdminDashboardScreen extends StatelessWidget {
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'))
+        ],
       ),
     );
   }
@@ -875,29 +1070,40 @@ class RealAdminDashboardScreen extends StatelessWidget {
               Expanded(
                 child: ListView(
                   children: [
-                    _buildMediaItem('App Logo', 'logo.png', '250 KB', Icons.image, context),
-                    _buildMediaItem('Background', 'bg.jpg', '1.2 MB', Icons.wallpaper, context),
-                    _buildMediaItem('App Icon', 'icon.png', '45 KB', Icons.apps, context),
-                    _buildMediaItem('Splash Screen', 'splash.png', '890 KB', Icons.phone_android, context),
-                    _buildMediaItem('Banner Image', 'banner.jpg', '650 KB', Icons.panorama, context),
+                    _buildMediaItem(
+                        'App Logo', 'logo.png', '250 KB', Icons.image, context),
+                    _buildMediaItem('Background', 'bg.jpg', '1.2 MB',
+                        Icons.wallpaper, context),
+                    _buildMediaItem(
+                        'App Icon', 'icon.png', '45 KB', Icons.apps, context),
+                    _buildMediaItem('Splash Screen', 'splash.png', '890 KB',
+                        Icons.phone_android, context),
+                    _buildMediaItem('Banner Image', 'banner.jpg', '650 KB',
+                        Icons.panorama, context),
                   ],
                 ),
               ),
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'))
+        ],
       ),
     );
   }
 
-  Widget _buildMediaItem(String title, String filename, String size, IconData icon, BuildContext context) {
+  Widget _buildMediaItem(String title, String filename, String size,
+      IconData icon, BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: Icon(icon, color: Colors.blue),
         title: Text(title, style: const TextStyle(fontSize: 14)),
-        subtitle: Text('$filename • $size', style: const TextStyle(fontSize: 11)),
+        subtitle:
+            Text('$filename • $size', style: const TextStyle(fontSize: 11)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -966,7 +1172,8 @@ class RealAdminDashboardScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.check),
                       label: const Text('Test Connection'),
-                      onPressed: () => _showSnackbar(context, 'Testing API connection...'),
+                      onPressed: () =>
+                          _showSnackbar(context, 'Testing API connection...'),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -974,7 +1181,8 @@ class RealAdminDashboardScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.save),
                       label: const Text('Save'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green),
                       onPressed: () {
                         Navigator.pop(context);
                         _showSnackbar(context, 'API configuration saved');
@@ -986,7 +1194,11 @@ class RealAdminDashboardScreen extends StatelessWidget {
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'))
+        ],
       ),
     );
   }
@@ -1006,9 +1218,10 @@ class RealAdminDashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    border:
+                        Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                   ),
                   child: const Row(
                     children: [
@@ -1038,7 +1251,10 @@ class RealAdminDashboardScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     DropdownButton<String>(
                       value: 'All Admins',
-                      items: ['All Admins', 'Active', 'Restricted'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                      items: ['All Admins', 'Active', 'Restricted']
+                          .map(
+                              (s) => DropdownMenuItem(value: s, child: Text(s)))
+                          .toList(),
                       onChanged: (v) => setState(() {}),
                     ),
                   ],
@@ -1051,52 +1267,79 @@ class RealAdminDashboardScreen extends StatelessWidget {
                       return Card(
                         child: ExpansionTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.red.withOpacity(0.2),
-                            child: const Icon(Icons.admin_panel_settings, color: Colors.red, size: 20),
+                            backgroundColor: Colors.red.withValues(alpha: 0.2),
+                            child: const Icon(Icons.admin_panel_settings,
+                                color: Colors.red, size: 20),
                           ),
                           title: Text('Kisan Admin ${index + 1}'),
-                          subtitle: Text('District: ${['Kathmandu', 'Pokhara', 'Lalitpur', 'Bhaktapur', 'Chitwan'][index]}'),
+                          subtitle: Text('District: ${[
+                            'Kathmandu',
+                            'Pokhara',
+                            'Lalitpur',
+                            'Bhaktapur',
+                            'Chitwan'
+                          ][index]}'),
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(12),
                               child: Column(
                                 children: [
-                                  _buildPermissionRow('View Users', true, (v) => setState(() {})),
-                                  _buildPermissionRow('Edit Users', true, (v) => setState(() {})),
-                                  _buildPermissionRow('Delete Users', false, (v) => setState(() {})),
-                                  _buildPermissionRow('Approve Users', true, (v) => setState(() {})),
+                                  _buildPermissionRow('View Users', true,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('Edit Users', true,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('Delete Users', false,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('Approve Users', true,
+                                      (v) => setState(() {})),
                                   const Divider(),
-                                  _buildPermissionRow('View Products', true, (v) => setState(() {})),
-                                  _buildPermissionRow('Edit Products', true, (v) => setState(() {})),
-                                  _buildPermissionRow('Delete Products', false, (v) => setState(() {})),
+                                  _buildPermissionRow('View Products', true,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('Edit Products', true,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('Delete Products', false,
+                                      (v) => setState(() {})),
                                   const Divider(),
-                                  _buildPermissionRow('View Posts', true, (v) => setState(() {})),
-                                  _buildPermissionRow('Edit Posts', true, (v) => setState(() {})),
-                                  _buildPermissionRow('Delete Posts', false, (v) => setState(() {})),
+                                  _buildPermissionRow('View Posts', true,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('Edit Posts', true,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('Delete Posts', false,
+                                      (v) => setState(() {})),
                                   const Divider(),
-                                  _buildPermissionRow('App Design Access', false, (v) => setState(() {})),
-                                  _buildPermissionRow('Media Management', false, (v) => setState(() {})),
-                                  _buildPermissionRow('System Settings', false, (v) => setState(() {})),
-                                  _buildPermissionRow('Backup/Restore', false, (v) => setState(() {})),
+                                  _buildPermissionRow('App Design Access',
+                                      false, (v) => setState(() {})),
+                                  _buildPermissionRow('Media Management', false,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('System Settings', false,
+                                      (v) => setState(() {})),
+                                  _buildPermissionRow('Backup/Restore', false,
+                                      (v) => setState(() {})),
                                   const SizedBox(height: 12),
                                   Row(
                                     children: [
                                       Expanded(
                                         child: ElevatedButton.icon(
-                                          icon: const Icon(Icons.save, size: 16),
+                                          icon:
+                                              const Icon(Icons.save, size: 16),
                                           label: const Text('Save'),
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                          onPressed: () => _showSnackbar(context, 'Permissions saved for Admin ${index + 1}'),
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.green),
+                                          onPressed: () => _showSnackbar(
+                                              context,
+                                              'Permissions saved for Admin ${index + 1}'),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: OutlinedButton.icon(
-                                          icon: const Icon(Icons.restore, size: 16),
+                                          icon: const Icon(Icons.restore,
+                                              size: 16),
                                           label: const Text('Reset'),
                                           onPressed: () {
                                             setState(() {});
-                                            _showSnackbar(context, 'Permissions reset to default');
+                                            _showSnackbar(context,
+                                                'Permissions reset to default');
                                           },
                                         ),
                                       ),
@@ -1120,14 +1363,17 @@ class RealAdminDashboardScreen extends StatelessWidget {
               label: const Text('Global Settings'),
               onPressed: () => _showGlobalPermissionsDialog(context),
             ),
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close')),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPermissionRow(String label, bool value, Function(bool) onChanged) {
+  Widget _buildPermissionRow(
+      String label, bool value, Function(bool) onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -1138,7 +1384,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.green,
+            activeThumbColor: Colors.green,
           ),
         ],
       ),
@@ -1162,32 +1408,47 @@ class RealAdminDashboardScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 const SizedBox(height: 16),
-                const Text('User Management', style: TextStyle(fontWeight: FontWeight.bold)),
-                _buildPermissionRow('Allow Delete Users', false, (v) => setState(() {})),
-                _buildPermissionRow('Allow Suspend Users', true, (v) => setState(() {})),
+                const Text('User Management',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                _buildPermissionRow(
+                    'Allow Delete Users', false, (v) => setState(() {})),
+                _buildPermissionRow(
+                    'Allow Suspend Users', true, (v) => setState(() {})),
                 const Divider(),
-                const Text('Content Management', style: TextStyle(fontWeight: FontWeight.bold)),
-                _buildPermissionRow('Allow Delete Products', false, (v) => setState(() {})),
-                _buildPermissionRow('Allow Delete Posts', false, (v) => setState(() {})),
+                const Text('Content Management',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                _buildPermissionRow(
+                    'Allow Delete Products', false, (v) => setState(() {})),
+                _buildPermissionRow(
+                    'Allow Delete Posts', false, (v) => setState(() {})),
                 const Divider(),
-                const Text('System Access', style: TextStyle(fontWeight: FontWeight.bold)),
-                _buildPermissionRow('App Design Access', false, (v) => setState(() {})),
-                _buildPermissionRow('Media Management', false, (v) => setState(() {})),
-                _buildPermissionRow('System Settings', false, (v) => setState(() {})),
-                _buildPermissionRow('Backup/Restore', false, (v) => setState(() {})),
-                _buildPermissionRow('Security Logs', true, (v) => setState(() {})),
+                const Text('System Access',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                _buildPermissionRow(
+                    'App Design Access', false, (v) => setState(() {})),
+                _buildPermissionRow(
+                    'Media Management', false, (v) => setState(() {})),
+                _buildPermissionRow(
+                    'System Settings', false, (v) => setState(() {})),
+                _buildPermissionRow(
+                    'Backup/Restore', false, (v) => setState(() {})),
+                _buildPermissionRow(
+                    'Security Logs', true, (v) => setState(() {})),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             ElevatedButton.icon(
               icon: const Icon(Icons.check),
               label: const Text('Apply to All'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 Navigator.pop(context);
-                _showSnackbar(context, 'Global permissions applied to all Kisan Admins');
+                _showSnackbar(
+                    context, 'Global permissions applied to all Kisan Admins');
               },
             ),
           ],
@@ -1206,6 +1467,7 @@ class RealAdminDashboardScreen extends StatelessWidget {
   }
 
   void _showSnackbar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }

@@ -72,7 +72,7 @@ class _FarmerListingsScreenState extends State<FarmerListingsScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: const Color(0xFF4CAF50).withOpacity(0.1),
+                      backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.1),
                       child: const Icon(Icons.person, color: Color(0xFF4CAF50)),
                     ),
                     title: Text(listing.productName, style: const TextStyle(fontWeight: FontWeight.bold)),

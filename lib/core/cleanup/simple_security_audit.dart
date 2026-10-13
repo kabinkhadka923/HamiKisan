@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../utils/logger.dart';
 
 class SimpleSecurityAudit {
   static final List<String> _sensitivePatterns = [
@@ -10,14 +11,7 @@ class SimpleSecurityAudit {
     'firebase',
   ];
 
-  static final List<String> _debugPatterns = [
-
-
-
-
-
-
-  ];
+  static final List<String> _debugPatterns = [];
 
   static final List<String> _insecurePatterns = [
     'SharedPreferences',
@@ -26,33 +20,32 @@ class SimpleSecurityAudit {
   ];
 
   static Future<void> performSecurityAudit() async {
-
-    
     final issues = <SecurityIssue>[];
-    
+
     // Check for hardcoded credentials
     await _checkHardcodedCredentials(issues);
-    
+
     // Check for debug prints
     await _checkDebugPrints(issues);
-    
+
     // Check for insecure storage
     await _checkInsecureStorage(issues);
-    
+
     // Generate report
     _generateReport(issues);
-    
+
     // Auto-fix simple issues
     await _autoFixIssues(issues);
   }
 
-  static Future<void> _checkHardcodedCredentials(List<SecurityIssue> issues) async {
+  static Future<void> _checkHardcodedCredentials(
+      List<SecurityIssue> issues) async {
     final dartFiles = await _getDartFiles();
-    
+
     for (final file in dartFiles) {
       final content = await file.readAsString();
       final lines = content.split('\n');
-      
+
       for (int i = 0; i < lines.length; i++) {
         final line = lines[i].toLowerCase();
         for (final pattern in _sensitivePatterns) {
@@ -76,11 +69,11 @@ class SimpleSecurityAudit {
 
   static Future<void> _checkDebugPrints(List<SecurityIssue> issues) async {
     final dartFiles = await _getDartFiles();
-    
+
     for (final file in dartFiles) {
       final content = await file.readAsString();
       final lines = content.split('\n');
-      
+
       for (int i = 0; i < lines.length; i++) {
         final line = lines[i];
         for (final pattern in _debugPatterns) {
@@ -104,11 +97,11 @@ class SimpleSecurityAudit {
 
   static Future<void> _checkInsecureStorage(List<SecurityIssue> issues) async {
     final dartFiles = await _getDartFiles();
-    
+
     for (final file in dartFiles) {
       final content = await file.readAsString();
       final lines = content.split('\n');
-      
+
       for (int i = 0; i < lines.length; i++) {
         final line = lines[i];
         for (final pattern in _insecurePatterns) {
@@ -132,8 +125,9 @@ class SimpleSecurityAudit {
 
   static Future<void> _autoFixIssues(List<SecurityIssue> issues) async {
     // Filter debug issues (those with IssueType.other from debug prints)
-    final debugIssues = issues.where((issue) => issue.type == IssueType.other).toList();
-    
+    final debugIssues =
+        issues.where((issue) => issue.type == IssueType.other).toList();
+
     for (final issue in debugIssues) {
       await _removeDebugPrint(issue);
     }
@@ -144,85 +138,65 @@ class SimpleSecurityAudit {
       final file = File(issue.file);
       final content = await file.readAsString();
       final lines = content.split('\n');
-      
+
       // Remove the debug print line
       if (issue.line <= lines.length) {
         lines[issue.line - 1] = ''; // Clear the line
       }
-      
+
       await file.writeAsString(lines.join('\n'));
-
     } catch (e) {
-
+      Logger.warning('Could not remove debug print from ${issue.file}',
+          tag: 'SecurityAudit', data: e);
     }
   }
 
   static void _generateReport(List<SecurityIssue> issues) {
-
-
-    
     if (issues.isEmpty) {
-
       return;
     }
-    
+
     // Group by severity
-    final criticalIssues = issues.where((issue) => issue.severity == Severity.critical).toList();
-    final highIssues = issues.where((issue) => issue.severity == Severity.high).toList();
-    final mediumIssues = issues.where((issue) => issue.severity == Severity.medium).toList();
-    final lowIssues = issues.where((issue) => issue.severity == Severity.low).toList();
-    
+    final criticalIssues =
+        issues.where((issue) => issue.severity == Severity.critical).toList();
+    final highIssues =
+        issues.where((issue) => issue.severity == Severity.high).toList();
+    final mediumIssues =
+        issues.where((issue) => issue.severity == Severity.medium).toList();
+    final lowIssues =
+        issues.where((issue) => issue.severity == Severity.low).toList();
 
     for (final issue in criticalIssues) {
       _printIssue(issue);
     }
-    
 
     for (final issue in highIssues) {
       _printIssue(issue);
     }
-    
 
     for (final issue in mediumIssues) {
       _printIssue(issue);
     }
-    
 
     for (final issue in lowIssues) {
       _printIssue(issue);
     }
-    
 
-
-
-
-
-
-    
-    if (criticalIssues.isNotEmpty || highIssues.isNotEmpty) {
-
-
-    }
+    if (criticalIssues.isNotEmpty || highIssues.isNotEmpty) {}
   }
 
-  static void _printIssue(SecurityIssue issue) {
-
-
-
-
-
-  }
+  static void _printIssue(SecurityIssue issue) {}
 
   static Future<List<File>> _getDartFiles() async {
     final directory = Directory('lib');
     final files = <File>[];
-    
+
     await for (final entity in directory.list(recursive: true)) {
       if (entity is File && entity.path.endsWith('.dart')) {
         files.add(entity);
       }
     }
-    
+
     return files;
   }
 }

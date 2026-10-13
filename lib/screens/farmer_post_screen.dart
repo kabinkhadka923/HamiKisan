@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/user.dart';
@@ -8,8 +7,6 @@ import '../models/post_model.dart';
 import '../providers/auth_provider.dart';
 import '../services/post_service.dart';
 import '../services/media_service.dart';
-import '../security/encryption_service.dart';
-import 'video_call_screen.dart';
 
 class FarmerPostScreen extends StatefulWidget {
   final User farmer;
@@ -91,22 +88,23 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        children: PostType.values.map((type) => Expanded(
-          child: FilterChip(
-            label: Text(_typeLabel(type)),
-            selected: _selectedType == type,
-            onSelected: (selected) {
-              setState(() => _selectedType = type);
-            },
-            backgroundColor: Colors.grey[200],
-            selectedColor: Theme.of(context).colorScheme.primary,
-            labelStyle: TextStyle(
-              color: _selectedType == type
-                  ? Colors.white
-                  : Colors.black87,
-            ),
-          ),
-        )).toList(),
+        children: PostType.values
+            .map((type) => Expanded(
+                  child: FilterChip(
+                    label: Text(_typeLabel(type)),
+                    selected: _selectedType == type,
+                    onSelected: (selected) {
+                      setState(() => _selectedType = type);
+                    },
+                    backgroundColor: Colors.grey[200],
+                    selectedColor: Theme.of(context).colorScheme.primary,
+                    labelStyle: TextStyle(
+                      color:
+                          _selectedType == type ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
@@ -140,7 +138,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
           // Title
           TextField(
             controller: _titleController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Title (optional)',
               border: OutlineInputBorder(),
               isDense: true,
@@ -152,7 +150,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
           // Content
           TextField(
             controller: _contentController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'What would you like to share?',
               border: OutlineInputBorder(),
               isDense: true,
@@ -209,20 +207,22 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Price:', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text('Price:',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600])),
             TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Price per unit',
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               onChanged: (val) =>
                   setState(() => _quickPrice = double.tryParse(val) ?? 0),
             ),
             const SizedBox(height: 4),
             TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Unit (kg, bundle, etc.)',
                 border: OutlineInputBorder(),
                 isDense: true,
@@ -236,19 +236,20 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Crop:', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text('Crop:',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600])),
             TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Crop name',
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
-              onChanged: (val) =>
-                  setState(() => _quickCrop = val.isNotEmpty ? val : 'Tomatoes'),
+              onChanged: (val) => setState(
+                  () => _quickCrop = val.isNotEmpty ? val : 'Tomatoes'),
             ),
             const SizedBox(height: 4),
             TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Quantity available',
                 border: OutlineInputBorder(),
                 isDense: true,
@@ -263,15 +264,15 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Resource:', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text('Resource:',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600])),
             TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'What are you sharing?',
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
-              onChanged: (val) =>
-                  setState(() => _quickResource = val.isNotEmpty ? val : 'Seeds'),
+              onChanged: (val) => setState(() => _quickResource = val),
             ),
           ],
         );
@@ -285,7 +286,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
   String _quickUnit = 'kg';
   String _quickCrop = 'Tomatoes';
   double _quickQuantity = 0;
-  String _quickResource = 'Seeds';
+  String _quickResource = '';
 
   Future<void> _pickMedia() async {
     final type = await _showMediaTypeDialog();
@@ -349,7 +350,12 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
   Future<void> _createPost() async {
     if (_titleController.text.trim().isEmpty &&
         _contentController.text.trim().isEmpty &&
-        _mediaPath == null) return;
+        _mediaPath == null &&
+        !(_selectedType == PostType.resource_share &&
+            _quickResource.trim().isNotEmpty) &&
+        !(_selectedType == PostType.availability && _quickQuantity > 0)) {
+      return;
+    }
 
     setState(() => _isSending = true);
 
@@ -359,25 +365,37 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
         farmerId: '',
         farmerName: widget.farmer.name,
         postType: _selectedType,
-        title: _titleController.text.trim(),
-        content: _contentController.text.trim(),
-        mediaUrl: _mediaPath != null ? 'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg' : null,
+        title: _titleController.text.trim().isNotEmpty
+            ? _titleController.text.trim()
+            : _selectedType == PostType.resource_share
+                ? _quickResource.trim()
+                : '',
+        content: _selectedType == PostType.availability && _quickQuantity > 0
+            ? [
+                _contentController.text.trim(),
+                'Quantity available: ${_quickQuantity.toString()}',
+              ].where((value) => value.isNotEmpty).join('\n')
+            : _contentController.text.trim(),
+        mediaUrl: _mediaPath != null
+            ? 'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg'
+            : null,
         imageUrl: _mediaPath != null
             ? 'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg'
             : null,
         imageUrls: _mediaPath != null
-            ? ['https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg']
+            ? [
+                'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg'
+              ]
             : [],
         price: _selectedType == PostType.price_alert ? _quickPrice : null,
         unit: _selectedType == PostType.price_alert ? _quickUnit : null,
-        cropName:
-            _selectedType == PostType.availability ? _quickCrop : null,
+        cropName: _selectedType == PostType.availability ? _quickCrop : null,
         isOrganic: _selectedType == PostType.crop_update,
         qualityGrade: _selectedType == PostType.crop_update ? 'A' : null,
         createdAt: DateTime.now(),
       );
 
-      final createdPost = await _postService.createPost(post);
+      await _postService.createPost(post);
 
       // Clear form
       _titleController.clear();
@@ -434,7 +452,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
                 _buildPostForm(),
 
                 // Divider
-                Divider(height: 1, thickness: 1),
+                const Divider(height: 1, thickness: 1),
 
                 // Posts list
                 Expanded(
@@ -453,14 +471,15 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
                             return _buildPost(_posts[index]);
                           },
                         ),
+                ),
               ],
             ),
-      ),
     );
   }
 
   Widget _buildPost(Post post) {
-    final isFromCurrentFarmer = post.farmerId == context.read<AuthProvider>().currentUser?.id;
+    final isFromCurrentFarmer =
+        post.farmerId == context.read<AuthProvider>().currentUser?.id;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12.0),
@@ -497,9 +516,8 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: isFromCurrentFarmer
-                            ? Colors.white
-                            : Colors.black87,
+                        color:
+                            isFromCurrentFarmer ? Colors.white : Colors.black87,
                       ),
                     ),
                     Text(
@@ -521,9 +539,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
             post.content,
             style: TextStyle(
               fontSize: 14,
-              color: isFromCurrentFarmer
-                  ? Colors.white70
-                  : Colors.black87,
+              color: isFromCurrentFarmer ? Colors.white70 : Colors.black87,
               height: 1.4,
             ),
           ),
@@ -558,9 +574,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
                   Icon(
                     Icons.favorite_border,
                     size: 18,
-                    color: post.likes > 0
-                        ? Colors.pink
-                        : Colors.grey[400],
+                    color: post.likes > 0 ? Colors.pink : Colors.grey[400],
                   ),
                   const SizedBox(width: 2),
                   Text(
@@ -598,7 +612,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color, width: 1),
       ),

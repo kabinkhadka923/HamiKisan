@@ -190,7 +190,7 @@ class _ItemFormDialogState extends State<_ItemFormDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _unit,
+                initialValue: _unit,
                 decoration: const InputDecoration(labelText: 'Unit (ईकाइ)'),
                 items: const [
                   DropdownMenuItem(value: 'केजी', child: Text('केजी (KG)')),

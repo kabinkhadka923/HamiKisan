@@ -1,4 +1,26 @@
 {
     "git.ignoreLimitWarning": true,
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "chat.tools.terminal.autoApprove": {
+        "/^flutter analyze lib/screens/login_screen\\.dart$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^flutter --version$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^flutter clean && flutter pub get$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^flutter config --enable-web && flutter devices$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^flutter build web --release --base-href \"/HamiKisan/\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
 }

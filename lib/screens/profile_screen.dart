@@ -210,38 +210,29 @@ class ProfileScreen extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(context.tr('choose_language')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Radio<String>(
+          content: RadioGroup<String>(
+            groupValue: localizationProvider.currentLanguage,
+            onChanged: (value) async {
+              if (value == null) return;
+              await localizationProvider.setLanguage(value);
+              await authProvider.updateLanguage(value);
+              if (context.mounted) Navigator.of(context).pop();
+            },
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<String>(
+                  title: Text('English'),
                   value: 'English',
-                  groupValue: localizationProvider.currentLanguage,
-                  onChanged: (value) {},
-                  activeColor: const Color(0xFF4CAF50),
+                  activeColor: Color(0xFF4CAF50),
                 ),
-                title: const Text('English'),
-                onTap: () async {
-                  await localizationProvider.setLanguage('English');
-                  await authProvider.updateLanguage('English');
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                leading: Radio<String>(
+                RadioListTile<String>(
+                  title: Text('नेपाली (Nepali)'),
                   value: 'Nepali',
-                  groupValue: localizationProvider.currentLanguage,
-                  onChanged: (value) {},
-                  activeColor: const Color(0xFF4CAF50),
+                  activeColor: Color(0xFF4CAF50),
                 ),
-                title: const Text('नेपाली (Nepali)'),
-                onTap: () async {
-                  await localizationProvider.setLanguage('Nepali');
-                  await authProvider.updateLanguage('Nepali');
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(

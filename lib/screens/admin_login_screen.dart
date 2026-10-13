@@ -9,6 +9,7 @@ import '../services/database.dart';
 import 'admin/admin_dashboard_screen.dart';
 import 'super_admin_secure_panel.dart';
 import '../widgets/password_strength_meter.dart';
+import '../utils/logger.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -59,21 +60,17 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
       final prefs = await SharedPreferences.getInstance();
       final usersStr = prefs.getString('local_users_db_v4');
       if (usersStr == null) {
-        print('[DEBUG] No users found in SharedPreferences DB');
+        Logger.debug('No users found in SharedPreferences database',
+            tag: 'AdminAuth');
         return;
       }
 
       final users = json.decode(usersStr) as Map<String, dynamic>;
-      print('========================================');
-      print('[DEBUG] AUTH STATE');
-      print('Total users: ${users.length}');
-      users.forEach((id, data) {
-        print(
-            'User: ${data['username']}, Role: ${data['role']}, Hash: ${data['password_hash']?.toString().substring(0, 20)}...');
-      });
-      print('========================================');
+      Logger.debug('Loaded local authentication state',
+          tag: 'AdminAuth', data: {'userCount': users.length});
     } catch (e) {
-      print('[DEBUG] Error checking auth state: $e');
+      Logger.warning('Could not inspect local authentication state',
+          tag: 'AdminAuth', data: e);
     }
   }
 
@@ -88,7 +85,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
       }
     } catch (e) {
       // Database might not be available on web, ignore lock check
-      print('Lock status check failed (database unavailable): $e');
+      Logger.warning('Could not check admin lock status',
+          tag: 'AdminAuth', data: e);
     }
   }
 
@@ -149,12 +147,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1A237E).withOpacity(0.5),
+                color: const Color(0xFF1A237E).withValues(alpha: 0.5),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
-            border: Border.all(color: Colors.white.withOpacity(0.1), width: 2),
+            border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1), width: 2),
           ),
           child: Stack(
             children: [
@@ -162,7 +161,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                 child: Icon(
                   Icons.security,
                   size: 60,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
               Positioned(
@@ -208,9 +207,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.1),
+            color: Colors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.red.withOpacity(0.3)),
+            border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -245,9 +244,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.05),
+        color: Colors.red.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -271,7 +270,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
             'Too many failed login attempts',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
@@ -279,7 +278,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -329,7 +328,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -343,18 +342,20 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                 labelText: 'Admin Username',
                 labelStyle: const TextStyle(color: Colors.white70),
                 hintText: 'Enter admin username',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                prefixIcon:
-                    Icon(Icons.person, color: Colors.white.withOpacity(0.7)),
+                hintStyle:
+                    TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                prefixIcon: Icon(Icons.person,
+                    color: Colors.white.withValues(alpha: 0.7)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.08),
+                fillColor: Colors.white.withValues(alpha: 0.08),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  borderSide:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -383,7 +384,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -398,13 +399,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                 labelText: 'Admin Password',
                 labelStyle: const TextStyle(color: Colors.white70),
                 hintText: 'Enter your password',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                prefixIcon:
-                    Icon(Icons.lock, color: Colors.white.withOpacity(0.7)),
+                hintStyle:
+                    TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                prefixIcon: Icon(Icons.lock,
+                    color: Colors.white.withValues(alpha: 0.7)),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                   onPressed: () =>
                       setState(() => _obscurePassword = !_obscurePassword),
@@ -414,10 +416,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.08),
+                fillColor: Colors.white.withValues(alpha: 0.08),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  borderSide:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -455,9 +458,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -494,7 +497,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 4,
-                shadowColor: const Color(0xFF1A237E).withOpacity(0.5),
+                shadowColor: const Color(0xFF1A237E).withValues(alpha: 0.5),
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -523,7 +526,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.2),
+                              color: Colors.red.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -554,9 +557,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.05),
+            color: Colors.blue.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.blue.withOpacity(0.2)),
+            border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
           ),
           child: Column(
             children: [
@@ -580,7 +583,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                 'Enter the 6-digit code sent to your email',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -603,7 +606,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide:
-                          BorderSide(color: Colors.blue.withOpacity(0.5)),
+                          BorderSide(color: Colors.blue.withValues(alpha: 0.5)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -611,10 +614,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                           const BorderSide(color: Colors.blue, width: 2),
                     ),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.08),
+                    fillColor: Colors.white.withValues(alpha: 0.08),
                     hintText: '000000',
                     hintStyle: TextStyle(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       letterSpacing: 8,
                     ),
                   ),
@@ -632,7 +635,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                   Text(
                     "Didn't receive code? ",
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 12,
                     ),
                   ),
@@ -675,7 +678,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                 onPressed: _showForgotPasswordDialog,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white70,
-                  side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -694,7 +697,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white70,
-                  side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -713,16 +716,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.info_outline,
                 size: 16,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -730,7 +733,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                   'For security reasons, this session will timeout after 15 minutes of inactivity.',
                   style: TextStyle(
                     fontSize: 10,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     height: 1.3,
                   ),
                 ),
@@ -769,7 +772,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
           await _db.resetAdminLock(_usernameController.text);
         } catch (e) {
           // Database might not be available on web, ignore
-          print('Failed to reset admin lock (database unavailable): $e');
+          Logger.debug('Could not reset admin lock', tag: 'AdminAuth', data: e);
         }
 
         // Check if user is admin
@@ -797,7 +800,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
             await _db.lockAdminAccount(_usernameController.text, lockUntil);
           } catch (e) {
             // Database might not be available on web, ignore
-            print('Failed to lock admin account (database unavailable): $e');
+            Logger.warning('Could not persist admin account lock',
+                tag: 'AdminAuth', data: e);
           }
 
           setState(() {
@@ -909,7 +913,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
             Text(
               'Send password reset link to:',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 14,
               ),
             ),
@@ -917,7 +921,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -1015,9 +1019,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                 ),
                 child: const Column(
                   children: [
@@ -1084,7 +1088,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -1126,7 +1130,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),

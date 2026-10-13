@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
 import 'dart:async';
+import '../utils/logger.dart';
 
 /// 🎵 Enhanced Audio Service for HamiKisan - Production Ready
 class AudioService {
@@ -74,9 +75,7 @@ class AudioService {
       }
 
       _eventController.add(AudioEvent.initialized());
-      print('🎵 Audio Service Initialized with volume: ${_preferences.volume}');
-    } catch (e, stack) {
-      print('❌ Audio initialization error: $e\n$stack');
+    } catch (e) {
       _eventController.add(AudioEvent.error('Initialization failed: $e'));
     }
   }
@@ -147,7 +146,8 @@ class AudioService {
       // Wait for completion
       await _callSoundCompleter!.future;
     } catch (e, stack) {
-      print('❌ Error playing incoming call: $e\n$stack');
+      Logger.error('Could not play incoming call ringtone',
+          tag: 'Audio', error: e, stackTrace: stack);
       _eventController.add(AudioEvent.error('Call ring failed: $e'));
       await stopCallSound();
     }
@@ -180,7 +180,8 @@ class AudioService {
         await _safeVibrate(duration: 50, amplitude: 30);
       }
     } catch (e, stack) {
-      print('❌ Error playing outgoing call: $e\n$stack');
+      Logger.error('Could not play outgoing call ringtone',
+          tag: 'Audio', error: e, stackTrace: stack);
       _eventController.add(AudioEvent.error('Outgoing call failed: $e'));
       await stopCallSound();
     }
@@ -201,7 +202,8 @@ class AudioService {
 
       _eventController.add(AudioEvent.callConnected());
     } catch (e) {
-      print('❌ Error playing call connected sound: $e');
+      Logger.error('Could not play call connected sound',
+          tag: 'Audio', error: e);
     }
   }
 
@@ -215,7 +217,7 @@ class AudioService {
 
       _eventController.add(AudioEvent.callEnded(reason));
     } catch (e) {
-      print('❌ Error playing call ended sound: $e');
+      Logger.error('Could not play call ended sound', tag: 'Audio', error: e);
     }
   }
 
@@ -227,7 +229,7 @@ class AudioService {
         volume: _preferences.volume * 0.3,
       );
     } catch (e) {
-      print('❌ Error playing message sent sound: $e');
+      Logger.error('Could not play message sent sound', tag: 'Audio', error: e);
     }
   }
 
@@ -243,7 +245,8 @@ class AudioService {
         await _safeVibrate(duration: 150);
       }
     } catch (e) {
-      print('❌ Error playing message received sound: $e');
+      Logger.error('Could not play message received sound',
+          tag: 'Audio', error: e);
     }
   }
 
@@ -293,7 +296,7 @@ class AudioService {
 
       _eventController.add(AudioEvent.notificationPlayed(type));
     } catch (e) {
-      print('❌ Error playing notification: $e');
+      // Error playing notification
     }
   }
 
@@ -307,7 +310,7 @@ class AudioService {
 
       _eventController.add(AudioEvent.errorSoundPlayed(message));
     } catch (e) {
-      print('❌ Error playing error sound: $e');
+      Logger.error('Could not play error sound', tag: 'Audio', error: e);
     }
   }
 
@@ -324,7 +327,7 @@ class AudioService {
         await _safeVibrate(duration: 50, amplitude: 40);
       }
     } catch (e) {
-      print('❌ Error playing success sound: $e');
+      Logger.error('Could not play success sound', tag: 'Audio', error: e);
     }
   }
 
@@ -357,7 +360,7 @@ class AudioService {
       _stopVibration();
       _eventController.add(AudioEvent.ringingStopped());
     } catch (e) {
-      print('❌ Error stopping call sound: $e');
+      Logger.error('Could not stop call sound', tag: 'Audio', error: e);
     }
   }
 
@@ -371,7 +374,7 @@ class AudioService {
       _eventController
           .add(_isMuted ? AudioEvent.muted() : AudioEvent.unmuted());
     } catch (e) {
-      print('❌ Error setting mute: $e');
+      Logger.error('Could not update mute state', tag: 'Audio', error: e);
     }
   }
 
@@ -390,7 +393,8 @@ class AudioService {
         await _player.setVolume(_volumeLevel);
         await _secondaryPlayer.setVolume(_volumeLevel);
       } catch (e) {
-        print('❌ Error setting volume: $e');
+        Logger.error('Could not update playback volume',
+            tag: 'Audio', error: e);
       }
     }
   }
@@ -406,7 +410,8 @@ class AudioService {
         await _player.setVolume(_isMuted ? 0.0 : _volumeLevel);
       }
     } catch (e) {
-      print('❌ Error handling audio focus: $e');
+      Logger.error('Could not handle audio focus change',
+          tag: 'Audio', error: e);
     }
   }
 
@@ -419,7 +424,7 @@ class AudioService {
       _stopVibration();
       await _eventController.close();
     } catch (e) {
-      print('❌ Error disposing audio service: $e');
+      Logger.error('Could not dispose audio service', tag: 'Audio', error: e);
     }
   }
 
@@ -518,7 +523,7 @@ class AudioService {
       if (defaultTargetPlatform == TargetPlatform.android) {
         await _player.setPlayerMode(PlayerMode.mediaPlayer);
         await _player.setAudioContext(AudioContext(
-          android: AudioContextAndroid(
+          android: const AudioContextAndroid(
             contentType: AndroidContentType.speech,
           ),
         ));
@@ -526,7 +531,7 @@ class AudioService {
         await _player.setAudioContext(AudioContext(
           iOS: AudioContextIOS(
             category: AVAudioSessionCategory.playAndRecord,
-            options: {
+            options: const {
               AVAudioSessionOptions.mixWithOthers,
               AVAudioSessionOptions.defaultToSpeaker,
             },
@@ -534,7 +539,8 @@ class AudioService {
         ));
       }
     } catch (e) {
-      print('⚠️ Audio session configuration failed: $e');
+      Logger.warning('Could not configure audio session',
+          tag: 'Audio', data: e);
     }
   }
 
@@ -551,7 +557,7 @@ class AudioService {
         await _audioCache.load(sound);
       }
     } catch (e) {
-      print('⚠️ Sound preloading failed: $e');
+      Logger.warning('Could not preload sounds', tag: 'Audio', data: e);
     }
   }
 }

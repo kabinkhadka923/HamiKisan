@@ -7,6 +7,7 @@ import '../services/security_service.dart';
 import '../services/web_auth_service.dart';
 import '../services/backend_config.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import '../utils/logger.dart';
 
 class AuthService {
   static const bool _useLocalDb = false;
@@ -93,20 +94,24 @@ class AuthService {
     }
 
     if (_useLocalDb) {
-      return await _loginWithLocalDb(normalizedPhone, password, useEmail: false);
+      return await _loginWithLocalDb(normalizedPhone, password,
+          useEmail: false);
     }
 
     try {
-      final response = await http.post(
-        BackendConfig.uri('/api/auth/login'),
-        headers: _headers,
-        body: json.encode({
-          'phoneNumber': normalizedPhone,
-          'password': password,
-          if (expectedRole != null)
-            'role': expectedRole == UserRole.kisanDoctor ? 'doctor' : 'farmer',
-        }),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            BackendConfig.uri('/api/auth/login'),
+            headers: _headers,
+            body: json.encode({
+              'phoneNumber': normalizedPhone,
+              'password': password,
+              if (expectedRole != null)
+                'role':
+                    expectedRole == UserRole.kisanDoctor ? 'doctor' : 'farmer',
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -155,16 +160,12 @@ class AuthService {
   Future<Map<String, dynamic>?> _webLogin(
       String identifier, String password) async {
     try {
-      print('[AUTH] Web login attempt: $identifier');
-
       // Try emergency bypass login first
       final emergencyAdmin = await _webAuth.getEmergencyAdmin();
       if (emergencyAdmin != null &&
           identifier == emergencyAdmin['username'] &&
           password == emergencyAdmin['password']) {
-        print('[AUTH] Emergency bypass login SUCCESS');
-
-        // Construct user map from emergency data
+        // Emergency bypass login SUCCESS
         return {
           'id': emergencyAdmin['id'],
           'username': emergencyAdmin['username'],
@@ -184,7 +185,6 @@ class AuthService {
 
       return null;
     } catch (e) {
-      print('[AUTH] Web login error: $e');
       return null;
     }
   }
@@ -290,7 +290,9 @@ class AuthService {
   Future<bool> resendOTP(String phoneNumber) async {
     if (_useLocalDb) {
       // Generate a random 6-digit OTP
-      final randomOTP = ((DateTime.now().millisecondsSinceEpoch % 900000) + 100000).toString();
+      final randomOTP =
+          ((DateTime.now().millisecondsSinceEpoch % 900000) + 100000)
+              .toString();
       await _storeOTP(phoneNumber, randomOTP);
       return true;
     }
@@ -310,7 +312,6 @@ class AuthService {
       }
     } catch (e) {
       // Fallback: if backend is unavailable, indicate OTP resend attempted
-      print('[AUTH] OTP resend attempted for $phoneNumber (backend unavailable)');
     }
     return false;
   }
@@ -404,17 +405,11 @@ class AuthService {
       String identifier, String password,
       {required bool useEmail}) async {
     try {
-      print(
-          '[AUTH] Login attempt - identifier: $identifier, useEmail: $useEmail');
-
       final cleanIdentifier = SecurityUtils.sanitizeInput(identifier);
-      print('[AUTH] Cleaned identifier: $cleanIdentifier');
 
       // Temporarily bypass account locking for admin accounts to diagnose issue
       final isAdminAttempt = cleanIdentifier.toLowerCase().contains('admin') ||
           cleanIdentifier.toLowerCase().contains('super');
-
-      print('[AUTH] Is admin attempt: $isAdminAttempt');
 
       if (!isAdminAttempt && SecurityUtils.isAccountLocked(cleanIdentifier)) {
         try {
@@ -431,82 +426,63 @@ class AuthService {
       }
 
       final prefs = await SharedPreferences.getInstance();
-      print('[AUTH] SharedPreferences retrieved');
 
       if (prefs.getString(_usersKey) == null) {
-        print('[AUTH] No users found, initializing default users');
         await _initializeDefaultUsers();
       } else if (isAdminAttempt) {
-        print(
-            '[AUTH] Admin attempt detected, ensuring admin accounts are up to date');
         await _ensureAdminAccounts();
       }
 
       final usersStr = prefs.getString(_usersKey);
       if (usersStr == null) {
-        print('[AUTH] ERROR: Users string is null after initialization');
         if (!isAdminAttempt) {
           SecurityUtils.recordLoginAttempt(cleanIdentifier);
         }
         return null;
       }
 
-      print('[AUTH] Users data length: ${usersStr.length}');
       final users = json.decode(usersStr) as Map<String, dynamic>;
-      print('[AUTH] Number of users in database: ${users.length}');
-      print('[AUTH] User IDs: ${users.keys.toList()}');
 
       for (final userId in users.keys) {
         final user = users[userId] as Map<String, dynamic>;
-        final username = user['username'];
-        final role = user['role'];
-
-        print('[AUTH] Checking user: $username (role: $role)');
-
         final identifierMatch = useEmail
             ? user['email']?.toLowerCase() == cleanIdentifier.toLowerCase()
             : user['username']?.toLowerCase() == cleanIdentifier.toLowerCase();
 
-        if (identifierMatch) {
-          print('[AUTH] Found matching user: $username');
-          print(
-              '[AUTH] Stored password hash: ${user['password_hash']?.substring(0, 20)}...');
+        if (!identifierMatch) continue;
 
-          if (_verifyPassword(password, user['password_hash'])) {
-            print('[AUTH] ✓ Password verification SUCCESS for user: $username');
-            final userData = {...user, 'id': userId};
-            userData['lastLoginAt'] = DateTime.now().millisecondsSinceEpoch;
-            await _updateLocalUser(userData['id'], userData);
+        final passwordHash = user['password_hash'];
+        if (passwordHash is String && _verifyPassword(password, passwordHash)) {
+          final userData = {...user, 'id': userId};
+          userData['lastLoginAt'] = DateTime.now().millisecondsSinceEpoch;
+          await _updateLocalUser(userId, userData);
 
-            try {
-              await SecurityService.logSecurityEvent('LOGIN_SUCCESS', userId, {
-                'identifier': cleanIdentifier,
-                'loginMethod': useEmail ? 'email' : 'username',
-              });
-            } catch (e) {
-              // Ignore logging errors
-            }
-
-            return userData;
-          } else {
-            print('[AUTH] ✗ Password verification FAILED for user: $username');
-            if (!isAdminAttempt) {
-              SecurityUtils.recordLoginAttempt(cleanIdentifier);
-            }
-            try {
-              await SecurityService.logSecurityEvent('LOGIN_FAILED', userId, {
-                'identifier': cleanIdentifier,
-                'reason': 'Invalid password',
-              });
-            } catch (e) {
-              // Ignore logging errors
-            }
-            return null;
+          try {
+            await SecurityService.logSecurityEvent('LOGIN_SUCCESS', userId, {
+              'identifier': cleanIdentifier,
+              'loginMethod': useEmail ? 'email' : 'username',
+            });
+          } catch (e) {
+            // Ignore logging errors.
           }
+
+          return userData;
         }
+
+        if (!isAdminAttempt) {
+          SecurityUtils.recordLoginAttempt(cleanIdentifier);
+        }
+        try {
+          await SecurityService.logSecurityEvent('LOGIN_FAILED', userId, {
+            'identifier': cleanIdentifier,
+            'reason': 'Invalid password',
+          });
+        } catch (e) {
+          // Ignore logging errors.
+        }
+        return null;
       }
 
-      print('[AUTH] No matching user found for identifier: $cleanIdentifier');
       if (!isAdminAttempt) {
         SecurityUtils.recordLoginAttempt(cleanIdentifier);
       }
@@ -516,13 +492,10 @@ class AuthService {
           'reason': 'User not found',
         });
       } catch (e) {
-        // Ignore logging errors
+        // Ignore logging errors.
       }
       return null;
     } catch (e) {
-      // Log the actual error for debugging
-      print('[AUTH] Login error: $e');
-      print('[AUTH] Stack trace: ${StackTrace.current}');
       return null;
     }
   }
@@ -628,7 +601,9 @@ class AuthService {
       await prefs.setString(_usersKey, json.encode(usersData));
 
       // Generate a random 6-digit OTP for verification
-      final randomOTP = ((DateTime.now().millisecondsSinceEpoch % 900000) + 100000).toString();
+      final randomOTP =
+          ((DateTime.now().millisecondsSinceEpoch % 900000) + 100000)
+              .toString();
       await _storeOTP(phoneNumber, randomOTP);
 
       await SecurityService.logSecurityEvent('REGISTRATION_SUCCESS', userId, {
@@ -799,7 +774,6 @@ class AuthService {
 
       return SecurityUtils.verifyPassword(password, storedHash, salt);
     } catch (e) {
-      print('[AUTH] Password verification error: $e');
       return false;
     }
   }
@@ -863,9 +837,8 @@ class AuthService {
       };
 
       await prefs.setString(_usersKey, json.encode(users));
-      print('[AUTH] Admin accounts synchronized successfully');
     } catch (e) {
-      print('[AUTH] Failed to synchronize admin accounts: $e');
+      // Failed to synchronize admin accounts
     }
   }
 
@@ -902,12 +875,8 @@ class AuthService {
       };
 
       await prefs.setString(_usersKey, json.encode(users));
-      print('================================================');
-      print('[SECURITY] Admin account reset successfully');
-      print('[SECURITY] Check code for temporary credentials');
-      print('================================================');
     } catch (e) {
-      print('[AUTH] Emergency admin reset failed: $e');
+      // Emergency admin reset failed
     }
   }
 
@@ -943,7 +912,10 @@ class AuthService {
         users[userId]['language'] = language;
         await prefs.setString(_usersKey, json.encode(users));
       }
-    } catch (e) {}
+    } catch (e) {
+      Logger.warning('Could not update local user language',
+          tag: 'Auth', data: e);
+    }
   }
 
   Future<void> updateUserLanguageSelection(
@@ -968,7 +940,10 @@ class AuthService {
         users[userId]['hasSelectedLanguage'] = hasSelected;
         await prefs.setString(_usersKey, json.encode(users));
       }
-    } catch (e) {}
+    } catch (e) {
+      Logger.warning('Could not update local language selection',
+          tag: 'Auth', data: e);
+    }
   }
 
   Future<void> createEmergencyAdmin() async {

@@ -1,14 +1,21 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 
-enum CallState { idle, ringingIncoming, ringingOutgoing, connected, ended, error }
+enum CallState {
+  idle,
+  ringingIncoming,
+  ringingOutgoing,
+  connected,
+  ended,
+  error
+}
 
 enum CallType { video, voice }
 
 class CallSignalingService {
-  late IO.Socket _socket;
+  late socket_io.Socket _socket;
   late ValueNotifier<String?> _currentCallId;
   late ValueNotifier<CallState> _callState;
   late ValueNotifier<String?> _callerName;
@@ -23,7 +30,7 @@ class CallSignalingService {
   ValueNotifier<CallState> get callState => _callState;
   ValueNotifier<String?> get callerName => _callerName;
 
-  setSocket(IO.Socket socket) {
+  setSocket(socket_io.Socket socket) {
     _socket = socket;
 
     _socket.on('call:init', (data) {

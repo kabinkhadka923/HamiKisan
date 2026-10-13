@@ -49,6 +49,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _agreeToTerms = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
   int _otpResendCooldown = 0;
   int _loginAttempts = 0;
   Timer? _cooldownTimer;
@@ -217,25 +218,31 @@ class _LoginScreenState extends State<LoginScreen>
 
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) return context.tr('required_field');
-    
-    // Check if it's a valid Nepali phone number (starts with 9, 10 digits)
+
+    // Keep email and username login support while enforcing Nepalese mobile
+    // number prefixes and length for numeric identifiers.
     var cleanedPhone = value.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleanedPhone.length == 10 && cleanedPhone.startsWith('9')) {
-      return null; // Valid phone number
+    if (cleanedPhone.isNotEmpty &&
+        cleanedPhone.length == value.length &&
+        RegExp(r'^[0-9]+$').hasMatch(value)) {
+      if (RegExp(r'^(?:98|97)[0-9]{8}$').hasMatch(cleanedPhone)) {
+        return null;
+      }
+      return context.tr('invalid_phone');
     }
-    
+
     // Check if it's a valid email address
     final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     if (emailRegex.hasMatch(value) && value.length <= 254) {
       return null; // Valid email
     }
-    
+
     // Check if it's a valid username (alphanumeric, 3-20 characters)
     final usernameRegex = RegExp(r'^[a-zA-Z0-9_]{3,20}$');
     if (usernameRegex.hasMatch(value)) {
       return null; // Valid username
     }
-    
+
     return context.tr('invalid_phone');
   }
 
@@ -266,6 +273,7 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -287,38 +295,60 @@ class _LoginScreenState extends State<LoginScreen>
             scale: _scaleAnimation,
             child: FadeTransition(
               opacity: _fadeAnimation,
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.all(24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 5),
-                      _buildLogo(),
-                      const SizedBox(height: 10),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.all(24.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 5),
+                          _buildLogo(),
+                          const SizedBox(height: 10),
 
-                      // Role Selection (only for registration)
-                      if (!_isLogin && !_isOtpVerification) ...[
-                        _buildRoleSelection(),
-                        const SizedBox(height: 30),
-                      ],
+                          // Role Selection (only for registration)
+                          if (!_isLogin && !_isOtpVerification) ...[
+                            _buildRoleSelection(),
+                            const SizedBox(height: 30),
+                          ],
 
-                      // OTP Verification Header
-                      if (_isOtpVerification) ...[
-                        _buildOtpVerificationHeader(),
-                        const SizedBox(height: 30),
-                      ],
+                          // OTP Verification Header
+                          if (_isOtpVerification) ...[
+                            _buildOtpVerificationHeader(),
+                            const SizedBox(height: 30),
+                          ],
 
-                      // Main Form
-                      _buildForm(),
-
-                      const SizedBox(height: 24),
-                      _buildActionButton(),
-                      const SizedBox(height: 20),
-                      _buildToggleMode(),
-                    ],
+                          Container(
+                            padding: const EdgeInsets.all(24.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.95),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.12),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildForm(),
+                                const SizedBox(height: 24),
+                                _buildActionButton(),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          _buildToggleMode(),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -384,7 +414,7 @@ class _LoginScreenState extends State<LoginScreen>
               Shadow(
                 offset: const Offset(1, 1),
                 blurRadius: 3,
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -443,7 +473,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
@@ -630,36 +660,45 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 10),
 
-        // Remember Me
+        // Remember Me and Forgot Password
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Checkbox(
-              value: _rememberMe,
-              onChanged: (value) =>
-                  setState(() => _rememberMe = value ?? false),
-              activeColor: const Color(0xFF3DA35D),
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: _rememberMe,
+                    onChanged: (value) =>
+                        setState(() => _rememberMe = value ?? false),
+                    activeColor: const Color(0xFF3DA35D),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  Flexible(
+                    child: Text(
+                      context.tr('remember_me'),
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            Text(
-              context.tr('remember_me'),
-              style: const TextStyle(color: Colors.white),
+            TextButton(
+              onPressed: _showForgotPasswordDialog,
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF3DA35D),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                context.tr('forgot_password'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
-        ),
-        const SizedBox(height: 10),
-
-        // Forgot Password
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: _showForgotPasswordDialog,
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF3DA35D),
-            ),
-            child: Text(
-              context.tr('forgot_password'),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
         ),
 
         // Login Attempts Warning
@@ -699,7 +738,7 @@ class _LoginScreenState extends State<LoginScreen>
         Text(
           context.tr('login_as'),
           style: const TextStyle(
-            color: Colors.white,
+            color: Colors.black87,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -830,7 +869,7 @@ class _LoginScreenState extends State<LoginScreen>
 
         // Province Dropdown (Mock Data for now as model doesn't have unique province list efficiently)
         DropdownButtonFormField<String>(
-          value: _selectedProvince,
+          initialValue: _selectedProvince,
           decoration: _buildInputDecoration(context.tr('province'), Icons.map),
           items: [
             'Province 1',
@@ -848,7 +887,7 @@ class _LoginScreenState extends State<LoginScreen>
 
         // District Dropdown
         DropdownButtonFormField<String>(
-          value: _selectedDistrict,
+          initialValue: _selectedDistrict,
           decoration:
               _buildInputDecoration(context.tr('district'), Icons.location_on),
           items: NepalDistricts.all
@@ -1101,6 +1140,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   Widget _buildActionButton() {
     final authProvider = context.watch<AuthProvider>();
+    final isLoading = _isLoading || authProvider.isLoading;
 
     if (_isOtpVerification) {
       return Column(
@@ -1119,7 +1159,7 @@ class _LoginScreenState extends State<LoginScreen>
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: authProvider.isLoading ? null : _handleSubmit,
+        onPressed: isLoading ? null : _handleSubmit,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF3DA35D),
           foregroundColor: Colors.white,
@@ -1128,13 +1168,11 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           elevation: 2,
         ),
-        child: authProvider.isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
+        child: isLoading
+            ? const Center(
                 child: CircularProgressIndicator(
+                  color: Colors.white,
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
             : Row(
@@ -1283,7 +1321,8 @@ class _LoginScreenState extends State<LoginScreen>
     _formKey.currentState?.reset();
   }
 
-  void _handleSubmit() async {
+  Future<void> _handleSubmit() async {
+    if (_isLoading) return;
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) {
@@ -1296,10 +1335,17 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
-    if (_isLogin) {
-      await _handleLogin();
-    } else {
-      await _handleRegister();
+    setState(() => _isLoading = true);
+    try {
+      if (_isLogin) {
+        await _handleLogin();
+      } else {
+        await _handleRegister();
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

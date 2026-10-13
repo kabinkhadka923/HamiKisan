@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/post_model.dart';
+import '../models/user.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Post post;
@@ -57,7 +58,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'Comments (${_comments.length})',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   ..._comments.map((comment) => _buildCommentCard(comment)),
@@ -65,7 +67,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     const Padding(
                       padding: EdgeInsets.all(32),
                       child: Center(
-                        child: Text('No comments yet. Be the first to comment!'),
+                        child:
+                            Text('No comments yet. Be the first to comment!'),
                       ),
                     ),
                 ],
@@ -88,9 +91,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: widget.post.authorRole == 'farmer' ? Colors.green : Colors.orange,
+                  backgroundColor: widget.post.authorRole == UserRole.farmer
+                      ? Colors.green
+                      : Colors.orange,
                   child: Icon(
-                    widget.post.authorRole == 'farmer' ? Icons.agriculture : Icons.medical_services,
+                    widget.post.authorRole == UserRole.farmer
+                        ? Icons.agriculture
+                        : Icons.medical_services,
                     color: Colors.white,
                   ),
                 ),
@@ -101,11 +108,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     children: [
                       Text(
                         widget.post.farmerName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       Text(
                         _formatTimeAgo(widget.post.createdAt),
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                     ],
                   ),
@@ -184,7 +193,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -200,7 +209,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
             ),
           ),

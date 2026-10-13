@@ -1,5 +1,6 @@
 /// Simple encryption service placeholder for Hamikisan Messages
 /// For production, implement proper end-to-end encryption
+library;
 import 'dart:convert';
 
 class EncryptionService {

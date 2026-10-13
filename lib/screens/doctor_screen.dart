@@ -665,7 +665,7 @@ class _DoctorScreenState extends State<DoctorScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => VideoCallScreen(
+                    builder: (context) => const VideoCallScreen(
                       callId: 'new_request',
                       peerName: 'Expert Consultant',
                       callerName: 'Expert Consultant',
@@ -823,7 +823,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           message['timestamp'],
                           style: TextStyle(
                             color: message['isUser']
-                                ? Colors.white.withOpacity(0.7)
+                                ? Colors.white.withValues(alpha: 0.7)
                                 : Colors.grey.shade600,
                             fontSize: 12,
                           ),
@@ -841,7 +841,7 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withValues(alpha: 0.3),
                   spreadRadius: 1,
                   blurRadius: 3,
                 ),

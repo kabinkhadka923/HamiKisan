@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'kisan_video_call_service.dart';
+import '../../utils/logger.dart';
 
 /// 📞 Global Call State Manager - Manages active calls and call history
 class CallStateManager {
@@ -48,7 +49,7 @@ class CallStateManager {
     _callStartTime = startTime;
 
     _activeCallController.add(_activeCallId);
-    print('📞 Call initialized: $caller -> $recipient');
+    Logger.debug('Call initialized: $caller -> $recipient', tag: 'Calls');
   }
 
   /// End the active call and log it to history
@@ -58,7 +59,7 @@ class CallStateManager {
     String? notes,
   }) async {
     if (_activeCallId == null || _callStartTime == null) {
-      print('❌ No active call to end');
+      Logger.warning('Call end requested with no active call', tag: 'Calls');
       return;
     }
 
@@ -89,9 +90,11 @@ class CallStateManager {
 
     _activeCallController.add(null);
 
-    print('📞 Call ended: ${record.caller} -> ${record.recipient}');
-    print('   Duration: ${_formatDuration(duration)}');
-    print('   Status: $status');
+    Logger.debug(
+      'Call ended: ${record.caller} -> ${record.recipient}; '
+      'duration: ${_formatDuration(duration)}; status: $status',
+      tag: 'Calls',
+    );
   }
 
   /// Get total call time for a contact

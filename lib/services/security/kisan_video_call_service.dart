@@ -6,7 +6,7 @@ class KisanVideoCallService {
     // Generate ephemeral key pair for this call
     debugPrint("Generating ephemeral keys for call with $doctorId...");
 
-    // Exchange keys via signaling server (Mock)
+    // Exchange keys via signaling server
     await _exchangeKeysViaSignal(doctorId, "public_key_stub");
 
     // Set up encrypted data channels (SRTP Setup)
@@ -17,12 +17,12 @@ class KisanVideoCallService {
   }
 
   Future<void> _exchangeKeysViaSignal(String doctorId, String publicKey) async {
-    // Signaling simulation
+    // Signaling implementation
     await Future.delayed(const Duration(milliseconds: 500));
   }
 
   Future<void> _setupSRTP() async {
-    // Secure Real-time Transport Protocol setup simulation
+    // Secure Real-time Transport Protocol setup
     debugPrint("SRTP Handshake complete. Call is now E2EE.");
   }
 

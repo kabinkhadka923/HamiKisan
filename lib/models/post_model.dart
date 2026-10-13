@@ -1,8 +1,17 @@
-import 'dart:convert';
-
 import '../models/user.dart';
 
-enum PostType { crop_update, price_alert, availability, question, success_story, resource_share }
+// These enum names are persisted and sent over the API as snake_case values.
+// ignore: constant_identifier_names
+enum PostType {
+  crop_update,
+  price_alert,
+  availability,
+  question,
+  success_story,
+  resource_share
+}
+
+// ignore: constant_identifier_names
 enum PostStatus { active, archived, sold_out }
 
 class Post {
@@ -111,10 +120,7 @@ class Post {
       cropName: map['cropName'] as String?,
       location: map['location'] as String?,
       district: map['district'] as String?,
-      status: PostStatus.values.firstWhere(
-        (s) => s.name == map['status'],
-        orElse: () => PostStatus.active,
-      ),
+      status: status,
       likes: map['likes'] ?? 0,
       comments: map['comments'] ?? 0,
       isLiked: map['isLiked'] ?? false,
@@ -172,7 +178,7 @@ class Post {
     String? district,
     PostStatus? status,
     int? likes,
-int? comments,
+    int? comments,
     bool? isLiked,
     int? shares,
     DateTime? createdAt,

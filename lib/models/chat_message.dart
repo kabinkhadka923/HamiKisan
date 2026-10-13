@@ -1,8 +1,18 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../models/user.dart';
 
-enum ChatMessageType { text, image, video, voice, location, reaction, group_announcement, forward }
+// Enum names are serialized into stored messages and must remain stable.
+// ignore: constant_identifier_names
+enum ChatMessageType {
+  text,
+  image,
+  video,
+  voice,
+  location,
+  reaction,
+  group_announcement,
+  forward
+}
+
 enum MessageStatus { sent, delivered, read, error }
 
 class ChatMessage {
@@ -67,7 +77,8 @@ class ChatMessage {
       status: status ?? this.status,
       reactions: reactions ?? this.reactions,
       groupSenderName: groupSenderName ?? this.groupSenderName,
-      forwardedFromMessageId: forwardedFromMessageId ?? this.forwardedFromMessageId,
+      forwardedFromMessageId:
+          forwardedFromMessageId ?? this.forwardedFromMessageId,
       forwardedByName: forwardedByName ?? this.forwardedByName,
       forwardedTimestamp: forwardedTimestamp ?? this.forwardedTimestamp,
     );
@@ -87,7 +98,8 @@ class ChatMessage {
       'status': status.name,
       if (reactions != null) 'reactions': reactions,
       if (groupSenderName != null) 'groupSenderName': groupSenderName,
-      if (forwardedFromMessageId != null) 'forwardedFromMessageId': forwardedFromMessageId,
+      if (forwardedFromMessageId != null)
+        'forwardedFromMessageId': forwardedFromMessageId,
       if (forwardedByName != null) 'forwardedByName': forwardedByName,
       if (forwardedTimestamp != null) 'forwardedTimestamp': formattedTimestamp,
     };
@@ -146,11 +158,10 @@ class ChatMessage {
       mediaUrl: map['mediaUrl'] ?? '',
       messageType: type,
       timestamp: map['timestamp'] ?? DateTime.now().millisecondsSinceEpoch,
-      status:
-          MessageStatus.values.firstWhere(
-            (s) => s.name == map['status'],
-            orElse: () => MessageStatus.sent,
-          ),
+      status: MessageStatus.values.firstWhere(
+        (s) => s.name == map['status'],
+        orElse: () => MessageStatus.sent,
+      ),
       reactions: reactions.isEmpty ? null : reactions,
       groupSenderName: map['groupSenderName'],
       forwardedFromMessageId: map['forwardedFromMessageId'],

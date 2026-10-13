@@ -315,7 +315,7 @@ class _ConsultationContactsScreenState
               connection?.receiverId == currentUser?.id;
           return ListTile(
             leading: CircleAvatar(
-              backgroundColor: const Color(0xFF2E7D32).withOpacity(0.12),
+              backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.12),
               child: Icon(
                 user.role == UserRole.kisanDoctor
                     ? Icons.medical_services

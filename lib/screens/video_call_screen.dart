@@ -7,6 +7,7 @@ import '../models/user.dart';
 import '../services/call/kisan_video_call_service.dart';
 import '../services/call/call_signaling_service.dart';
 import '../services/audio_service.dart';
+import '../utils/logger.dart';
 
 enum CallRole { caller, callee }
 
@@ -53,8 +54,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   StreamSubscription<void>? _endedSub;
 
   // WebRTC
-  RTCVideoRenderer _localRenderer = RTCVideoRenderer();
-  RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
+  final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
+  final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   RTCPeerConnection? _peerConnection;
   MediaStream? _localStream;
   bool _isMuted = false;
@@ -87,11 +88,12 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   Future<void> _initializeServices() async {
-    await _initializeRenderers();
+    final authProvider = context.read<AuthProvider>();
     _callService = KisanVideoCallService();
     _audioService = AudioService();
+    await _initializeRenderers();
+    if (!mounted) return;
 
-    final authProvider = context.read<AuthProvider>();
     _callService.setSocket(authProvider.socket);
 
     await _callService.init(socket: authProvider.socket);
@@ -130,7 +132,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     if (!mounted || callId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to start the call. Please try again.')),
+          const SnackBar(
+              content: Text('Unable to start the call. Please try again.')),
         );
       }
       return false;
@@ -229,12 +232,14 @@ class _VideoCallScreenState extends State<VideoCallScreen>
             : false,
       };
 
-      _localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+      _localStream =
+          await navigator.mediaDevices.getUserMedia(mediaConstraints);
       _localRenderer.srcObject = _localStream;
 
       if (mounted) setState(() {});
     } catch (e) {
-      print('Error starting local stream: $e');
+      Logger.error('Could not start local video stream',
+          tag: 'VideoCall', error: e);
     }
   }
 
@@ -304,7 +309,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       'callerId': data['callerId'],
       'calleeId': widget.calleeId,
     });
-
   }
 
   Future<void> _handleAnswer(Map<String, dynamic> data) async {
@@ -441,7 +445,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       _localRenderer.srcObject = _localStream;
       setState(() => _isFrontCamera = !_isFrontCamera);
     } catch (e) {
-      print('Error switching camera: $e');
+      Logger.error('Could not switch camera', tag: 'VideoCall', error: e);
     }
   }
 
@@ -506,12 +510,13 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
-        style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
+        style:
+            TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -538,7 +543,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   icon: _isVideoEnabled ? Icons.videocam_off : Icons.videocam,
                   label: _isVideoEnabled ? 'Video Off' : 'Video On',
                   onPressed: _toggleVideo,
-                  backgroundColor: _isVideoEnabled ? Colors.green : Colors.orange,
+                  backgroundColor:
+                      _isVideoEnabled ? Colors.green : Colors.orange,
                 ),
                 const SizedBox(width: 16),
                 if (widget.callType == CallType.video)
@@ -578,7 +584,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -593,7 +599,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -601,14 +608,16 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isDoctor = context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
+    final isDoctor =
+        context.read<AuthProvider>().currentUser?.role == UserRole.kisanDoctor;
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: _callService.callState == CallState.idle && widget.isOutgoing
           ? AppBar(
               title: Text(isDoctor ? 'Video Consultation' : 'Video Call'),
-              backgroundColor: isDoctor ? Colors.blue.shade700 : Colors.green.shade700,
+              backgroundColor:
+                  isDoctor ? Colors.blue.shade700 : Colors.green.shade700,
               leading: widget.isOutgoing
                   ? IconButton(
                       icon: const Icon(Icons.close),
@@ -620,8 +629,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       body: Stack(
         children: [
           _buildVideoArea(),
-          if (_callService.callState != CallState.idle)
-            _buildCallControls(),
+          if (_callService.callState != CallState.idle) _buildCallControls(),
         ],
       ),
     );

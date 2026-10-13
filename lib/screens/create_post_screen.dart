@@ -84,7 +84,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundColor: const Color(0xFF4CAF50).withOpacity(0.1),
+                  backgroundColor:
+                      const Color(0xFF4CAF50).withValues(alpha: 0.1),
                   child: const Icon(
                     Icons.person,
                     color: Color(0xFF4CAF50),
@@ -117,7 +118,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               controller: _contentController,
               maxLines: 8,
               decoration: InputDecoration(
-                hintText: 'Share your farming experience, tips, or questions...',
+                hintText:
+                    'Share your farming experience, tips, or questions...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -195,7 +197,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -222,7 +224,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Future<void> _handlePost() async {
     final content = _contentController.text.trim();
-    
+
     if (content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please write something to post')),
@@ -234,23 +236,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     try {
       final auth = context.read<AuthProvider>();
-      final user = auth.currentUser;
       final postProvider = context.read<PostProvider>();
 
       final success = await postProvider.createPost(Post(
-                      id: '',
-                      farmerId: auth.currentUser!.id,
-                      farmerName: auth.currentUser!.name,
-                      postType: PostType.crop_update,
-                      title: content,
-                      content: content,
-                      likes: 0,
-                      comments: 0,
-                      isLiked: false,
-                      shares: 0,
-                      authorRole: auth.currentUser!.role,
-                      createdAt: DateTime.now(),
-                    ));
+        id: '',
+        farmerId: auth.currentUser!.id,
+        farmerName: auth.currentUser!.name,
+        postType: PostType.crop_update,
+        title: content,
+        content: content,
+        likes: 0,
+        comments: 0,
+        isLiked: false,
+        shares: 0,
+        authorRole: auth.currentUser!.role,
+        createdAt: DateTime.now(),
+      ));
 
       setState(() => _isPosting = false);
 

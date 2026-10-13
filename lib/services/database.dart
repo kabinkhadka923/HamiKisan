@@ -5,6 +5,7 @@ import 'package:path/path.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/logger.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -28,7 +29,7 @@ class DatabaseService {
       _database = await _initDatabase();
       return _database!;
     } catch (e) {
-      print('[DB] Error getting database: $e');
+      Logger.error('Could not get database', tag: 'Database', error: e);
       rethrow;
     }
   }
@@ -38,7 +39,7 @@ class DatabaseService {
       Database db;
 
       if (kIsWeb) {
-        if (kDebugMode) print('[DB] Opening Web database...');
+        if (kDebugMode) Logger.debug('Opening web database', tag: 'Database');
 
         db = await openDatabase(
           _webDatabaseName,
@@ -46,16 +47,20 @@ class DatabaseService {
           onCreate: _onCreate,
           onUpgrade: _onUpgrade,
         );
-        if (kDebugMode) print('[DB] Web database initialized successfully');
+        if (kDebugMode) {
+          Logger.debug('Web database initialized', tag: 'Database');
+        }
       } else {
         if (kDebugMode) {
-          print('[DB] Initializing for Mobile/Desktop platform...');
+          Logger.debug('Initializing mobile/desktop database', tag: 'Database');
         }
 
         final dbPath = await getDatabasesPath();
         final path = join(dbPath, _databaseName);
 
-        if (kDebugMode) print('[DB] Opening database at: $path');
+        if (kDebugMode) {
+          Logger.debug('Opening database at $path', tag: 'Database');
+        }
 
         db = await openDatabase(
           path,
@@ -68,7 +73,7 @@ class DatabaseService {
       await _initializeDefaultData(db);
       return db;
     } catch (e) {
-      print('[DB] Initialization failed: $e');
+      Logger.error('Database initialization failed', tag: 'Database', error: e);
       rethrow;
     }
   }

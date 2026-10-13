@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/weather_models.dart';
 import 'kalimati_storage_service.dart';
 import 'farmer_listing_service.dart';
+import '../utils/logger.dart';
 
 class MarketService {
   SharedPreferences? _prefs;
@@ -25,7 +26,8 @@ class MarketService {
       final farmerService = FarmerListingService();
       await farmerService.initialize();
       final farmerListings = await farmerService.loadListings();
-      final farmerPrices = farmerListings.map((e) => e.toMarketPrice()).toList();
+      final farmerPrices =
+          farmerListings.map((e) => e.toMarketPrice()).toList();
 
       // Priority 1: Check for manually added items
       final manualItems = await _storageService.loadItems();
@@ -43,14 +45,16 @@ class MarketService {
           return apiPrices;
         }
       }
-      
+
       // Return cached data if available
       if (_cachedMarketPrices != null) {
         return _cachedMarketPrices!;
       }
-      
+
       return [];
     } catch (e) {
+      Logger.warning('Could not load daily market prices',
+          tag: 'Market', data: e);
       // Return cached data if available
       if (_cachedMarketPrices != null) {
         return _cachedMarketPrices!;
@@ -64,18 +68,21 @@ class MarketService {
       final headers = _kalimatiApiKey != null && _kalimatiApiKey!.isNotEmpty
           ? {'Authorization': 'Bearer $_kalimatiApiKey'}
           : <String, String>{};
-      
-      final response = await http.get(
-        Uri.parse(_kalimatiApiUrl!),
-        headers: headers,
-      ).timeout(const Duration(seconds: 10));
+
+      final response = await http
+          .get(
+            Uri.parse(_kalimatiApiUrl!),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return _parseKalimatiResponse(data);
       }
     } catch (e) {
-
+      Logger.warning('Could not fetch Kalimati market prices',
+          tag: 'Market', data: e);
     }
     return [];
   }
@@ -99,19 +106,20 @@ class MarketService {
         }
       }
     } catch (e) {
-
+      Logger.warning('Could not parse Kalimati market prices',
+          tag: 'Market', data: e);
     }
     return prices;
   }
 
   List<HotMarketItem> getHotMarketItems(List<MarketPrice> prices) {
     // Calculate profitability score and sort
-    final sortedPrices = prices
-        .map((price) => HotMarketItem.fromMarketPrice(price))
-        .toList();
+    final sortedPrices =
+        prices.map((price) => HotMarketItem.fromMarketPrice(price)).toList();
 
     // Sort by profitability score (highest first)
-    sortedPrices.sort((a, b) => b.profitabilityScore.compareTo(a.profitabilityScore));
+    sortedPrices
+        .sort((a, b) => b.profitabilityScore.compareTo(a.profitabilityScore));
 
     // Return top 3 hot items
     return sortedPrices.take(3).toList();
@@ -126,18 +134,20 @@ class MarketService {
         alerts.add(MarketNotification(
           type: 'price',
           title: 'Price Surge Alert',
-          message: '${price.productName} price increased by ${price.priceChangePercent.toStringAsFixed(1)}% today. Consider selling if you have stock.',
+          message:
+              '${price.productName} price increased by ${price.priceChangePercent.toStringAsFixed(1)}% today. Consider selling if you have stock.',
           timestamp: DateTime.now(),
           isUrgent: price.priceChangePercent > 20,
         ));
       }
-      
+
       // Price drop alerts for tracked items
       if (price.priceChangePercent < -5) {
         alerts.add(MarketNotification(
           type: 'price',
           title: 'Price Drop Alert',
-          message: '${price.productName} price decreased by ${price.priceChangePercent.abs().toStringAsFixed(1)}%. Good time to buy for consumption.',
+          message:
+              '${price.productName} price decreased by ${price.priceChangePercent.abs().toStringAsFixed(1)}%. Good time to buy for consumption.',
           timestamp: DateTime.now(),
           isUrgent: false,
         ));
@@ -148,7 +158,8 @@ class MarketService {
         alerts.add(MarketNotification(
           type: 'alert',
           title: 'High Demand Alert',
-          message: 'High demand and limited supply for ${price.productName}. Prices likely to increase further.',
+          message:
+              'High demand and limited supply for ${price.productName}. Prices likely to increase further.',
           timestamp: DateTime.now(),
           isUrgent: true,
         ));
@@ -160,53 +171,59 @@ class MarketService {
 
   Map<String, List<MarketPrice>> getPricesByLocation(List<MarketPrice> prices) {
     final Map<String, List<MarketPrice>> locationPrices = {};
-    
+
     for (final price in prices) {
       if (!locationPrices.containsKey(price.location)) {
         locationPrices[price.location] = [];
       }
       locationPrices[price.location]!.add(price);
     }
-    
+
     return locationPrices;
   }
 
-  List<MarketPrice> getPricesByProduct(List<MarketPrice> prices, String productName) {
-    return prices.where((price) => 
-      price.productName.toLowerCase().contains(productName.toLowerCase())
-    ).toList();
+  List<MarketPrice> getPricesByProduct(
+      List<MarketPrice> prices, String productName) {
+    return prices
+        .where((price) =>
+            price.productName.toLowerCase().contains(productName.toLowerCase()))
+        .toList();
   }
 
-  double getPriceDifference(String productName, String location1, String location2, List<MarketPrice> prices) {
+  double getPriceDifference(String productName, String location1,
+      String location2, List<MarketPrice> prices) {
     final prices1 = getPricesByProduct(prices, productName)
         .where((price) => price.location == location1)
         .toList();
     final prices2 = getPricesByProduct(prices, productName)
         .where((price) => price.location == location2)
         .toList();
-    
+
     if (prices1.isEmpty || prices2.isEmpty) return 0.0;
-    
+
     return prices2.first.avgPrice - prices1.first.avgPrice;
   }
 
   Future<void> _saveCachedData(List<MarketPrice> prices) async {
     if (_prefs == null) return;
-    
-    final List<Map<String, dynamic>> cachedData = prices.map((price) => price.toJson()).toList();
+
+    final List<Map<String, dynamic>> cachedData =
+        prices.map((price) => price.toJson()).toList();
     await _prefs!.setString('cached_market_prices', json.encode(cachedData));
   }
 
   Future<void> _loadCachedData() async {
     if (_prefs == null) return;
-    
+
     final cachedString = _prefs!.getString('cached_market_prices');
     if (cachedString != null) {
       try {
         final List<dynamic> cachedList = json.decode(cachedString);
-        _cachedMarketPrices = cachedList.map((json) => MarketPrice.fromJson(json)).toList();
+        _cachedMarketPrices =
+            cachedList.map((json) => MarketPrice.fromJson(json)).toList();
       } catch (e) {
-
+        Logger.warning('Could not parse cached market prices',
+            tag: 'Market', data: e);
       }
     }
   }

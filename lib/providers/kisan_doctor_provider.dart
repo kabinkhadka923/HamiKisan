@@ -42,7 +42,6 @@ class KisanDoctorProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _service.initializeMockData();
       await loadDoctorCases(doctorId);
       await loadDoctorAppointments(doctorId);
       await loadDoctorNotifications(doctorId);

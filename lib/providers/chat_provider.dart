@@ -3,7 +3,6 @@ import 'dart:async';
 import '../models/chat_message.dart';
 import '../services/chat_service.dart';
 import '../models/user.dart';
-import 'package:hamikisan/models/chat_message.dart' show ChatMessageType;
 
 class ChatProvider with ChangeNotifier {
   final ChatService _chatService = ChatService();

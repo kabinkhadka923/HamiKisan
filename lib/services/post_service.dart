@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/post_model.dart';
-import '../models/user.dart';
 import '../services/auth_service.dart';
 import 'backend_config.dart';
 
@@ -16,7 +15,6 @@ class PostService {
   static const String _localPostsKey = 'local_farmer_posts_v1';
 
   String? _currentFarmerId;
-  bool _isConnected = false;
 
   final StreamController<Post> _postStreamController =
       StreamController<Post>.broadcast();
@@ -30,7 +28,6 @@ class PostService {
 
   Future<void> initialize(String farmerId) async {
     _currentFarmerId = farmerId;
-    _isConnected = true;
 
     // Load local posts first
     final localPosts = await _loadLocalPosts();
@@ -80,28 +77,35 @@ class PostService {
         'postType': postWithFarmer.postType.name,
         'title': postWithFarmer.title,
         'content': postWithFarmer.content,
-        if (postWithFarmer.mediaUrl != null) 'mediaUrl': postWithFarmer.mediaUrl,
-        if (postWithFarmer.imageUrl != null) 'imageUrl': postWithFarmer.imageUrl,
+        if (postWithFarmer.mediaUrl != null)
+          'mediaUrl': postWithFarmer.mediaUrl,
+        if (postWithFarmer.imageUrl != null)
+          'imageUrl': postWithFarmer.imageUrl,
         if (postWithFarmer.imageUrls.isNotEmpty)
-            'imageUrls': postWithFarmer.imageUrls,
+          'imageUrls': postWithFarmer.imageUrls,
         if (postWithFarmer.price != null) 'price': postWithFarmer.price,
         if (postWithFarmer.unit != null) 'unit': postWithFarmer.unit,
-        if (postWithFarmer.cropName != null) 'cropName': postWithFarmer.cropName,
-        if (postWithFarmer.location != null) 'location': postWithFarmer.location,
-        if (postWithFarmer.district != null) 'district': postWithFarmer.district,
+        if (postWithFarmer.cropName != null)
+          'cropName': postWithFarmer.cropName,
+        if (postWithFarmer.location != null)
+          'location': postWithFarmer.location,
+        if (postWithFarmer.district != null)
+          'district': postWithFarmer.district,
         'isOrganic': postWithFarmer.isOrganic,
         'qualityGrade': postWithFarmer.qualityGrade,
         'status': postWithFarmer.status.name,
       };
 
-      final response = await http.post(
-        BackendConfig.uri('/api/posts'),
-        headers: {
-          'Accept': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-        body: body,
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            BackendConfig.uri('/api/posts'),
+            headers: {
+              'Accept': 'application/json',
+              if (token != null) 'Authorization': 'Bearer $token',
+            },
+            body: body,
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         onPostCreated?.call(postWithFarmer);
@@ -129,8 +133,7 @@ class PostService {
 
     // Update locally
     final currentPosts = await _loadLocalPosts();
-    final idx =
-        currentPosts.indexWhere((p) => p.id == post.id);
+    final idx = currentPosts.indexWhere((p) => p.id == post.id);
     if (idx >= 0) {
       currentPosts[idx] = updatedPost;
       await _saveLocalPosts(currentPosts);
@@ -177,8 +180,7 @@ class PostService {
 
     // Update locally
     final currentPosts = await _loadLocalPosts();
-    final idx =
-        currentPosts.indexWhere((p) => p.id == post.id);
+    final idx = currentPosts.indexWhere((p) => p.id == post.id);
     if (idx >= 0) {
       currentPosts[idx] = updatedPost;
       await _saveLocalPosts(currentPosts);
@@ -226,8 +228,7 @@ class PostService {
 
     // Update locally
     final currentPosts = await _loadLocalPosts();
-    final idx =
-        currentPosts.indexWhere((p) => p.id == post.id);
+    final idx = currentPosts.indexWhere((p) => p.id == post.id);
     if (idx >= 0) {
       currentPosts[idx] = updatedPost;
       await _saveLocalPosts(currentPosts);
@@ -243,7 +244,11 @@ class PostService {
           'Accept': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-        body: {'postId': post.id, 'comment': comment, 'farmerId': _currentFarmerId},
+        body: {
+          'postId': post.id,
+          'comment': comment,
+          'farmerId': _currentFarmerId
+        },
       ).timeout(const Duration(seconds: 5));
     } catch (_) {}
   }

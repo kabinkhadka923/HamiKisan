@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/system_health_models.dart';
+import '../utils/logger.dart';
 
 class SystemHealthProvider extends ChangeNotifier {
   static SystemHealthProvider? _instance;
@@ -88,7 +89,9 @@ class SystemHealthProvider extends ChangeNotifier {
     HealthStatus overall = HealthStatus.healthy;
     if (failed > 0) {
       overall = HealthStatus.failed;
-    } else if (degraded > 0) overall = HealthStatus.degraded;
+    } else if (degraded > 0) {
+      overall = HealthStatus.degraded;
+    }
 
     return SystemHealthSummary(
       totalServices: _services.length,
@@ -399,7 +402,8 @@ class SystemHealthProvider extends ChangeNotifier {
 
       await prefs.setStringList('system_health_services', servicesJson);
     } catch (e) {
-      print('Error saving service states: $e');
+      Logger.error('Could not save service health states',
+          tag: 'SystemHealth', error: e);
     }
   }
 
@@ -429,7 +433,8 @@ class SystemHealthProvider extends ChangeNotifier {
         }
       }
     } catch (e) {
-      print('Error loading service states: $e');
+      Logger.error('Could not load service health states',
+          tag: 'SystemHealth', error: e);
     }
   }
 
@@ -450,7 +455,7 @@ class SystemHealthProvider extends ChangeNotifier {
   void _sendAlertNotification(List<ServiceStatus> failures) {
     final message =
         'Critical services down: ${failures.map((f) => f.serviceName).join(', ')}';
-    print('🔴 SYSTEM ALERT: $message');
+    Logger.critical(message, tag: 'SystemHealth');
     // Implement notification logic here
   }
 
@@ -461,7 +466,8 @@ class SystemHealthProvider extends ChangeNotifier {
 
     if (failures.isNotEmpty) {
       // You could trigger additional actions here
-      print('⚠️ Critical failures detected: ${failures.length}');
+      Logger.warning('Critical services failed: ${failures.length}',
+          tag: 'SystemHealth');
     }
   }
 

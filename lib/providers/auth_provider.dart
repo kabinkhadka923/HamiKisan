@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 import '../models/user.dart';
 import '../services/auth_service.dart';
 import '../services/backend_config.dart';
 import '../services/security_service.dart';
+import '../utils/logger.dart';
 
 class AuthResult {
   final bool success;
@@ -43,7 +44,7 @@ class AuthProvider with ChangeNotifier {
 
   /// Clear socket connection
   void clearSocket() {
-    (_socket as IO.Socket?)?.dispose();
+    (_socket as socket_io.Socket?)?.dispose();
     _socket = null;
   }
 
@@ -51,9 +52,9 @@ class AuthProvider with ChangeNotifier {
     final token = await AuthService.getAuthToken();
     if (token == null || token.isEmpty) return;
     clearSocket();
-    _socket = IO.io(
+    _socket = socket_io.io(
       BackendConfig.baseUrl,
-      IO.OptionBuilder()
+      socket_io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': 'Bearer $token'})
           .enableAutoConnect()
@@ -89,7 +90,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
   /// Auto-detects identifier type (phone, email, username) and logs in
   Future<bool> login(
     String identifier,
@@ -121,7 +121,8 @@ class AuthProvider with ChangeNotifier {
       return false;
     }
   }
-Future<bool> loginWithUsername(String username, String password,
+
+  Future<bool> loginWithUsername(String username, String password,
       {UserRole? role}) async {
     _setLoading(true);
     _clearError();
@@ -200,20 +201,21 @@ Future<bool> loginWithUsername(String username, String password,
 
       final userData = await _authService.loginWithUsername(username, password);
       if (userData == null) {
-        print('Admin login failed: userData is null');
+        Logger.warning('Admin login returned no user data', tag: 'Auth');
         _error = 'Invalid admin credentials';
         return false;
       }
 
-      print('Admin login: userData received - role: ${userData['role']}');
+      Logger.debug('Admin login received user data', tag: 'Auth');
 
       final user = User.fromJson(userData);
-      print('Admin login: User parsed - role: ${user.role}');
+      Logger.debug('Admin login parsed user', tag: 'Auth');
 
       // Verify user has appropriate admin role
       if (isSuperAdminAttempt) {
         if (user.role != UserRole.superAdmin) {
-          print('Admin login failed: Expected superAdmin but got ${user.role}');
+          Logger.warning('Admin login rejected: super-admin role required',
+              tag: 'Auth');
           _error = 'Access denied: Super Admin privileges required';
           return false;
         }
@@ -221,14 +223,14 @@ Future<bool> loginWithUsername(String username, String password,
         // Regular admin login
         if (user.role != UserRole.kisanAdmin &&
             user.role != UserRole.superAdmin) {
-          print(
-              'Admin login failed: Expected kisanAdmin or superAdmin but got ${user.role}');
+          Logger.warning('Admin login rejected: admin role required',
+              tag: 'Auth');
           _error = 'Access denied: Admin privileges required';
           return false;
         }
       }
 
-      print('Admin login: Role verification passed');
+      Logger.debug('Admin login role verification passed', tag: 'Auth');
       _currentUser = user;
       await saveSession();
 
@@ -240,7 +242,7 @@ Future<bool> loginWithUsername(String username, String password,
 
       return true;
     } catch (e) {
-      print('Admin login error: $e');
+      Logger.error('Admin login failed', tag: 'Auth', error: e);
       _error = 'Admin login failed: $e';
       return false;
     } finally {
@@ -499,14 +501,20 @@ Future<bool> loginWithUsername(String username, String password,
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('saved_username', username);
-    } catch (e) {}
+    } catch (e) {
+      Logger.warning('Could not save remembered username',
+          tag: 'Auth', data: e);
+    }
   }
 
   Future<void> clearSavedUsername() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('saved_username');
-    } catch (e) {}
+    } catch (e) {
+      Logger.warning('Could not clear remembered username',
+          tag: 'Auth', data: e);
+    }
   }
 
   void _setLoading(bool loading) {

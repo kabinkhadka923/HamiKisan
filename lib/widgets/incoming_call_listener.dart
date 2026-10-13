@@ -8,6 +8,7 @@ import '../services/audio_service.dart';
 import '../services/call/call_signaling_service.dart';
 import '../services/call/kisan_video_call_service.dart';
 import '../screens/video_call_screen.dart';
+import '../utils/logger.dart';
 
 /// Polls the backend for incoming calls and shows a ringing screen when the
 /// current user is being called. Wrap any dashboard body with this widget.
@@ -30,8 +31,10 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
   @override
   void initState() {
     super.initState();
-    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _checkIncomingCall());
-    WidgetsBinding.instance.addPostFrameCallback((_) => _attachSocketListener());
+    _pollTimer =
+        Timer.periodic(const Duration(seconds: 3), (_) => _checkIncomingCall());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _attachSocketListener());
   }
 
   void _attachSocketListener() {
@@ -83,11 +86,15 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
   }
 
   Future<void> _showIncomingCallSheet(SignalCall call) async {
+    final navigator = Navigator.of(context);
+    final authProvider = context.read<AuthProvider>();
     try {
       await _audioService.playIncomingCall(callerType: 'doctor', vibrate: true);
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('Could not play incoming call ringtone',
+          tag: 'Calls', data: e);
+    }
 
-    final navigator = Navigator.of(context);
     final accepted = await _showRingingDialog(call);
 
     _audioService.stopCallSound();
@@ -96,7 +103,6 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
     setState(() {});
 
     if (accepted) {
-      final authProvider = context.read<AuthProvider>();
       final currentUser = authProvider.currentUser;
       navigator.push(
         MaterialPageRoute(
@@ -109,8 +115,9 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
             callerId: call.from,
             calleeId: currentUser?.id ?? '',
             isOutgoing: false,
-            callType: call.callType == 'voice' ? CallType.voice : CallType.video,
-            callContext: {'callerType': 'doctor'},
+            callType:
+                call.callType == 'voice' ? CallType.voice : CallType.video,
+            callContext: const {'callerType': 'doctor'},
           ),
         ),
       );
@@ -167,7 +174,9 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
                       accepted = false;
                       await CallSignalingService()
                           .answerCall(callId: call.callId, accept: false);
-                      Navigator.pop(dialogContext);
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                      }
                     },
                     backgroundColor: Colors.red.shade600,
                     child: const Icon(Icons.call_end),
@@ -179,7 +188,9 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
                       accepted = true;
                       await CallSignalingService()
                           .answerCall(callId: call.callId, accept: true);
-                      Navigator.pop(dialogContext);
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                      }
                     },
                     backgroundColor: Colors.green.shade600,
                     child: const Icon(Icons.video_call),

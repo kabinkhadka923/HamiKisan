@@ -134,9 +134,9 @@ class _KisanDoctorDashboardScreenState
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Kisan Doctor Workspace',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -207,10 +207,10 @@ class _KisanDoctorDashboardScreenState
           scale: 0.75,
           child: Switch(
             value: _isOnline,
-            activeColor: Colors.white,
-            activeTrackColor: Colors.white.withOpacity(0.4),
+            activeThumbColor: Colors.white,
+            activeTrackColor: Colors.white.withValues(alpha: 0.4),
             inactiveThumbColor: Colors.grey.shade200,
-            inactiveTrackColor: Colors.white.withOpacity(0.25),
+            inactiveTrackColor: Colors.white.withValues(alpha: 0.25),
             onChanged: (value) async {
               setState(() => _isOnline = value);
               try {
@@ -308,7 +308,7 @@ class _KisanDoctorDashboardScreenState
       label: Text(label),
       selected: selected,
       showCheckmark: false,
-      selectedColor: const Color(0xFF2E7D32).withOpacity(0.16),
+      selectedColor: const Color(0xFF2E7D32).withValues(alpha: 0.16),
       labelStyle: TextStyle(
         color: selected ? const Color(0xFF1B5E20) : Colors.grey.shade700,
         fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
@@ -342,7 +342,7 @@ class _KisanDoctorDashboardScreenState
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2E7D32).withOpacity(0.12),
+                    color: const Color(0xFF2E7D32).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child:
@@ -420,7 +420,7 @@ class _KisanDoctorDashboardScreenState
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor:
-                        const Color(0xFF2E7D32).withOpacity(0.14),
+                        const Color(0xFF2E7D32).withValues(alpha: 0.14),
                     foregroundColor: const Color(0xFF1B5E20),
                   ),
                   icon: const Icon(Icons.video_call, size: 16),
@@ -444,7 +444,7 @@ class _KisanDoctorDashboardScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.14),
+        color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -559,7 +559,7 @@ class _KisanDoctorDashboardScreenState
 
     return Chip(
       label: Text(label),
-      backgroundColor: color.withOpacity(0.12),
+      backgroundColor: color.withValues(alpha: 0.12),
       side: BorderSide.none,
       labelStyle: TextStyle(
         color: color.shade700,
@@ -587,7 +587,7 @@ class _KisanDoctorDashboardScreenState
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundColor: AppColors.primaryGreen.withOpacity(0.18),
+                backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.18),
                 backgroundImage: doctor.profilePicture != null
                     ? NetworkImage(doctor.profilePicture!)
                     : null,
@@ -744,7 +744,7 @@ class _KisanDoctorDashboardScreenState
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: const Color(0xFF2E7D32).withOpacity(0.12),
+                  backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.12),
                   child: const Icon(Icons.person, color: Color(0xFF2E7D32), size: 28),
                 ),
                 const SizedBox(width: 12),
@@ -809,7 +809,7 @@ class _KisanDoctorDashboardScreenState
                     icon: const Icon(Icons.videocam, size: 18),
                     label: const Text('Call'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32).withOpacity(0.14),
+                      backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.14),
                       foregroundColor: const Color(0xFF1B5E20),
                       minimumSize: const Size(double.infinity, 40),
                     ),
@@ -881,7 +881,7 @@ class _KisanDoctorDashboardScreenState
               children: [
                 CircleAvatar(
                   radius: 32,
-                  backgroundColor: const Color(0xFF2E7D32).withOpacity(0.12),
+                  backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.12),
                   child: Text(
                     farmer.name.isNotEmpty ? farmer.name[0].toUpperCase() : 'F',
                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32)),
@@ -956,7 +956,7 @@ class _KisanDoctorDashboardScreenState
                     icon: const Icon(Icons.videocam, size: 18),
                     label: const Text('Call'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32).withOpacity(0.14),
+                      backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.14),
                       foregroundColor: const Color(0xFF1B5E20),
                       minimumSize: const Size(double.infinity, 40),
                     ),
@@ -992,9 +992,9 @@ class _KisanDoctorDashboardScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
         '$label: $count',

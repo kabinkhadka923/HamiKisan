@@ -107,7 +107,7 @@ class SettingsScreen extends StatelessWidget {
       onChanged: (bool value) {
         // TODO: Implement notification toggle
       },
-      activeColor: const Color(0xFF4CAF50),
+      activeThumbColor: const Color(0xFF4CAF50),
     );
   }
 
@@ -162,32 +162,29 @@ class SettingsScreen extends StatelessWidget {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text(context.tr('choose_language')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<String>(
-                title: const Text('English'),
-                value: 'English',
-                groupValue: localizationProvider.currentLanguage,
-                onChanged: (value) async {
-                  await localizationProvider.setLanguage('English');
-                  await authProvider.updateLanguage('English');
-                  if (dialogContext.mounted) Navigator.pop(dialogContext);
-                },
-                activeColor: const Color(0xFF4CAF50),
-              ),
-              RadioListTile<String>(
-                title: const Text('नेपाली (Nepali)'),
-                value: 'Nepali',
-                groupValue: localizationProvider.currentLanguage,
-                onChanged: (value) async {
-                  await localizationProvider.setLanguage('Nepali');
-                  await authProvider.updateLanguage('Nepali');
-                  if (dialogContext.mounted) Navigator.pop(dialogContext);
-                },
-                activeColor: const Color(0xFF4CAF50),
-              ),
-            ],
+          content: RadioGroup<String>(
+            groupValue: localizationProvider.currentLanguage,
+            onChanged: (value) async {
+              if (value == null) return;
+              await localizationProvider.setLanguage(value);
+              await authProvider.updateLanguage(value);
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+            },
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<String>(
+                  title: Text('English'),
+                  value: 'English',
+                  activeColor: Color(0xFF4CAF50),
+                ),
+                RadioListTile<String>(
+                  title: Text('नेपाली (Nepali)'),
+                  value: 'Nepali',
+                  activeColor: Color(0xFF4CAF50),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(

@@ -1,8 +1,15 @@
 import 'dart:async';
-import 'package:flutter/widgets.dart';
 import '../audio_service.dart';
 
-enum CallState { idle, ringingIncoming, ringingOutgoing, connected, ending, error }
+enum CallState {
+  idle,
+  ringingIncoming,
+  ringingOutgoing,
+  connected,
+  ending,
+  error
+}
+
 enum CallType { video, voice, audio }
 
 class KisanVideoCallService {
@@ -16,7 +23,6 @@ class KisanVideoCallService {
 
   // Call tracking
   String? _currentCallId;
-  String? _myUserId;
   String? _peerUserId;
   bool _isMuted = false;
   bool _isVideoEnabled = true;
@@ -65,8 +71,6 @@ class KisanVideoCallService {
   void _listenForIncomingCalls() {
     _socket?.on('call_incoming', (data) {
       if (_callState != CallState.idle) return; // Already in a call
-      final callerName = data['fromName'] ?? 'Doctor';
-      final callType = data['callType'] ?? 'video';
       final callId = data['callId'] ?? '';
       _peerUserId = data['from']?.toString();
 
@@ -137,21 +141,17 @@ class KisanVideoCallService {
     _socket?.on('call_sdp', (data) {
       // Handle SDP exchange for WebRTC
       final callId = data['callId'] ?? '';
-      final sdp = data['sdp'] ?? '';
-      final sdpType = data['sdpType'] ?? '';
       if (_currentCallId == callId) {
         // Apply remote SDP - in real implementation, this would be
         // applied to the WebRTC peer connection
-        print('Received SDP for call $callId: $sdpType');
       }
     });
 
     _socket?.on('call_ice', (data) {
       // Handle ICE candidate exchange
       final callId = data['callId'] ?? '';
-      final candidate = data['candidate'] ?? '';
       if (_currentCallId == callId) {
-        print('Received ICE candidate for call $callId');
+        // ICE candidate received
       }
     });
   }
@@ -165,7 +165,6 @@ class KisanVideoCallService {
   }) async {
     if (_callState != CallState.idle) return;
 
-    _myUserId = myUserId;
     _peerUserId = recipientId;
     _currentCallId = callId ?? recipientId;
     _callState = CallState.ringingOutgoing;
@@ -213,7 +212,8 @@ class KisanVideoCallService {
 
   /// Decline incoming call
   Future<void> declineCall() async {
-    if (_callState == CallState.ringingIncoming || _callState == CallState.ringingOutgoing) {
+    if (_callState == CallState.ringingIncoming ||
+        _callState == CallState.ringingOutgoing) {
       _ringTimeoutTimer?.cancel();
       _callState = CallState.idle;
       _callStateController.add(_callState);
@@ -242,7 +242,7 @@ class KisanVideoCallService {
     try {
       await _audioService.playCallEnded();
     } catch (e) {
-      print('Error playing call ended sound: $e');
+      // Error playing call ended sound
     }
 
     // Cleanup
@@ -262,7 +262,7 @@ class KisanVideoCallService {
     try {
       await _audioService.toggleMute();
     } catch (e) {
-      print('Error toggling mute: $e');
+      // Error toggling mute
     }
   }
 
@@ -272,7 +272,7 @@ class KisanVideoCallService {
     try {
       await _audioService.playNotification();
     } catch (e) {
-      print('Error playing notification: $e');
+      // Error playing notification
     }
   }
 
