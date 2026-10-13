@@ -78,11 +78,8 @@ class KisanVideoCallService {
       _callState = CallState.ringingIncoming;
       _callStateController.add(_callState);
 
-      // Play ringtone
       _audioService.playIncomingCall(
-        customRingtone: 'incomming_call_ringtone.mp3',
         vibrate: true,
-        callerType: 'doctor',
       );
 
       // Set ring timeout

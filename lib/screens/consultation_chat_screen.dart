@@ -6,7 +6,6 @@ import '../models/user.dart';
 import '../models/chat_message.dart';
 import '../providers/auth_provider.dart';
 import '../services/chat_service.dart';
-import '../services/media_service.dart';
 import '../services/location_service.dart';
 import '../services/call/kisan_video_call_service.dart';
 import 'video_call_screen.dart';
@@ -27,7 +26,6 @@ class ConsultationChatScreen extends StatefulWidget {
 
 class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
   final ChatService _chatService = ChatService();
-  final MediaService _mediaService = MediaService();
   final LocationService _locationService = LocationService();
 
   StreamSubscription<ChatMessage>? _messageSub;
@@ -44,8 +42,6 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
   TextEditingController _messageController = TextEditingController();
   bool _isComposing = false;
   bool _isSending = false;
-  String? _locationLat;
-  String? _locationLng;
   ScrollController _scrollController = ScrollController();
 
   @override
@@ -143,6 +139,35 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
       });
     }
     _scrollToBottom();
+  }
+
+  void _startCall(CallType callType) {
+    if (_chatMode != ChatMode.oneOnOne) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Calls are available in one-to-one chats.')),
+      );
+      return;
+    }
+    final currentUser = context.read<AuthProvider>().currentUser;
+    if (currentUser == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => VideoCallScreen(
+          callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+          peerName: widget.peer.name,
+          callerName: currentUser.name,
+          callerSpecialty: 'Consultation',
+          role: CallRole.caller,
+          callerId: currentUser.id,
+          calleeId: widget.peer.id,
+          calleePhoneNumber: widget.peer.phoneNumber,
+          isOutgoing: true,
+          callType: callType,
+        ),
+      ),
+    );
   }
 
   void _scrollToBottom() {
@@ -273,32 +298,20 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
                     orElse: () => {'name': 'Group'})['name'] ??
                 'Group')
             : 'Chat with ${widget.peer.name}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.video_call),
-            onPressed: () {
-              final authProvider = context.read<AuthProvider>();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => VideoCallScreen(
-                    callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
-                    peerName: widget.peer.name,
-                    callerName: authProvider.currentUser?.name ?? 'Me',
-                    callerSpecialty: 'Consultation',
-                    role: CallRole.caller,
-                    callerId: authProvider.currentUser?.id ?? '',
-                    calleeId: widget.peer.id,
-                    calleePhoneNumber: widget.peer.phoneNumber,
-                    isOutgoing: true,
-                    callType: CallType.video,
-                  ),
+        actions: _chatMode == ChatMode.oneOnOne
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.call),
+                  onPressed: () => _startCall(CallType.voice),
+                  tooltip: 'Audio call',
                 ),
-              );
-            },
-            tooltip: 'Video Call',
-          ),
-        ],
+                IconButton(
+                  icon: const Icon(Icons.video_call),
+                  onPressed: () => _startCall(CallType.video),
+                  tooltip: 'Video call',
+                ),
+              ]
+            : const [],
       ),
       body: Column(
         children: [
@@ -446,17 +459,17 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.attach_file, size: 24),
-            onPressed: _pickMedia,
+            onPressed: _isSending ? null : _pickMedia,
             tooltip: 'Attach photo',
           ),
           IconButton(
             icon: const Icon(Icons.mic, size: 24),
-            onPressed: () => _handlePickedMedia('voice'),
+            onPressed: _isSending ? null : () => _handlePickedMedia('voice'),
             tooltip: 'Voice message',
           ),
           IconButton(
             icon: const Icon(Icons.location_on, size: 24),
-            onPressed: _shareLocation,
+            onPressed: _isSending ? null : _shareLocation,
             tooltip: 'Share location',
           ),
           Expanded(
@@ -491,173 +504,98 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
     );
   }
 
-  Future<void> _pickMedia() async {
-    final type = await _showMediaTypeDialog();
-    if (type == null) return;
-
-    setState(() => _isSending = true);
-
-    try {
-      String? result;
-      switch (type) {
-        case 'image':
-          result = await _mediaService.pickImage();
-          break;
-      }
-
-      if (result != null && mounted) {
-        final url =
-            'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg';
-        const content = '';
-        if (_chatMode == ChatMode.group && _selectedGroupId != null) {
-          await _chatService.sendMessageToGroup(
-            groupId: _selectedGroupId!,
-            message: content,
-            messageType: ChatMessageType.image,
-            mediaUrl: url,
-          );
-        } else {
-          await _chatService.sendMessageToUser(
-            receiverId: _peerId,
-            message: content,
-            messageType: ChatMessageType.image,
-            mediaUrl: url,
-          );
-        }
-      }
-    } finally {
-      if (mounted) setState(() => _isSending = false);
-    }
+  void _pickMedia() {
+    _showFeatureUnavailable('Photo attachments are not configured yet.');
   }
 
   Future<void> _shareLocation() async {
-    final position = await _locationService.getCurrentPosition();
-    setState(() {
-      _locationLat = position.latitude.toString();
-      _locationLng = position.longitude.toString();
-    });
-
-    final content =
-        'latitude=$_locationLat,longitude=$_locationLng,address=Current Location';
-    if (_chatMode == ChatMode.group && _selectedGroupId != null) {
-      await _chatService.sendMessageToGroup(
-        groupId: _selectedGroupId!,
-        message: content,
-        messageType: ChatMessageType.location,
-        mediaUrl: null,
-      );
-    } else {
-      await _chatService.sendMessageToUser(
-        receiverId: _peerId,
-        message: content,
-        messageType: ChatMessageType.location,
-        mediaUrl: null,
-      );
+    if (_isSending) return;
+    setState(() => _isSending = true);
+    try {
+      final position = await _locationService.getCurrentPosition();
+      final content =
+          'latitude=${position.latitude},longitude=${position.longitude},address=Current Location';
+      final sent = _chatMode == ChatMode.group && _selectedGroupId != null
+          ? await _chatService.sendMessageToGroup(
+              groupId: _selectedGroupId!,
+              message: content,
+              messageType: ChatMessageType.location,
+              mediaUrl: null,
+            )
+          : await _chatService.sendMessageToUser(
+              receiverId: _peerId,
+              message: content,
+              messageType: ChatMessageType.location,
+              mediaUrl: null,
+            );
+      if (!sent && mounted) {
+        _showChatMessage('Location was saved but could not be delivered.');
+      }
+    } catch (error) {
+      if (mounted) _showChatMessage('Could not share location: $error');
+    } finally {
+      if (mounted) setState(() => _isSending = false);
     }
-    setState(() {
-      _locationLat = null;
-      _locationLng = null;
-    });
   }
 
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _isSending) return;
 
     setState(() => _isSending = true);
 
     try {
-      final content = text;
-      if (_chatMode == ChatMode.group && _selectedGroupId != null) {
-        await _chatService.sendMessageToGroup(
-          groupId: _selectedGroupId!,
-          message: content,
-          messageType: ChatMessageType.text,
-          mediaUrl: null,
-        );
-      } else {
-        await _chatService.sendMessageToUser(
-          receiverId: _peerId,
-          message: content,
-          messageType: ChatMessageType.text,
-          mediaUrl: null,
-        );
+      final sent = _chatMode == ChatMode.group && _selectedGroupId != null
+          ? await _chatService.sendMessageToGroup(
+              groupId: _selectedGroupId!,
+              message: text,
+              messageType: ChatMessageType.text,
+              mediaUrl: null,
+            )
+          : await _chatService.sendMessageToUser(
+              receiverId: _peerId,
+              message: text,
+              messageType: ChatMessageType.text,
+              mediaUrl: null,
+            );
+      if (!sent) {
+        if (mounted) {
+          _messageController.clear();
+          setState(() => _isComposing = false);
+          _showChatMessage(
+            'Message saved on this device, but delivery failed. Try again when connected.',
+          );
+        }
+        return;
       }
+      if (!mounted) return;
       _messageController.clear();
       setState(() => _isComposing = false);
+    } catch (error) {
+      if (mounted) _showChatMessage('Message could not be sent: $error');
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
   }
 
-  Future<String?> _showMediaTypeDialog() async {
-    return await showDialog<String>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Attach'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.image),
-              title: const Text('Photo'),
-              onTap: () => Navigator.of(context).pop('image'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.mic),
-              title: const Text('Voice Message'),
-              onTap: () => Navigator.of(context).pop('voice'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.location_on),
-              title: const Text('Location'),
-              onTap: () => Navigator.of(context).pop('location'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _handlePickedMedia(String type) async {
     if (type == 'image') {
-      await _pickMedia();
+      _pickMedia();
     } else if (type == 'voice') {
-      await _sendVoiceMessage();
+      _showFeatureUnavailable('Voice recording is not configured yet.');
     } else if (type == 'location') {
       await _shareLocation();
     }
   }
 
-  Future<void> _sendVoiceMessage() async {
-    const message = '🎤 Voice note sent';
-    if (_chatMode == ChatMode.group && _selectedGroupId != null) {
-      await _chatService.sendMessageToGroup(
-        groupId: _selectedGroupId!,
-        message: message,
-        messageType: ChatMessageType.text,
-        mediaUrl: null,
-      );
-    } else {
-      await _chatService.sendMessageToUser(
-        receiverId: _peerId,
-        message: message,
-        messageType: ChatMessageType.text,
-        mediaUrl: null,
-      );
-    }
+  void _showFeatureUnavailable(String message) {
+    _showChatMessage(message);
+  }
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Voice note sent successfully')),
-      );
-    }
+  void _showChatMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

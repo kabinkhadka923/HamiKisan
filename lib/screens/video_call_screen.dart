@@ -52,6 +52,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   StreamSubscription<CallState>? _stateSub;
   StreamSubscription<void>? _connectedSub;
   StreamSubscription<void>? _endedSub;
+  Timer? _offerRetryTimer;
+  Timer? _ringTimeoutTimer;
+  bool _isHandlingOffer = false;
+  bool _hasReceivedAnswer = false;
 
   // WebRTC
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
@@ -79,6 +83,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     _stateSub?.cancel();
     _connectedSub?.cancel();
     _endedSub?.cancel();
+    _offerRetryTimer?.cancel();
+    _ringTimeoutTimer?.cancel();
     _localRenderer.dispose();
     _remoteRenderer.dispose();
     _localStream?.dispose();
@@ -145,6 +151,14 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       'callType': widget.callType.name,
       'callerName': authProvider.currentUser?.name,
     });
+    _ringTimeoutTimer?.cancel();
+    _ringTimeoutTimer = Timer(const Duration(seconds: 30), () async {
+      if (!mounted || _callService.callState == CallState.connected) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No answer. The call has ended.')),
+      );
+      await _endCall();
+    });
     return true;
   }
 
@@ -199,27 +213,39 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     setState(() {});
     switch (state) {
       case CallState.idle:
+        _ringTimeoutTimer?.cancel();
+        unawaited(_audioService.stopCallSound());
         break;
       case CallState.connected:
-        _audioService.playCallConnected();
+        _ringTimeoutTimer?.cancel();
+        unawaited(_playConnectedTone());
         break;
       case CallState.ending:
-        _audioService.playCallEnded();
+        unawaited(_playEndedTone());
         break;
       case CallState.error:
+        unawaited(_audioService.stopCallSound());
         break;
       case CallState.ringingIncoming:
+        unawaited(_audioService.playIncomingCall(vibrate: true));
+        break;
       case CallState.ringingOutgoing:
-        _audioService.playIncomingCall(
-          customRingtone: 'incomming_call_ringtone.mp3',
-          vibrate: true,
-          callerType: 'doctor',
-        );
+        unawaited(_audioService.playOutgoingCall());
         break;
     }
   }
 
-  Future<void> _startLocalStream() async {
+  Future<void> _playConnectedTone() async {
+    await _audioService.stopCallSound();
+    await _audioService.playCallConnected();
+  }
+
+  Future<void> _playEndedTone() async {
+    await _audioService.stopCallSound();
+    await _audioService.playCallEnded();
+  }
+
+  Future<bool> _startLocalStream() async {
     try {
       final Map<String, dynamic> mediaConstraints = {
         'audio': true,
@@ -237,9 +263,22 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       _localRenderer.srcObject = _localStream;
 
       if (mounted) setState(() {});
+      return true;
     } catch (e) {
       Logger.error('Could not start local video stream',
           tag: 'VideoCall', error: e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              widget.callType == CallType.voice
+                  ? 'Microphone access is required for voice calls.'
+                  : 'Camera and microphone access are required for video calls.',
+            ),
+          ),
+        );
+      }
+      return false;
     }
   }
 
@@ -273,52 +312,104 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
   Future<void> _makeCall() async {
     _callService.updateCallState(CallState.ringingOutgoing);
-    await _startLocalStream();
-    await _createPeerConnection();
+    try {
+      if (!await _startLocalStream()) {
+        _callService.updateCallState(CallState.error);
+        await _endCall();
+        return;
+      }
+      await _createPeerConnection();
 
-    final offer = await _peerConnection!.createOffer();
-    await _peerConnection!.setLocalDescription(offer);
+      final offer = await _peerConnection!.createOffer();
+      await _peerConnection!.setLocalDescription(offer);
 
-    _callService.socket?.emit('call:offer', {
-      'callId': _activeCallId,
-      'offer': offer.toMap(),
-      'callerId': widget.callerId,
-      'calleeId': widget.calleeId,
-      'callType': widget.callType.name,
-    });
+      final payload = {
+        'callId': _activeCallId,
+        'offer': offer.toMap(),
+        'callerId': widget.callerId,
+        'calleeId': widget.calleeId,
+        'callType': widget.callType.name,
+      };
+      _callService.socket?.emit('call:offer', payload);
+      _offerRetryTimer?.cancel();
+      _offerRetryTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted || _hasReceivedAnswer) {
+          timer.cancel();
+          return;
+        }
+        _callService.socket?.emit('call:offer', payload);
+      });
+    } catch (error) {
+      Logger.error('Could not start call media signaling',
+          tag: 'VideoCall', error: error);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not connect the call.')),
+        );
+        _callService.updateCallState(CallState.error);
+        await _endCall();
+      }
+    }
   }
 
   Future<void> _handleIncomingOffer(Map<String, dynamic> data) async {
-    await _startLocalStream();
-    await _createPeerConnection();
+    if (_isHandlingOffer) return;
+    _isHandlingOffer = true;
 
-    final offer = RTCSessionDescription(
-      data['offer']['sdp'],
-      data['offer']['type'],
-    );
+    try {
+      if (!await _startLocalStream()) {
+        _isHandlingOffer = false;
+        _callService.updateCallState(CallState.error);
+        await _endCall();
+        return;
+      }
+      await _createPeerConnection();
 
-    await _peerConnection!.setRemoteDescription(offer);
+      final offer = RTCSessionDescription(
+        data['offer']['sdp'],
+        data['offer']['type'],
+      );
 
-    final answer = await _peerConnection!.createAnswer();
-    await _peerConnection!.setLocalDescription(answer);
-    _callService.updateCallState(CallState.connected);
+      await _peerConnection!.setRemoteDescription(offer);
 
-    _callService.socket?.emit('call:answer', {
-      'callId': _activeCallId,
-      'answer': (await _peerConnection!.getLocalDescription())?.toMap(),
-      'callerId': data['callerId'],
-      'calleeId': widget.calleeId,
-    });
+      final answer = await _peerConnection!.createAnswer();
+      await _peerConnection!.setLocalDescription(answer);
+      _callService.updateCallState(CallState.connected);
+
+      _callService.socket?.emit('call:answer', {
+        'callId': _activeCallId,
+        'answer': (await _peerConnection!.getLocalDescription())?.toMap(),
+        'callerId': data['callerId'],
+        'calleeId': widget.calleeId,
+      });
+    } catch (error) {
+      _isHandlingOffer = false;
+      Logger.error('Could not accept call offer',
+          tag: 'VideoCall', error: error);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not connect the call.')),
+        );
+      }
+    }
   }
 
   Future<void> _handleAnswer(Map<String, dynamic> data) async {
-    if (_peerConnection != null) {
-      final answer = RTCSessionDescription(
-        data['answer']['sdp'],
-        data['answer']['type'],
-      );
-      await _peerConnection!.setRemoteDescription(answer);
-      _callService.updateCallState(CallState.connected);
+    if (_peerConnection != null && !_hasReceivedAnswer) {
+      try {
+        final answer = RTCSessionDescription(
+          data['answer']['sdp'],
+          data['answer']['type'],
+        );
+        await _peerConnection!.setRemoteDescription(answer);
+        _hasReceivedAnswer = true;
+        _offerRetryTimer?.cancel();
+        _callService.updateCallState(CallState.connected);
+      } catch (error) {
+        Logger.error('Could not apply call answer',
+            tag: 'VideoCall', error: error);
+        if (mounted) await _endCall();
+      }
     }
   }
 
@@ -344,6 +435,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   Future<void> _endCall() async {
+    _offerRetryTimer?.cancel();
+    _ringTimeoutTimer?.cancel();
     await _cleanupCall();
     await CallSignalingService().endCall(callId: _activeCallId);
     _callService.socket?.emit('call:end', {
@@ -356,6 +449,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   void _handleCallDeclined() {
+    _ringTimeoutTimer?.cancel();
+    _offerRetryTimer?.cancel();
+    unawaited(_audioService.stopCallSound());
     _cleanupCall();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -366,6 +462,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   void _handleCallEnded() {
+    _ringTimeoutTimer?.cancel();
+    _offerRetryTimer?.cancel();
+    unawaited(_audioService.stopCallSound());
     _cleanupCall();
     if (mounted) {
       _navigateBack();
@@ -450,6 +549,40 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   Widget _buildVideoArea() {
+    if (widget.callType == CallType.voice) {
+      return Positioned.fill(
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF173B32), Color(0xFF101820)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 58,
+                backgroundColor: Colors.white.withValues(alpha: 0.14),
+                child: const Icon(Icons.person, size: 58, color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                widget.peerName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildCallStateWidget(),
+            ],
+          ),
+        ),
+      );
+    }
     return Stack(
       children: [
         Positioned.fill(
@@ -539,22 +672,23 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   backgroundColor: _isMuted ? Colors.orange : Colors.green,
                 ),
                 const SizedBox(width: 16),
-                _buildControlButton(
-                  icon: _isVideoEnabled ? Icons.videocam_off : Icons.videocam,
-                  label: _isVideoEnabled ? 'Video Off' : 'Video On',
-                  onPressed: _toggleVideo,
-                  backgroundColor:
-                      _isVideoEnabled ? Colors.green : Colors.orange,
-                ),
-                const SizedBox(width: 16),
-                if (widget.callType == CallType.video)
+                if (widget.callType == CallType.video) ...[
+                  _buildControlButton(
+                    icon: _isVideoEnabled ? Icons.videocam_off : Icons.videocam,
+                    label: _isVideoEnabled ? 'Video Off' : 'Video On',
+                    onPressed: _toggleVideo,
+                    backgroundColor:
+                        _isVideoEnabled ? Colors.green : Colors.orange,
+                  ),
+                  const SizedBox(width: 16),
                   _buildControlButton(
                     icon: Icons.flip_camera_android,
                     label: 'Flip',
                     onPressed: _switchCamera,
                     backgroundColor: Colors.blue,
                   ),
-                const SizedBox(width: 16),
+                  const SizedBox(width: 16),
+                ],
                 _buildControlButton(
                   icon: Icons.call_end,
                   label: 'End',

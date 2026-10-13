@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/user.dart';
 import '../../models/kisan_doctor_models.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/kisan_doctor_provider.dart';
 import '../../utils/app_colors.dart';
 import '../video_call_screen.dart';
@@ -28,6 +29,34 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
   final TextEditingController _solutionController = TextEditingController();
   final TextEditingController _medicineController = TextEditingController();
   final TextEditingController _fertilizerController = TextEditingController();
+
+  void _startCaseCall(Case case_, CallType callType) {
+    final currentUser = context.read<AuthProvider>().currentUser;
+    if (currentUser == null || case_.farmerId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('The farmer account for this case is unavailable.'),
+        ),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => VideoCallScreen(
+          callId: 'case_${case_.caseId}',
+          peerName: 'Farmer',
+          callerName: currentUser.name,
+          callerSpecialty: 'Medical Consultant',
+          role: CallRole.caller,
+          callerId: currentUser.id,
+          calleeId: case_.farmerId,
+          isOutgoing: true,
+          callType: callType,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,25 +145,14 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.call),
+            tooltip: 'Audio call farmer',
+            onPressed: () => _startCaseCall(case_, CallType.voice),
+          ),
+          IconButton(
             icon: const Icon(Icons.video_call),
-onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VideoCallScreen(
-                    callId: widget.case_?.caseId ?? '',
-                    peerName: widget.doctor.name,
-                    callerName: widget.doctor.name,
-                    callerSpecialty: 'Medical Consultant',
-                    role: CallRole.caller,
-                    callerId: widget.case_?.farmerId ?? '',
-                    calleeId: widget.case_?.farmerId ?? '',
-                    isOutgoing: false,
-                    callType: CallType.video,
-                  ),
-                ),
-              );
-            },
+            tooltip: 'Video call farmer',
+            onPressed: () => _startCaseCall(case_, CallType.video),
           ),
         ],
       ),

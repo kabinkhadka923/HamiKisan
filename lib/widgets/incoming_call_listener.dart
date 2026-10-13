@@ -8,7 +8,6 @@ import '../services/audio_service.dart';
 import '../services/call/call_signaling_service.dart';
 import '../services/call/kisan_video_call_service.dart';
 import '../screens/video_call_screen.dart';
-import '../utils/logger.dart';
 
 /// Polls the backend for incoming calls and shows a ringing screen when the
 /// current user is being called. Wrap any dashboard body with this widget.
@@ -88,12 +87,7 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
   Future<void> _showIncomingCallSheet(SignalCall call) async {
     final navigator = Navigator.of(context);
     final authProvider = context.read<AuthProvider>();
-    try {
-      await _audioService.playIncomingCall(callerType: 'doctor', vibrate: true);
-    } catch (e) {
-      Logger.warning('Could not play incoming call ringtone',
-          tag: 'Calls', data: e);
-    }
+    unawaited(_audioService.playIncomingCall(vibrate: true));
 
     final accepted = await _showRingingDialog(call);
 
@@ -126,80 +120,130 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
 
   Future<bool> _showRingingDialog(SignalCall call) async {
     bool accepted = false;
+    bool isSubmitting = false;
+    String? errorMessage;
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black54,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF66BB6A)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircleAvatar(
-                radius: 44,
-                backgroundColor: Colors.white24,
-                child: Icon(Icons.person, size: 44, color: Colors.white),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                call.fromName ?? 'Incoming Caller',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          Future<void> answer(bool accept) async {
+            if (isSubmitting) return;
+            setDialogState(() {
+              isSubmitting = true;
+              errorMessage = null;
+            });
+            final result = await _signaling.answerCall(
+              callId: call.callId,
+              accept: accept,
+            );
+            if (!dialogContext.mounted) return;
+            final expected =
+                accept ? SignalCallStatus.connected : SignalCallStatus.declined;
+            if (result != expected) {
+              setDialogState(() {
+                isSubmitting = false;
+                errorMessage = 'This call is no longer available. Try again.';
+              });
+              return;
+            }
+            accepted = accept;
+            Navigator.pop(dialogContext);
+          }
+
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF1B5E20),
+                    Color(0xFF2E7D32),
+                    Color(0xFF66BB6A)
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
+                borderRadius: BorderRadius.circular(24),
               ),
-              const SizedBox(height: 6),
-              const Text(
-                'Incoming Video Consultation...',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-              const SizedBox(height: 28),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  FloatingActionButton(
-                    heroTag: 'listener_decline',
-                    onPressed: () async {
-                      accepted = false;
-                      await CallSignalingService()
-                          .answerCall(callId: call.callId, accept: false);
-                      if (dialogContext.mounted) {
-                        Navigator.pop(dialogContext);
-                      }
-                    },
-                    backgroundColor: Colors.red.shade600,
-                    child: const Icon(Icons.call_end),
+                  const CircleAvatar(
+                    radius: 44,
+                    backgroundColor: Colors.white24,
+                    child: Icon(Icons.person, size: 44, color: Colors.white),
                   ),
-                  const SizedBox(width: 40),
-                  FloatingActionButton(
-                    heroTag: 'listener_accept',
-                    onPressed: () async {
-                      accepted = true;
-                      await CallSignalingService()
-                          .answerCall(callId: call.callId, accept: true);
-                      if (dialogContext.mounted) {
-                        Navigator.pop(dialogContext);
-                      }
-                    },
-                    backgroundColor: Colors.green.shade600,
-                    child: const Icon(Icons.video_call),
+                  const SizedBox(height: 16),
+                  Text(
+                    call.fromName ?? 'Incoming Caller',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    call.callType == 'voice'
+                        ? 'Incoming voice call...'
+                        : 'Incoming video consultation...',
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text(
+                        'Close',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 28),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FloatingActionButton(
+                        heroTag: 'listener_decline',
+                        onPressed: isSubmitting ? null : () => answer(false),
+                        backgroundColor: Colors.red.shade600,
+                        child: const Icon(Icons.call_end),
+                      ),
+                      const SizedBox(width: 40),
+                      FloatingActionButton(
+                        heroTag: 'listener_accept',
+                        onPressed: isSubmitting ? null : () => answer(true),
+                        backgroundColor: Colors.green.shade600,
+                        child: isSubmitting
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(
+                                call.callType == 'voice'
+                                    ? Icons.call
+                                    : Icons.video_call,
+                              ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
     return accepted;

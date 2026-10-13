@@ -1,20 +1,10 @@
 class AudioConfig {
-  // Farmer-specific audio preferences
-  static const farmerPreferences = {
-    'ringtone': 'sound/call/farmer_call.mp3',
-    'notification': 'sound/messages/notification.wav',
+  static const defaultPreferences = {
+    'incomingRingtone': 'sound/incomming_call_ringtone.mp3',
+    'outgoingRingtone': 'sound/outgoing_call_ring.mp3',
+    'notification': 'sound/message/notification.mp3',
     'volume': 0.8,
     'vibrate': true,
-    'spoken_feedback': false, // For low-literacy farmers
-  };
-
-  // Doctor-specific audio preferences
-  static const doctorPreferences = {
-    'ringtone': 'sound/call/doctor_call.mp3',
-    'notification': 'sound/messages/notification.wav',
-    'volume': 0.6,
-    'vibrate': true,
-    'spoken_feedback': true,
   };
 
   // Emergency audio settings

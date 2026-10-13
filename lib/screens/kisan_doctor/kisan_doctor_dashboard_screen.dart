@@ -54,66 +54,66 @@ class _KisanDoctorDashboardScreenState
         builder: (context, provider, _) {
           return Scaffold(
             appBar: _buildGradientHeader(provider),
-                backgroundColor: const Color(0xFFF4F7FB),
+            backgroundColor: const Color(0xFFF4F7FB),
             body: provider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _buildCurrentTab(provider),
-          floatingActionButton: _selectedIndex == 0
-              ? FloatingActionButton.extended(
-                  backgroundColor: _isOnline
-                          ? const Color(0xFF1565C0)
-                      : Colors.grey.shade500,
-                  foregroundColor: Colors.white,
-                  icon: const Icon(Icons.video_call),
-                  label: const Text('Start Live Consultation'),
-                  onPressed: _isOnline
-                      ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const ConsultationContactsScreen(),
-                            ),
-                          );
-                        }
-                      : null,
-                )
-              : null,
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            selectedItemColor: const Color(0xFF1565C0),
-                  unselectedItemColor: Colors.grey.shade500,
-            type: BottomNavigationBarType.fixed,
-            onTap: (index) => setState(() => _selectedIndex = index),
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.agriculture_outlined),
-                activeIcon: Icon(Icons.agriculture),
-                label: 'Cases',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_today_outlined),
-                activeIcon: Icon(Icons.calendar_today),
-                label: 'Appointments',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.video_call_outlined),
-                activeIcon: Icon(Icons.video_call),
-                label: 'Calling',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.people_outline),
-                activeIcon: Icon(Icons.people),
-                label: 'Farmers',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: 'Profile',
-              ),
-            ],
-          ),
-        );
+            floatingActionButton: _selectedIndex == 0
+                ? FloatingActionButton.extended(
+                    backgroundColor: _isOnline
+                        ? const Color(0xFF1565C0)
+                        : Colors.grey.shade500,
+                    foregroundColor: Colors.white,
+                    icon: const Icon(Icons.video_call),
+                    label: const Text('Start Live Consultation'),
+                    onPressed: _isOnline
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const ConsultationContactsScreen(),
+                              ),
+                            );
+                          }
+                        : null,
+                  )
+                : null,
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              selectedItemColor: const Color(0xFF1565C0),
+              unselectedItemColor: Colors.grey.shade500,
+              type: BottomNavigationBarType.fixed,
+              onTap: (index) => setState(() => _selectedIndex = index),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.agriculture_outlined),
+                  activeIcon: Icon(Icons.agriculture),
+                  label: 'Cases',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.calendar_today_outlined),
+                  activeIcon: Icon(Icons.calendar_today),
+                  label: 'Appointments',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.video_call_outlined),
+                  activeIcon: Icon(Icons.video_call),
+                  label: 'Calling',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.people_outline),
+                  activeIcon: Icon(Icons.people),
+                  label: 'Farmers',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
@@ -407,10 +407,10 @@ class _KisanDoctorDashboardScreenState
                           callId:
                               'call_${DateTime.now().millisecondsSinceEpoch}',
                           peerName: farmer.name,
-                          callerName: farmer.name,
+                          callerName: widget.doctor.name,
                           callerSpecialty: 'Farmer Consultation',
                           role: CallRole.caller,
-                          callerId: farmer.id,
+                          callerId: widget.doctor.id,
                           calleeId: farmer.id,
                           isOutgoing: true,
                           callType: CallType.video,
@@ -697,9 +697,8 @@ class _KisanDoctorDashboardScreenState
 
   Widget _buildConnectedFarmersTab(KisanDoctorProvider provider) {
     // Get farmers from ongoing cases
-    final connectedFarmers = provider.cases
-        .where((c) => c.status == CaseStatus.ongoing)
-        .toList();
+    final connectedFarmers =
+        provider.cases.where((c) => c.status == CaseStatus.ongoing).toList();
 
     if (connectedFarmers.isEmpty) {
       return Center(
@@ -708,9 +707,11 @@ class _KisanDoctorDashboardScreenState
           children: [
             Icon(Icons.people_outline, size: 80, color: Colors.grey.shade300),
             const SizedBox(height: 16),
-            const Text('No connected farmers yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('No connected farmers yet',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Farmers will appear here when you accept their cases', style: TextStyle(color: Colors.grey.shade600)),
+            Text('Farmers will appear here when you accept their cases',
+                style: TextStyle(color: Colors.grey.shade600)),
           ],
         ),
       );
@@ -744,19 +745,28 @@ class _KisanDoctorDashboardScreenState
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.12),
-                  child: const Icon(Icons.person, color: Color(0xFF2E7D32), size: 28),
+                  backgroundColor:
+                      const Color(0xFF2E7D32).withValues(alpha: 0.12),
+                  child: const Icon(Icons.person,
+                      color: Color(0xFF2E7D32), size: 28),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(farmer.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(farmer.name,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 2),
-                      Text('Crop: ${case_.cropType}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                      Text('Crop: ${case_.cropType}',
+                          style: TextStyle(
+                              color: Colors.grey.shade600, fontSize: 13)),
                       const SizedBox(height: 2),
-                      Text('Since: ${DateFormat('dd MMM yyyy').format(case_.createdAt)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                      Text(
+                          'Since: ${DateFormat('dd MMM yyyy').format(case_.createdAt)}',
+                          style: TextStyle(
+                              color: Colors.grey.shade500, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -793,7 +803,8 @@ class _KisanDoctorDashboardScreenState
                         context,
                         MaterialPageRoute(
                           builder: (_) => VideoCallScreen(
-                            callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+                            callId:
+                                'call_${DateTime.now().millisecondsSinceEpoch}',
                             peerName: farmer.name,
                             callerName: widget.doctor.name,
                             callerSpecialty: widget.doctor.specialization,
@@ -809,7 +820,8 @@ class _KisanDoctorDashboardScreenState
                     icon: const Icon(Icons.videocam, size: 18),
                     label: const Text('Call'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.14),
+                      backgroundColor:
+                          const Color(0xFF2E7D32).withValues(alpha: 0.14),
                       foregroundColor: const Color(0xFF1B5E20),
                       minimumSize: const Size(double.infinity, 40),
                     ),
@@ -840,9 +852,11 @@ class _KisanDoctorDashboardScreenState
           children: [
             Icon(Icons.people_outline, size: 80, color: Colors.grey.shade300),
             const SizedBox(height: 16),
-            const Text('No farmers yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('No farmers yet',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Farmers will appear here after consultations', style: TextStyle(color: Colors.grey.shade600)),
+            Text('Farmers will appear here after consultations',
+                style: TextStyle(color: Colors.grey.shade600)),
           ],
         ),
       );
@@ -855,16 +869,21 @@ class _KisanDoctorDashboardScreenState
       itemBuilder: (context, index) {
         final farmer = farmers[index];
         // Find cases for this farmer
-        final farmerCases = provider.cases.where((c) => c.farmerId == farmer.id).toList();
-        final ongoingCases = farmerCases.where((c) => c.status == CaseStatus.ongoing).length;
-        final resolvedCases = farmerCases.where((c) => c.status == CaseStatus.resolved).length;
+        final farmerCases =
+            provider.cases.where((c) => c.farmerId == farmer.id).toList();
+        final ongoingCases =
+            farmerCases.where((c) => c.status == CaseStatus.ongoing).length;
+        final resolvedCases =
+            farmerCases.where((c) => c.status == CaseStatus.resolved).length;
 
-        return _buildFarmerProfileCard(farmer, ongoingCases, resolvedCases, farmerCases.first.cropType);
+        return _buildFarmerProfileCard(
+            farmer, ongoingCases, resolvedCases, farmerCases.first.cropType);
       },
     );
   }
 
-  Widget _buildFarmerProfileCard(User farmer, int ongoingCount, int resolvedCount, String lastCrop) {
+  Widget _buildFarmerProfileCard(
+      User farmer, int ongoingCount, int resolvedCount, String lastCrop) {
     return Card(
       elevation: 0,
       margin: EdgeInsets.zero,
@@ -881,10 +900,14 @@ class _KisanDoctorDashboardScreenState
               children: [
                 CircleAvatar(
                   radius: 32,
-                  backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.12),
+                  backgroundColor:
+                      const Color(0xFF2E7D32).withValues(alpha: 0.12),
                   child: Text(
                     farmer.name.isNotEmpty ? farmer.name[0].toUpperCase() : 'F',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32)),
+                    style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -892,17 +915,22 @@ class _KisanDoctorDashboardScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(farmer.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(farmer.name,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           _buildStatChip('Ongoing', ongoingCount, Colors.blue),
                           const SizedBox(width: 8),
-                          _buildStatChip('Resolved', resolvedCount, Colors.green),
+                          _buildStatChip(
+                              'Resolved', resolvedCount, Colors.green),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text('Last crop: $lastCrop', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                      Text('Last crop: $lastCrop',
+                          style: TextStyle(
+                              color: Colors.grey.shade600, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -940,7 +968,8 @@ class _KisanDoctorDashboardScreenState
                         context,
                         MaterialPageRoute(
                           builder: (_) => VideoCallScreen(
-                            callId: 'call_${DateTime.now().millisecondsSinceEpoch}',
+                            callId:
+                                'call_${DateTime.now().millisecondsSinceEpoch}',
                             peerName: farmer.name,
                             callerName: widget.doctor.name,
                             callerSpecialty: widget.doctor.specialization,
@@ -956,7 +985,8 @@ class _KisanDoctorDashboardScreenState
                     icon: const Icon(Icons.videocam, size: 18),
                     label: const Text('Call'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.14),
+                      backgroundColor:
+                          const Color(0xFF2E7D32).withValues(alpha: 0.14),
                       foregroundColor: const Color(0xFF1B5E20),
                       minimumSize: const Size(double.infinity, 40),
                     ),
@@ -968,7 +998,8 @@ class _KisanDoctorDashboardScreenState
                     onPressed: () {
                       // TODO: Navigate to farmer posts screen
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Farmer posts view coming soon')),
+                        const SnackBar(
+                            content: Text('Farmer posts view coming soon')),
                       );
                     },
                     icon: const Icon(Icons.article_outlined, size: 18),
@@ -998,7 +1029,8 @@ class _KisanDoctorDashboardScreenState
       ),
       child: Text(
         '$label: $count',
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+        style:
+            TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
       ),
     );
   }

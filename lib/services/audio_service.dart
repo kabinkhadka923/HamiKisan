@@ -82,11 +82,10 @@ class AudioService {
 
   /// 📞 Play incoming call with smart handling
   Future<void> playIncomingCall({
-    String? customRingtone,
     bool? vibrate,
     Duration? vibrationPattern,
     bool isUrgent = false,
-    String callerType = 'doctor',
+    String callerType = 'call',
   }) async {
     if (_isPlayingCallSound && !isUrgent) {
       // Already ringing, don't interrupt unless urgent
@@ -100,15 +99,7 @@ class AudioService {
     _callSoundCompleter = Completer();
 
     try {
-      // Determine ringtone
-      String ringtone;
-      if (customRingtone != null) {
-        ringtone = customRingtone;
-      } else if (isUrgent) {
-        ringtone = _soundAssets['emergency_alert']!;
-      } else {
-        ringtone = _soundAssets['incoming_call']!;
-      }
+      final ringtone = _soundAssets['incoming_call']!;
 
       // Configure player
       await _player.stop();
