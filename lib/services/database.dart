@@ -14,7 +14,7 @@ class DatabaseService {
 
   static const String _databaseName = 'hamikisan_secure.db';
   static const String _webDatabaseName = 'hamikisan_web.db';
-  static const int _databaseVersion = 3;
+  static const int _databaseVersion = 4;
   Database? _database;
 
   static SharedPreferences? _prefs;
@@ -201,6 +201,122 @@ class DatabaseService {
         FOREIGN KEY (username) REFERENCES users (username)
       )
     ''');
+
+    await _createCommunityTables(db);
+  }
+
+  Future<void> _createCommunityTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS community_groups (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        type TEXT NOT NULL,
+        location TEXT NOT NULL,
+        district TEXT,
+        leader_id TEXT NOT NULL,
+        member_count INTEGER DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        FOREIGN KEY (leader_id) REFERENCES users (id)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS community_members (
+        id TEXT PRIMARY KEY,
+        group_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        joined_at INTEGER NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        FOREIGN KEY (group_id) REFERENCES community_groups (id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+        UNIQUE(group_id, user_id)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS community_notices (
+        id TEXT PRIMARY KEY,
+        group_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        type TEXT NOT NULL,
+        author_id TEXT NOT NULL,
+        author_name TEXT NOT NULL,
+        author_profile_picture TEXT,
+        created_at TEXT NOT NULL,
+        expires_at TEXT,
+        is_pinned INTEGER DEFAULT 0,
+        attachments TEXT,
+        view_count INTEGER DEFAULT 0,
+        FOREIGN KEY (group_id) REFERENCES community_groups (id),
+        FOREIGN KEY (author_id) REFERENCES users (id)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS community_market_prices (
+        id TEXT PRIMARY KEY,
+        group_id TEXT NOT NULL,
+        product_name TEXT NOT NULL,
+        category TEXT NOT NULL,
+        min_price REAL NOT NULL,
+        max_price REAL NOT NULL,
+        avg_price REAL NOT NULL,
+        unit TEXT NOT NULL,
+        market_location TEXT NOT NULL,
+        price_date TEXT NOT NULL,
+        posted_by_id TEXT NOT NULL,
+        posted_by_name TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (group_id) REFERENCES community_groups (id),
+        FOREIGN KEY (posted_by_id) REFERENCES users (id)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS community_feedback (
+        id TEXT PRIMARY KEY,
+        group_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        user_name TEXT NOT NULL,
+        user_profile_picture TEXT,
+        type TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        message TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        response TEXT,
+        responded_by_id TEXT,
+        responded_by_name TEXT,
+        responded_at TEXT,
+        created_at TEXT NOT NULL,
+        is_urgent INTEGER DEFAULT 0,
+        FOREIGN KEY (group_id) REFERENCES community_groups (id),
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS community_messages (
+        id TEXT PRIMARY KEY,
+        group_id TEXT NOT NULL,
+        sender_id TEXT NOT NULL,
+        sender_name TEXT NOT NULL,
+        sender_profile_picture TEXT,
+        message TEXT NOT NULL,
+        reply_to_notice_id TEXT,
+        created_at TEXT NOT NULL,
+        is_approved INTEGER DEFAULT 0,
+        approved_by_id TEXT,
+        FOREIGN KEY (group_id) REFERENCES community_groups (id),
+        FOREIGN KEY (sender_id) REFERENCES users (id)
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_community_groups_leader ON community_groups(leader_id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_community_members_group ON community_members(group_id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_community_members_user ON community_members(user_id)',
+    );
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -384,6 +500,10 @@ class DatabaseService {
           'CREATE INDEX idx_community_feedback_group ON community_feedback(group_id)');
       await db.execute(
           'CREATE INDEX idx_community_messages_group ON community_messages(group_id)');
+    }
+
+    if (oldVersion < 4) {
+      await _createCommunityTables(db);
     }
   }
 

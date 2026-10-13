@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../models/notification_item.dart';
+import '../providers/auth_provider.dart';
+import '../services/notification_service.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -9,11 +16,15 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  final NotificationService _notificationService = NotificationService();
   final List<NotificationItem> _notifications = [];
   NotificationFilter _currentFilter = NotificationFilter.all;
   bool _isLoading = true;
+  String? _loadError;
   bool _enableVibration = true;
   bool _enableSound = true;
+  String? _userId;
+  Set<NotificationType> _enabledTypes = NotificationType.values.toSet();
 
   @override
   void initState() {
@@ -22,79 +33,61 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _loadNotifications() async {
-    // Simulate API call delay
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    // Sample notifications - in real app, fetch from API
-    final sampleNotifications = [
-      NotificationItem(
-        title: 'New Expert Available',
-        message: 'Dr. Sharma is now available for consultation in your area',
-        icon: Icons.medical_services,
-        color: Colors.blue,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        type: NotificationType.expert,
-        isRead: false,
-      ),
-      NotificationItem(
-        title: 'Weather Alert',
-        message: 'Heavy rain expected in your region tomorrow. Plan accordingly.',
-        icon: Icons.cloud,
-        color: Colors.orange,
-        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-        type: NotificationType.weather,
-        isRead: true,
-      ),
-      NotificationItem(
-        title: 'Crop Health Update',
-        message: 'Your rice crop shows signs of improved growth this week',
-        icon: Icons.eco,
-        color: Colors.green,
-        timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-        type: NotificationType.crop,
-        isRead: false,
-      ),
-      NotificationItem(
-        title: 'Market Price Alert',
-        message: 'Wheat prices have increased by 15% in your local market',
-        icon: Icons.attach_money,
-        color: Colors.purple,
-        timestamp: DateTime.now().subtract(const Duration(days: 1)),
-        type: NotificationType.market,
-        isRead: true,
-      ),
-      NotificationItem(
-        title: 'Government Scheme',
-        message: 'New farming subsidy scheme announced. Check eligibility now.',
-        icon: Icons.account_balance,
-        color: Colors.red,
-        timestamp: DateTime.now().subtract(const Duration(days: 2)),
-        type: NotificationType.government,
-        isRead: false,
-      ),
-      NotificationItem(
-        title: 'Community Event',
-        message: 'Farming workshop this Saturday at 10 AM in your village',
-        icon: Icons.event,
-        color: Colors.teal,
-        timestamp: DateTime.now().subtract(const Duration(days: 3)),
-        type: NotificationType.community,
-        isRead: true,
-      ),
-    ];
+    final user = context.read<AuthProvider>().currentUser;
+    if (user == null) {
+      if (mounted) {
+        setState(() {
+          _loadError = 'Sign in to view your notifications.';
+          _isLoading = false;
+        });
+      }
+      return;
+    }
 
-    setState(() {
-      _notifications.addAll(sampleNotifications);
-      _isLoading = false;
-    });
+    _userId = user.id;
+    try {
+      final results = await Future.wait([
+        _notificationService.getNotifications(
+          userId: user.id,
+          district: user.district ?? user.address,
+        ),
+        SharedPreferences.getInstance(),
+      ]);
+      final notifications = results[0] as List<NotificationItem>;
+      final prefs = results[1] as SharedPreferences;
+      final configuredTypes =
+          prefs.getStringList('notifications_types_${user.id}');
+      if (!mounted || !context.mounted) return;
+      setState(() {
+        _notifications
+          ..clear()
+          ..addAll(notifications);
+        _enableVibration =
+            prefs.getBool('notifications_vibration_${user.id}') ?? true;
+        _enableSound = prefs.getBool('notifications_sound_${user.id}') ?? true;
+        _enabledTypes = configuredTypes == null
+            ? NotificationType.values.toSet()
+            : NotificationType.values
+                .where((type) => configuredTypes.contains(type.name))
+                .toSet();
+        _loadError = null;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = 'Could not load notifications: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   List<NotificationItem> get _filteredNotifications {
-    if (_currentFilter == NotificationFilter.all) return _notifications;
-    return _notifications
-        .where((notification) =>
-            notification.type.name == _currentFilter.name)
-        .toList();
+    return _notifications.where((notification) {
+      if (!_enabledTypes.contains(notification.type)) return false;
+      return _currentFilter == NotificationFilter.all ||
+          notification.type.name == _currentFilter.name;
+    }).toList();
   }
 
   int get _unreadCount =>
@@ -180,6 +173,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
     }
 
+    if (_loadError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 12),
+              Text(_loadError!, textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () {
+                  setState(() => _isLoading = true);
+                  _loadNotifications();
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (_filteredNotifications.isEmpty) {
       return Center(
         child: Padding(
@@ -217,7 +234,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               const SizedBox(height: 32),
               if (_currentFilter != NotificationFilter.all)
                 ElevatedButton.icon(
-                  onPressed: () => setState(() => _currentFilter = NotificationFilter.all),
+                  onPressed: () =>
+                      setState(() => _currentFilter = NotificationFilter.all),
                   icon: const Icon(Icons.filter_alt_off, size: 18),
                   label: const Text('Clear Filter'),
                   style: ElevatedButton.styleFrom(
@@ -262,7 +280,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ],
                 ),
                 TextButton(
-                  onPressed: () => setState(() => _currentFilter = NotificationFilter.all),
+                  onPressed: () =>
+                      setState(() => _currentFilter = NotificationFilter.all),
                   child: const Text(
                     'Clear',
                     style: TextStyle(fontSize: 12),
@@ -293,7 +312,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildNotificationCard(NotificationItem notification, int index) {
     return Dismissible(
-      key: Key('notification_${notification.timestamp.millisecondsSinceEpoch}'),
+      key: ValueKey(notification.id),
       direction: DismissDirection.endToStart,
       background: Container(
         decoration: BoxDecoration(
@@ -313,7 +332,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Delete Notification'),
-            content: const Text('Are you sure you want to delete this notification?'),
+            content: const Text(
+                'Are you sure you want to delete this notification?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -331,24 +351,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         );
       },
       onDismissed: (direction) {
-        final removedNotification = notification;
-        setState(() {
-          _notifications.remove(removedNotification);
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Notification deleted'),
-            action: SnackBarAction(
-              label: 'Undo',
-              textColor: Colors.white,
-              onPressed: () {
-                setState(() {
-                  _notifications.insert(index, removedNotification);
-                });
-              },
-            ),
-          ),
-        );
+        _deleteNotification(notification);
       },
       child: Material(
         elevation: 2,
@@ -356,7 +359,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
-            color: notification.isRead ? Colors.white : Colors.green.withValues(alpha: 0.05),
+            color: notification.isRead
+                ? Colors.white
+                : Colors.green.withValues(alpha: 0.05),
             border: Border(
               left: BorderSide(
                 color: notification.color,
@@ -500,8 +505,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _refreshNotifications() async {
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
+    await _loadNotifications();
   }
 
   String _formatTime(DateTime timestamp) {
@@ -537,6 +541,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return Icons.account_balance;
       case NotificationType.community:
         return Icons.group;
+      case NotificationType.system:
+        return Icons.notifications;
     }
   }
 
@@ -554,6 +560,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return 'No Government Updates';
       case NotificationFilter.community:
         return 'No Community Notifications';
+      case NotificationFilter.system:
+        return 'No System Notifications';
       default:
         return 'No Notifications';
     }
@@ -573,6 +581,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return 'Government schemes and subsidy updates will appear here.';
       case NotificationFilter.community:
         return 'Community events and farmer meetup notifications will be shown here.';
+      case NotificationFilter.system:
+        return 'System and account notifications will be shown here.';
       default:
         return 'You\'re all caught up! Check back later for new updates.';
     }
@@ -598,8 +608,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ...NotificationFilter.values.map((filter) {
               final count = filter == NotificationFilter.all
                   ? _notifications.length
-                  : _notifications.where((n) => n.type.name == filter.name).length;
-              
+                  : _notifications
+                      .where((n) => n.type.name == filter.name)
+                      .length;
+
               return ListTile(
                 leading: Icon(
                   filter == NotificationFilter.all
@@ -669,7 +681,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
                 const Divider(),
                 const Text(
-                  'Notification Categories',
+                  'Visible Categories',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
@@ -679,8 +691,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       type.name[0].toUpperCase() + type.name.substring(1),
                       style: const TextStyle(fontSize: 14),
                     ),
-                    value: true, // In real app, store this in preferences
-                    onChanged: (value) {},
+                    value: _enabledTypes.contains(type),
+                    onChanged: (value) {
+                      setState(() {
+                        if (value ?? false) {
+                          _enabledTypes.add(type);
+                        } else {
+                          _enabledTypes.remove(type);
+                        }
+                      });
+                    },
                     controlAffinity: ListTileControlAffinity.leading,
                     dense: true,
                   );
@@ -689,14 +709,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _loadNotifications();
+                },
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  // Save settings
+                onPressed: () async {
+                  final userId = _userId;
+                  if (userId != null) {
+                    final prefs = await SharedPreferences.getInstance();
+                    await Future.wait([
+                      prefs.setBool(
+                          'notifications_vibration_$userId', _enableVibration),
+                      prefs.setBool(
+                          'notifications_sound_$userId', _enableSound),
+                      prefs.setStringList(
+                        'notifications_types_$userId',
+                        _enabledTypes.map((type) => type.name).toList(),
+                      ),
+                    ]);
+                  }
+                  if (!mounted || !context.mounted) return;
+                  this.setState(() {});
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  ScaffoldMessenger.of(this.context).showSnackBar(
                     const SnackBar(content: Text('Settings saved')),
                   );
                 },
@@ -732,7 +770,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 notification.isRead ? 'Mark as Unread' : 'Mark as Read',
               ),
               onTap: () {
-                _markAsRead(notification);
+                _setRead(notification, !notification.isRead);
                 Navigator.pop(context);
               },
             ),
@@ -742,14 +780,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               onTap: () {
                 Navigator.pop(context);
                 _deleteNotification(notification);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.share, color: Colors.blue),
-              title: const Text('Share'),
-              onTap: () {
-                Navigator.pop(context);
-                _shareNotification(notification);
               },
             ),
             ListTile(
@@ -766,16 +796,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  void _markAsRead(NotificationItem notification) {
+  Future<void> _markAsRead(NotificationItem notification) =>
+      _setRead(notification, true);
+
+  Future<void> _setRead(NotificationItem notification, bool isRead) async {
+    final userId = _userId;
+    if (userId == null) return;
     setState(() {
-      final index = _notifications.indexOf(notification);
+      final index =
+          _notifications.indexWhere((item) => item.id == notification.id);
       if (index != -1) {
-        _notifications[index] = _notifications[index].copyWith(isRead: true);
+        _notifications[index] = _notifications[index].copyWith(isRead: isRead);
       }
     });
+    try {
+      await _notificationService.setRead(userId, notification.id, isRead);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not update notification: $e')),
+      );
+    }
   }
 
-  void _markAllAsRead() {
+  Future<void> _markAllAsRead() async {
     if (_notifications.isEmpty) return;
 
     setState(() {
@@ -785,7 +829,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         }
       }
     });
-    
+    final userId = _userId;
+    if (userId != null) {
+      try {
+        await _notificationService.markAllRead(
+          userId,
+          _notifications.map((notification) => notification.id),
+        );
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not update notifications: $e')),
+          );
+          return;
+        }
+      }
+    }
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('All notifications marked as read'),
@@ -799,7 +860,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear All Notifications'),
-        content: const Text('Are you sure you want to clear all notifications? This action cannot be undone.'),
+        content: const Text(
+            'Are you sure you want to clear all notifications? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -820,111 +882,63 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  void _clearAllNotifications() {
+  Future<void> _clearAllNotifications() async {
     if (_notifications.isEmpty) return;
-
-    final clearedNotifications = List<NotificationItem>.from(_notifications);
-    
+    final userId = _userId;
+    if (userId == null) return;
+    final ids = _notifications.map((notification) => notification.id).toList();
     setState(() {
       _notifications.clear();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('All notifications cleared'),
-        action: SnackBarAction(
-          label: 'Undo',
-          textColor: Colors.white,
-          onPressed: () {
-            setState(() {
-              _notifications.addAll(clearedNotifications);
-            });
-          },
-        ),
-      ),
-    );
+    try {
+      await _notificationService.clear(userId, ids);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('All notifications cleared')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not clear notifications: $e')),
+        );
+        await _loadNotifications();
+      }
+    }
   }
 
-  void _deleteNotification(NotificationItem notification) {
+  Future<void> _deleteNotification(NotificationItem notification) async {
+    final userId = _userId;
+    if (userId == null) return;
     setState(() {
-      _notifications.remove(notification);
+      _notifications.removeWhere((item) => item.id == notification.id);
     });
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notification deleted')),
-    );
+    try {
+      await _notificationService.delete(userId, notification.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notification deleted')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not delete notification: $e')),
+        );
+        await _loadNotifications();
+      }
+    }
   }
 
-  void _shareNotification(NotificationItem notification) {
-    // Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sharing notification...')),
+  Future<void> _copyNotification(NotificationItem notification) async {
+    await Clipboard.setData(
+      ClipboardData(text: '${notification.title}\n${notification.message}'),
     );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notification copied to clipboard')),
+      );
+    }
   }
-
-  void _copyNotification(NotificationItem notification) {
-    // Implement copy functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notification copied to clipboard')),
-    );
-  }
-}
-
-class NotificationItem {
-  final String title;
-  final String message;
-  final IconData icon;
-  final Color color;
-  final DateTime timestamp;
-  final NotificationType type;
-  final bool isRead;
-
-  NotificationItem({
-    required this.title,
-    required this.message,
-    required this.icon,
-    required this.color,
-    required this.timestamp,
-    required this.type,
-    this.isRead = false,
-  });
-
-  NotificationItem copyWith({
-    String? title,
-    String? message,
-    IconData? icon,
-    Color? color,
-    DateTime? timestamp,
-    NotificationType? type,
-    bool? isRead,
-  }) {
-    return NotificationItem(
-      title: title ?? this.title,
-      message: message ?? this.message,
-      icon: icon ?? this.icon,
-      color: color ?? this.color,
-      timestamp: timestamp ?? this.timestamp,
-      type: type ?? this.type,
-      isRead: isRead ?? this.isRead,
-    );
-  }
-}
-
-enum NotificationType {
-  weather,
-  market,
-  expert,
-  crop,
-  government,
-  community,
-}
-
-enum NotificationFilter {
-  all,
-  weather,
-  market,
-  expert,
-  crop,
-  government,
-  community,
 }

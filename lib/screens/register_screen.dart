@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../data/nepal_districts.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,6 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _addressController = TextEditingController();
 
   String _selectedRole = 'farmer';
+  String? _selectedDistrict;
   String? _selectedFarmingCategory;
   String? _selectedSpecialization;
   bool _obscurePassword = true;
@@ -204,8 +206,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 elevation: 2,
-                                shadowColor:
-                                    const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                                shadowColor: const Color(0xFF4CAF50)
+                                    .withValues(alpha: 0.3),
                               ),
                               child: authProvider.isLoading
                                   ? const SizedBox(
@@ -523,6 +525,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        DropdownButtonFormField<String>(
+          initialValue: _selectedDistrict,
+          isExpanded: true,
+          decoration: const InputDecoration(
+            labelText: 'District / जिल्ला',
+            prefixIcon: Icon(Icons.map_outlined),
+            border: OutlineInputBorder(),
+          ),
+          items: nepalDistricts
+              .map((district) => DropdownMenuItem(
+                    value: district,
+                    child: Text(district),
+                  ))
+              .toList(),
+          validator: (value) => value == null ? 'Select your district' : null,
+          onChanged: (value) => setState(() => _selectedDistrict = value),
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -1016,6 +1036,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    if (_selectedDistrict == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select your district.'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+      return;
+    }
+
     final AuthResult result;
 
     if (_selectedRole == 'farmer') {
@@ -1025,6 +1055,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: _nameController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
         address: _addressController.text.trim(),
+        district: _selectedDistrict,
         farmingCategory: _selectedFarmingCategory,
       );
     } else {
@@ -1033,6 +1064,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: _passwordController.text,
         name: _nameController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
+        address: _addressController.text.trim(),
+        district: _selectedDistrict,
         specialization: _selectedSpecialization!,
       );
     }
@@ -1059,6 +1092,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() {
         _selectedFarmingCategory = null;
         _selectedSpecialization = null;
+        _selectedDistrict = null;
         _agreedToTerms = false;
         _autoValidate = false;
       });
@@ -1069,8 +1103,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(result.error.isNotEmpty ? result.error : 'Registration failed. Please try again.'),
+          content: Text(result.error.isNotEmpty
+              ? result.error
+              : 'Registration failed. Please try again.'),
           backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(

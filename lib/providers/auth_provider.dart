@@ -256,6 +256,7 @@ class AuthProvider with ChangeNotifier {
     required String name,
     String? phoneNumber,
     String? address,
+    String? district,
     String? farmingCategory,
   }) async {
     final username = email.split('@')[0];
@@ -267,6 +268,7 @@ class AuthProvider with ChangeNotifier {
       role: UserRole.farmer,
       password: password,
       address: address,
+      district: district,
       farmingCategory: farmingCategory,
     );
     return AuthResult(success: success, error: _error ?? '');
@@ -277,6 +279,8 @@ class AuthProvider with ChangeNotifier {
     required String password,
     required String name,
     String? phoneNumber,
+    String? address,
+    String? district,
     required String specialization,
   }) async {
     final username = email.split('@')[0];
@@ -287,6 +291,8 @@ class AuthProvider with ChangeNotifier {
       name: name,
       role: UserRole.kisanDoctor,
       password: password,
+      address: address,
+      district: district,
       specialization: specialization,
     );
     return AuthResult(success: success, error: _error ?? '');
@@ -300,6 +306,7 @@ class AuthProvider with ChangeNotifier {
     required UserRole role,
     String? password,
     String? address,
+    String? district,
     String? language,
     String? farmingCategory,
     String? specialization,
@@ -322,6 +329,7 @@ class AuthProvider with ChangeNotifier {
         role: role,
         password: password,
         address: address,
+        district: district,
         language: language,
         farmingCategory: farmingCategory,
         specialization: specialization,

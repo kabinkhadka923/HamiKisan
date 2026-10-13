@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/post_model.dart';
 import '../models/user.dart';
+import '../services/post_service.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Post post;
@@ -15,7 +16,34 @@ class PostDetailScreen extends StatefulWidget {
 
 class _PostDetailScreenState extends State<PostDetailScreen> {
   final _commentController = TextEditingController();
-  final List<Map<String, String>> _comments = [];
+  final PostService _postService = PostService();
+  List<Map<String, dynamic>> _comments = [];
+  bool _isLoadingComments = true;
+  bool _isSendingComment = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadComments();
+  }
+
+  Future<void> _loadComments() async {
+    try {
+      final comments = await _postService.getComments(widget.post.id);
+      if (mounted) {
+        setState(() {
+          _comments = comments;
+          _isLoadingComments = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoadingComments = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load comments: $e')),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -23,20 +51,39 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     super.dispose();
   }
 
-  void _addComment() {
-    if (_commentController.text.trim().isEmpty) return;
-
+  Future<void> _addComment() async {
+    final text = _commentController.text.trim();
+    if (text.isEmpty || _isSendingComment) return;
     final auth = context.read<AuthProvider>();
     final user = auth.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign in to add a comment.')),
+      );
+      return;
+    }
 
-    setState(() {
-      _comments.add({
-        'userName': user?.name ?? 'User',
-        'comment': _commentController.text.trim(),
-        'time': 'Just now',
+    setState(() => _isSendingComment = true);
+    try {
+      final comment = await _postService.addComment(
+        post: widget.post,
+        comment: text,
+        userId: user.id,
+        userName: user.name,
+      );
+      if (!mounted) return;
+      setState(() {
+        _comments.insert(0, comment);
+        _commentController.clear();
+        _isSendingComment = false;
       });
-      _commentController.clear();
-    });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSendingComment = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not add comment: $e')),
+      );
+    }
   }
 
   @override
@@ -62,15 +109,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  ..._comments.map((comment) => _buildCommentCard(comment)),
-                  if (_comments.isEmpty)
+                  if (_isLoadingComments)
+                    const Center(child: CircularProgressIndicator())
+                  else if (_comments.isEmpty)
                     const Padding(
                       padding: EdgeInsets.all(32),
                       child: Center(
                         child:
                             Text('No comments yet. Be the first to comment!'),
                       ),
-                    ),
+                    )
+                  else
+                    ..._comments.map((comment) => _buildCommentCard(comment)),
                 ],
               ),
             ),
@@ -149,7 +199,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
-  Widget _buildCommentCard(Map<String, String> comment) {
+  Widget _buildCommentCard(Map<String, dynamic> comment) {
+    final timestamp = comment['timestamp'];
+    final time = timestamp is int
+        ? _formatTimeAgo(DateTime.fromMillisecondsSinceEpoch(timestamp))
+        : 'Just now';
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: Padding(
@@ -167,14 +221,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    comment['userName']!,
+                    comment['userName']?.toString() ?? 'User',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text(comment['comment']!),
+                  Text(comment['comment']?.toString() ?? ''),
                   const SizedBox(height: 4),
                   Text(
-                    comment['time']!,
+                    time,
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
@@ -216,8 +270,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           ),
           const SizedBox(width: 8),
           IconButton(
-            onPressed: _addComment,
-            icon: const Icon(Icons.send, color: Color(0xFF4CAF50)),
+            onPressed: _isSendingComment ? null : _addComment,
+            icon: _isSendingComment
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.send, color: Color(0xFF4CAF50)),
           ),
         ],
       ),

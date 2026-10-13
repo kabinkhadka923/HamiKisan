@@ -21,6 +21,10 @@ Run DB schema:
 psql -U postgres -d hamikisan_db -f database/schema.sql
 ```
 
+The schema creates/updates the district membership tables and adds a district
+field to existing users. Re-run this command when deploying the district
+community feature.
+
 ## 2) Run
 
 ```bash
@@ -43,6 +47,11 @@ Auth:
 Users:
 - `GET /api/users/me` (JWT required)
 - `GET /api/users/doctors` (JWT required)
+
+District communities:
+- `GET /api/community/districts` (JWT required; returns all 77 districts and membership state)
+- `POST /api/community/districts/:districtId/membership` (JWT required)
+- `DELETE /api/community/districts/:districtId/membership` (JWT required)
 
 Appointments:
 - `POST /api/appointments` (JWT required)

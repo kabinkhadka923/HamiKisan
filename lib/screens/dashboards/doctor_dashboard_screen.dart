@@ -11,6 +11,7 @@ import '../kisan_doctor/appointments_screen.dart';
 import '../kisan_doctor/consultation_screen.dart';
 import '../kisan_doctor/feedback_screen.dart';
 import '../notifications_screen.dart';
+import '../settings_screen.dart';
 
 class DoctorDashboardScreen extends StatelessWidget {
   const DoctorDashboardScreen({super.key});
@@ -71,6 +72,14 @@ class DoctorDashboardScreen extends StatelessWidget {
                 ),
               );
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.logout),

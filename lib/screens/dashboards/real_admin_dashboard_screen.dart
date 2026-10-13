@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../screens/system_health_screen.dart';
+import '../../screens/settings_screen.dart';
 
 class RealAdminDashboardScreen extends StatelessWidget {
   const RealAdminDashboardScreen({super.key});
@@ -15,6 +16,14 @@ class RealAdminDashboardScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFB71C1C),
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => auth.logout(),

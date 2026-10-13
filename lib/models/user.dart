@@ -10,6 +10,7 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'role': instance.role.name,
       'status': instance.status.name,
       'address': instance.address,
+      'district': instance.district,
       'language': instance.language,
       'farmingCategory': instance.farmingCategory,
       'specialization': instance.specialization,
@@ -36,6 +37,7 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
         orElse: () => UserStatus.pending,
       ),
       address: json['address'] as String?,
+      district: json['district'] as String?,
       language: json['language'] as String?,
       farmingCategory: json['farmingCategory'] as String?,
       specialization: json['specialization'] as String?,
@@ -83,6 +85,7 @@ class User {
   final UserRole role;
   final UserStatus status;
   final String? address;
+  final String? district;
   final String? language;
   final String? farmingCategory;
   final String? specialization; // For doctors
@@ -102,6 +105,7 @@ class User {
     required this.role,
     required this.status,
     this.address,
+    this.district,
     this.language,
     this.farmingCategory,
     this.specialization,
@@ -133,6 +137,7 @@ class User {
     bool? hasSelectedLanguage,
     bool? isOnline,
     String? address,
+    String? district,
     String? language,
     String? farmingCategory,
     String? specialization,
@@ -147,6 +152,7 @@ class User {
       role: role,
       status: status ?? this.status,
       address: address ?? this.address,
+      district: district ?? this.district,
       language: language ?? this.language,
       farmingCategory: farmingCategory ?? this.farmingCategory,
       specialization: specialization ?? this.specialization,

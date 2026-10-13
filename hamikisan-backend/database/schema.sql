@@ -23,6 +23,25 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE users ADD COLUMN IF NOT EXISTS district VARCHAR(100);
+
+CREATE TABLE IF NOT EXISTS community_districts (
+  id VARCHAR(120) PRIMARY KEY,
+  district VARCHAR(100) UNIQUE NOT NULL,
+  name VARCHAR(160) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS community_memberships (
+  district_id VARCHAR(120) NOT NULL REFERENCES community_districts(id) ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (district_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_community_memberships_user
+  ON community_memberships(user_id);
+
 CREATE TABLE IF NOT EXISTS appointments (
   id BIGSERIAL PRIMARY KEY,
   farmer_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

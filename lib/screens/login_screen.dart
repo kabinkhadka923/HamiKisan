@@ -1429,6 +1429,7 @@ class _LoginScreenState extends State<LoginScreen>
         name: _nameController.text.trim(),
         role: _selectedRole,
         password: _passwordController.text.trim(),
+        district: _selectedDistrict,
         address:
             '$_selectedProvince, $_selectedDistrict, ${_localLevelController.text}, Ward ${_wardNoController.text}',
         language: _selectedLanguage,

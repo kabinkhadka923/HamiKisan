@@ -24,7 +24,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<WeatherMarketProvider>().loadWeatherAndMarketData();
-      context.read<PostProvider>().loadPosts();
+      context.read<PostProvider>().loadPosts(
+            userId: context.read<AuthProvider>().currentUser?.id,
+          );
     });
   }
 

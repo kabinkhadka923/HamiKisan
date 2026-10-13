@@ -1,24 +1,39 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/post_model.dart';
 import '../services/post_service.dart';
+import '../utils/logger.dart';
 
 class PostProvider with ChangeNotifier {
   final PostService _postService = PostService();
   List<Post> _posts = [];
+  final Set<String> _pendingLikes = {};
   bool _isLoading = false;
   String? _error;
+  String? _activeUserId;
 
   List<Post> get posts => _posts;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  Future<void> loadPosts() async {
+  Future<void> loadPosts({String? userId}) async {
+    _activeUserId = userId ?? _activeUserId;
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _posts = await _postService.getPosts();
+      final posts = await _postService.getAllPosts();
+      final activeUserId = _activeUserId;
+      final likedIds = activeUserId == null
+          ? <String>{}
+          : (await SharedPreferences.getInstance())
+                  .getStringList('liked_posts_$activeUserId')
+                  ?.toSet() ??
+              <String>{};
+      _posts = posts
+          .map((post) => post.copyWith(isLiked: likedIds.contains(post.id)))
+          .toList();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -28,10 +43,11 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-Future<bool> createPost(Post post) async {
+  Future<bool> createPost(Post post) async {
     try {
       final createdPost = await _postService.createPost(post);
-      _posts.insert(0, createdPost);
+      _posts.removeWhere((item) => item.id == createdPost.id);
+      _posts.insert(0, createdPost.copyWith(isLiked: false));
       notifyListeners();
 
       return true;
@@ -44,24 +60,54 @@ Future<bool> createPost(Post post) async {
 
   Future<void> toggleLike(String postId, String userId) async {
     final postIndex = _posts.indexWhere((p) => p.id == postId);
-    if (postIndex == -1) return;
+    if (postIndex == -1 || userId.isEmpty || _pendingLikes.contains(postId)) {
+      return;
+    }
 
     final post = _posts[postIndex];
-    // Toggle like: if likes > 0, already liked; otherwise like it
     final updatedPost = post.copyWith(
-      likes: post.likes > 0 ? post.likes - 1 : 1,
+      likes: (post.likes + (post.isLiked ? -1 : 1)).clamp(0, 1 << 31).toInt(),
+      isLiked: !post.isLiked,
     );
+    _pendingLikes.add(postId);
     _posts[postIndex] = updatedPost;
+    _activeUserId = userId;
     notifyListeners();
 
     try {
-      await _postService.toggleLike(updatedPost);
+      final prefs = await SharedPreferences.getInstance();
+      final likedIds = prefs.getStringList('liked_posts_$userId')?.toSet() ?? {};
+      if (updatedPost.isLiked) {
+        likedIds.add(postId);
+      } else {
+        likedIds.remove(postId);
+      }
+      await prefs.setStringList('liked_posts_$userId', likedIds.toList());
+      await _postService.toggleLike(post, userId);
     } catch (e) {
-      final revertPost = _posts[postIndex].copyWith(
-        likes: updatedPost.likes,
-      );
-      _posts[postIndex] = revertPost;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final likedIds =
+            prefs.getStringList('liked_posts_$userId')?.toSet() ?? {};
+        if (post.isLiked) {
+          likedIds.add(postId);
+        } else {
+          likedIds.remove(postId);
+        }
+        await prefs.setStringList('liked_posts_$userId', likedIds.toList());
+      } catch (rollbackError) {
+        Logger.warning(
+          'Could not restore saved post-like state',
+          tag: 'Posts',
+          data: rollbackError,
+        );
+      }
+      final currentIndex = _posts.indexWhere((item) => item.id == postId);
+      if (currentIndex >= 0) _posts[currentIndex] = post;
+      _error = e.toString();
       notifyListeners();
+    } finally {
+      _pendingLikes.remove(postId);
     }
   }
 
@@ -73,6 +119,8 @@ Future<bool> createPost(Post post) async {
       notifyListeners();
       return true;
     } catch (e) {
+      _error = e.toString();
+      notifyListeners();
       return false;
     }
   }

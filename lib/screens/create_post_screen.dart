@@ -225,6 +225,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Future<void> _handlePost() async {
     final content = _contentController.text.trim();
 
+    if (_selectedImage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Image uploads are not configured yet. Remove the image to share text only.',
+          ),
+        ),
+      );
+      return;
+    }
+
     if (content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please write something to post')),

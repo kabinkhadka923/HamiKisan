@@ -1,71 +1,221 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../models/user.dart';
 import '../providers/auth_provider.dart';
+import '../providers/kisan_doctor_provider.dart';
 import '../providers/localization_provider.dart';
 import '../widgets/localized_text.dart';
+import 'admin/api_settings_screen.dart';
+import 'edit_profile_screen.dart';
+import 'kisan_doctor/appointments_screen.dart';
+import 'my_posts_screen.dart';
+import 'notifications_screen.dart';
+import 'system_health_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final localizationProvider = context.watch<LocalizationProvider>();
+    final auth = context.watch<AuthProvider>();
+    final user = auth.currentUser;
+
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(title: const LocalizedText('settings')),
+        body: const Center(child: LocalizedText('please_login')),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const LocalizedText('settings'),
         backgroundColor: const Color(0xFF4CAF50),
+        foregroundColor: Colors.white,
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
-          _buildSection(
-            context,
-            title: context.tr('general'),
-            children: [
-              _buildLanguageTile(context, localizationProvider, authProvider),
-              _buildNotificationTile(context),
-            ],
-          ),
-          _buildSection(
-            context,
-            title: context.tr('account'),
-            children: [
-              _buildChangePasswordTile(context),
-              _buildPrivacyTile(context),
-            ],
-          ),
-          _buildSection(
-            context,
-            title: context.tr('about'),
-            children: [
-              _buildAboutTile(context),
-              _buildVersionTile(context),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ElevatedButton(
-              onPressed: () {
-                _showLogoutConfirmation(context, authProvider);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+          _AccountCard(user: user),
+          _section(
+            context.tr('general'),
+            [
+              _SettingsTile(
+                icon: Icons.language,
+                title: context.tr('language'),
+                subtitle: context.watch<LocalizationProvider>().currentLanguage,
+                onTap: () => _showLanguageDialog(context),
               ),
-              child: Text(context.tr('logout')),
+              _SettingsTile(
+                icon: Icons.notifications_outlined,
+                title: context.tr('notifications'),
+                subtitle: 'Manage notification categories and preferences',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          _roleSection(context, user),
+          _section(
+            context.tr('account'),
+            [
+              _SettingsTile(
+                icon: Icons.lock_outline,
+                title: context.tr('change_password'),
+                subtitle: 'Update your sign-in password',
+                onTap: () => _showChangePasswordDialog(context),
+              ),
+              _SettingsTile(
+                icon: Icons.privacy_tip_outlined,
+                title: context.tr('privacy_policy'),
+                subtitle: 'Account data and privacy information',
+                onTap: () => _showPrivacyInformation(context),
+              ),
+            ],
+          ),
+          _section(
+            context.tr('about'),
+            [
+              _SettingsTile(
+                icon: Icons.info_outline,
+                title: context.tr('about_app'),
+                subtitle: 'HamiKisan • Version 1.0.0',
+                onTap: () => showAboutDialog(
+                  context: context,
+                  applicationName: 'HamiKisan',
+                  applicationVersion: '1.0.0',
+                  applicationLegalese: 'Together We Farm',
+                  children: [
+                    const SizedBox(height: 12),
+                    Text(context.tr('about_description')),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+            child: OutlinedButton.icon(
+              onPressed: () => _showLogoutConfirmation(context, auth),
+              icon: const Icon(Icons.logout),
+              label: Text(context.tr('logout')),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red.shade700,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: Colors.red.shade300),
+              ),
             ),
           ),
-          const SizedBox(height: 32),
         ],
       ),
     );
   }
 
-  Widget _buildSection(BuildContext context,
-      {required String title, required List<Widget> children}) {
+  Widget _roleSection(BuildContext context, User user) {
+    switch (user.role) {
+      case UserRole.farmer:
+        return _section(
+          'Farmer',
+          [
+            _SettingsTile(
+              icon: Icons.edit_outlined,
+              title: context.tr('edit_profile'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const EditProfileScreen(),
+                ),
+              ),
+            ),
+            _SettingsTile(
+              icon: Icons.article_outlined,
+              title: context.tr('my_posts'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MyPostsScreen()),
+              ),
+            ),
+          ],
+        );
+      case UserRole.kisanDoctor:
+        return _section(
+          'Doctor',
+          [
+            _SettingsTile(
+              icon: Icons.event_available_outlined,
+              title: 'Appointments',
+              subtitle: 'View and manage consultation requests',
+              onTap: () => _openAppointments(context, user),
+            ),
+          ],
+        );
+      case UserRole.kisanAdmin:
+        return _section(
+          'Administrator',
+          const [
+            ListTile(
+              leading: Icon(Icons.admin_panel_settings_outlined),
+              title: Text('Administrator access'),
+              subtitle: Text(
+                'Administrative actions are available from the admin dashboard.',
+              ),
+            ),
+          ],
+        );
+      case UserRole.superAdmin:
+        return _section(
+          'Super Admin',
+          [
+            _SettingsTile(
+              icon: Icons.api_outlined,
+              title: 'API configuration',
+              subtitle: 'Configure external service keys and URLs',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ApiSettingsScreen()),
+              ),
+            ),
+            _SettingsTile(
+              icon: Icons.monitor_heart_outlined,
+              title: 'System health',
+              subtitle: 'Check configured service status',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SystemHealthScreen()),
+              ),
+            ),
+          ],
+        );
+    }
+  }
+
+  Future<void> _openAppointments(BuildContext context, User doctor) async {
+    final provider = context.read<KisanDoctorProvider>();
+    try {
+      await provider.initialize(doctor.id);
+      if (!context.mounted) return;
+      if (provider.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Could not load appointments: ${provider.error}')),
+        );
+        return;
+      }
+      provider.clearSelection();
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => AppointmentsScreen(doctor: doctor),
+        ),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load appointments: $error')),
+      );
+    }
+  }
+
+  Widget _section(String title, List<Widget> children) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -74,258 +224,301 @@ class SettingsScreen extends StatelessWidget {
           child: Text(
             title,
             style: const TextStyle(
+              color: Colors.grey,
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
             ),
           ),
         ),
-        ...children,
-        const Divider(height: 1),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12),
+          clipBehavior: Clip.antiAlias,
+          child: Column(children: children),
+        ),
       ],
     );
   }
 
-  Widget _buildLanguageTile(BuildContext context,
-      LocalizationProvider localizationProvider, AuthProvider authProvider) {
-    return ListTile(
-      leading: const Icon(Icons.language, color: Color(0xFF4CAF50)),
-      title: Text(context.tr('language')),
-      subtitle: Text(localizationProvider.currentLanguage),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () =>
-          _showLanguageDialog(context, localizationProvider, authProvider),
-    );
-  }
-
-  Widget _buildNotificationTile(BuildContext context) {
-    return SwitchListTile(
-      secondary: const Icon(Icons.notifications, color: Color(0xFF4CAF50)),
-      title: Text(context.tr('notifications')),
-      subtitle: Text(context.tr('receive_updates')),
-      value: true,
-      onChanged: (bool value) {
-        // TODO: Implement notification toggle
-      },
-      activeThumbColor: const Color(0xFF4CAF50),
-    );
-  }
-
-  Widget _buildChangePasswordTile(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.lock, color: Color(0xFF4CAF50)),
-      title: Text(context.tr('change_password')),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () {
-        _showChangePasswordDialog(context);
-      },
-    );
-  }
-
-  Widget _buildPrivacyTile(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.privacy_tip, color: Color(0xFF4CAF50)),
-      title: Text(context.tr('privacy_policy')),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () {
-        // TODO: Show privacy policy
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('coming_soon'))),
-        );
-      },
-    );
-  }
-
-  Widget _buildAboutTile(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.info, color: Color(0xFF4CAF50)),
-      title: Text(context.tr('about_app')),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () {
-        _showAboutDialog(context);
-      },
-    );
-  }
-
-  Widget _buildVersionTile(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.update, color: Color(0xFF4CAF50)),
-      title: Text(context.tr('version')),
-      subtitle: const Text('1.0.0'),
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context,
-      LocalizationProvider localizationProvider, AuthProvider authProvider) {
-    showDialog(
+  Future<void> _showLanguageDialog(BuildContext context) async {
+    final localization = context.read<LocalizationProvider>();
+    final auth = context.read<AuthProvider>();
+    final selectedLanguage = await showDialog<String>(
       context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(context.tr('choose_language')),
-          content: RadioGroup<String>(
-            groupValue: localizationProvider.currentLanguage,
-            onChanged: (value) async {
-              if (value == null) return;
-              await localizationProvider.setLanguage(value);
-              await authProvider.updateLanguage(value);
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RadioListTile<String>(
-                  title: Text('English'),
-                  value: 'English',
-                  activeColor: Color(0xFF4CAF50),
-                ),
-                RadioListTile<String>(
-                  title: Text('नेपाली (Nepali)'),
-                  value: 'Nepali',
-                  activeColor: Color(0xFF4CAF50),
-                ),
-              ],
-            ),
+      builder: (dialogContext) => SimpleDialog(
+        title: Text(context.tr('choose_language')),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(dialogContext, 'English'),
+            child: const Text('English'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(context.tr('cancel')),
-            ),
-          ],
-        );
-      },
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(dialogContext, 'Nepali'),
+            child: const Text('नेपाली (Nepali)'),
+          ),
+        ],
+      ),
     );
+
+    if (selectedLanguage == null || !context.mounted) return;
+    try {
+      await localization.setLanguage(selectedLanguage);
+      await auth.updateLanguage(selectedLanguage);
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save language preference: $error')),
+      );
+    }
   }
 
-  void _showChangePasswordDialog(BuildContext context) {
-    final currentPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
+  Future<void> _showChangePasswordDialog(BuildContext context) async {
+    final formKey = GlobalKey<FormState>();
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    final confirmController = TextEditingController();
+    var isSaving = false;
+    var isObscured = true;
+    final auth = context.read<AuthProvider>();
 
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(context.tr('change_password')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: currentPasswordController,
-                decoration: InputDecoration(
-                  labelText: context.tr('current_password'),
-                  border: const OutlineInputBorder(),
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (dialogContext, setDialogState) => AlertDialog(
+            title: Text(context.tr('change_password')),
+            content: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _passwordField(
+                      controller: currentController,
+                      label: context.tr('current_password'),
+                      obscureText: isObscured,
+                      toggleObscured: () =>
+                          setDialogState(() => isObscured = !isObscured),
+                    ),
+                    const SizedBox(height: 12),
+                    _passwordField(
+                      controller: newController,
+                      label: context.tr('new_password'),
+                      obscureText: isObscured,
+                      validator: (value) {
+                        if (value == null || value.length < 8) {
+                          return 'Use at least 8 characters';
+                        }
+                        if (value == currentController.text) {
+                          return 'Choose a password different from the current one';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _passwordField(
+                      controller: confirmController,
+                      label: context.tr('confirm_password'),
+                      obscureText: isObscured,
+                      validator: (value) => value != newController.text
+                          ? 'Passwords do not match'
+                          : null,
+                    ),
+                  ],
                 ),
-                obscureText: true,
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: newPasswordController,
-                decoration: InputDecoration(
-                  labelText: context.tr('new_password'),
-                  border: const OutlineInputBorder(),
-                ),
-                obscureText: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSaving ? null : () => Navigator.pop(dialogContext),
+                child: Text(context.tr('cancel')),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: confirmPasswordController,
-                decoration: InputDecoration(
-                  labelText: context.tr('confirm_password'),
-                  border: const OutlineInputBorder(),
-                ),
-                obscureText: true,
+              FilledButton(
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        if (!(formKey.currentState?.validate() ?? false)) {
+                          return;
+                        }
+                        setDialogState(() => isSaving = true);
+                        final success = await auth.changePassword(
+                          currentPassword: currentController.text,
+                          newPassword: newController.text,
+                        );
+                        if (!dialogContext.mounted) return;
+                        if (success) {
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(context.tr('password_changed')),
+                            ),
+                          );
+                        } else {
+                          setDialogState(() => isSaving = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                auth.error ??
+                                    'Password could not be changed. Contact support or use account recovery.',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                child: isSaving
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(context.tr('save')),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(context.tr('cancel')),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // TODO: Implement password change
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(context.tr('password_changed'))),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+        ),
+      );
+    } finally {
+      currentController.dispose();
+      newController.dispose();
+      confirmController.dispose();
+    }
+  }
+
+  Widget _passwordField({
+    required TextEditingController controller,
+    required String label,
+    required bool obscureText,
+    String? Function(String?)? validator,
+    VoidCallback? toggleObscured,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      validator: validator ??
+          (value) => value == null || value.isEmpty
+              ? 'Enter your current password'
+              : null,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        suffixIcon: toggleObscured == null
+            ? null
+            : IconButton(
+                onPressed: toggleObscured,
+                icon: Icon(
+                  obscureText ? Icons.visibility : Icons.visibility_off,
+                ),
               ),
-              child: Text(context.tr('save')),
-            ),
-          ],
-        );
-      },
+      ),
     );
   }
 
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
+  void _showPrivacyInformation(BuildContext context) {
+    showDialog<void>(
       context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(context.tr('about_app')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'HamiKisan',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                context.tr('app_tagline'),
-                style:
-                    const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-              ),
-              const SizedBox(height: 16),
-              Text(context.tr('about_description')),
-              const SizedBox(height: 16),
-              const Text('Version: 1.0.0'),
-              const Text('© 2025 HamiKisan Team'),
-            ],
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.tr('privacy_policy')),
+        content: const SingleChildScrollView(
+          child: Text(
+            'HamiKisan uses your account information to provide the features '
+            'available for your role. Language and notification preferences '
+            'are stored on this device. Posts and notification records may be '
+            'stored locally and synchronized when the configured service is '
+            'available. Do not share your password or verification codes. '
+            'For account data requests, contact the HamiKisan administrator.',
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(context.tr('close')),
-            ),
-          ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.tr('close')),
+          ),
+        ],
+      ),
     );
   }
 
-  void _showLogoutConfirmation(
-      BuildContext context, AuthProvider authProvider) {
-    showDialog(
+  Future<void> _showLogoutConfirmation(
+    BuildContext context,
+    AuthProvider auth,
+  ) async {
+    final shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(context.tr('logout')),
-          content: Text(context.tr('logout_confirmation')),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(context.tr('cancel')),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                authProvider.logout();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
-              child: Text(context.tr('logout')),
-            ),
-          ],
-        );
-      },
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.tr('logout')),
+        content: Text(context.tr('logout_confirmation')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.tr('cancel')),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(context.tr('logout')),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) await auth.logout();
+  }
+}
+
+class _AccountCard extends StatelessWidget {
+  final User user;
+
+  const _AccountCard({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary =
+        user.phoneNumber?.isNotEmpty == true ? user.phoneNumber! : user.email;
+
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.12),
+          foregroundColor: const Color(0xFF2E7D32),
+          child: Text(
+            user.name.isNotEmpty
+                ? user.name.characters.first.toUpperCase()
+                : '?',
+          ),
+        ),
+        title: Text(
+          user.name.isEmpty ? 'HamiKisan account' : user.name,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle:
+            Text('$secondary\n${user.role.displayName} • ${user.status.name}'),
+        isThreeLine: true,
+      ),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: const Color(0xFF4CAF50)),
+      title: Text(title),
+      subtitle: subtitle == null ? null : Text(subtitle!),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
   }
 }

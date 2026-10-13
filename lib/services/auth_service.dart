@@ -7,6 +7,7 @@ import '../services/security_service.dart';
 import '../services/web_auth_service.dart';
 import '../services/backend_config.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import '../data/nepal_districts.dart';
 import '../utils/logger.dart';
 
 class AuthService {
@@ -63,7 +64,9 @@ class AuthService {
       'profilePicture': rawUser['profilePicture'],
       'role': appRole,
       'status': (rawUser['status'] ?? 'approved').toString(),
-      'address': rawUser['address'],
+      'address': rawUser['address'] ?? rawUser['location'],
+      'district': rawUser['district'] ??
+          findNepalDistrict(rawUser['address'] ?? rawUser['location']),
       'language': rawUser['language'],
       'farmingCategory': rawUser['farmingCategory'],
       'specialization': rawUser['specialization'],
@@ -197,6 +200,7 @@ class AuthService {
     required UserRole role,
     String? password,
     String? address,
+    String? district,
     String? language,
     String? farmingCategory,
     String? specialization,
@@ -210,6 +214,7 @@ class AuthService {
         role: role,
         password: password ?? 'user123',
         address: address,
+        district: district,
         language: language,
         farmingCategory: farmingCategory,
         specialization: specialization,
@@ -241,13 +246,19 @@ class AuthService {
           'name': name,
           'role': backendRole,
           'password': password,
+          if (district != null) 'district': district,
+          if (address != null) 'location': address,
         }),
       );
 
       if (response.statusCode == 201) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         await _saveAuthToken(data['token']?.toString());
-        return _normalizeBackendUser(data['user'] as Map<String, dynamic>);
+        return {
+          ..._normalizeBackendUser(data['user'] as Map<String, dynamic>),
+          if (district != null) 'district': district,
+          if (address != null) 'address': address,
+        };
       } else {
         final errorData = json.decode(response.body);
         throw Exception(errorData['error'] ?? 'Registration failed');
@@ -377,7 +388,32 @@ class AuthService {
 
   Future<bool> changePassword(
       String userId, String currentPassword, String newPassword) async {
-    return newPassword.length >= 6;
+    if (newPassword.length < 8) return false;
+
+    if (!_useLocalDb) {
+      throw UnsupportedError(
+        'Password changes are not configured for the current backend.',
+      );
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final usersJson = prefs.getString(_usersKey);
+    if (usersJson == null) return false;
+
+    final users = json.decode(usersJson) as Map<String, dynamic>;
+    final storedUser = users[userId];
+    if (storedUser is! Map<String, dynamic>) return false;
+
+    final storedHash = storedUser['password_hash'];
+    if (storedHash is! String ||
+        !_verifyPassword(currentPassword, storedHash)) {
+      return false;
+    }
+
+    storedUser['password_hash'] = _hashPassword(newPassword);
+    users[userId] = storedUser;
+    await prefs.setString(_usersKey, json.encode(users));
+    return true;
   }
 
   Future<void> logout() async {
@@ -508,6 +544,7 @@ class AuthService {
     required UserRole role,
     required String password,
     String? address,
+    String? district,
     String? language,
     String? farmingCategory,
     String? specialization,
@@ -581,6 +618,7 @@ class AuthService {
         'password_hash': _hashPassword(password),
         'profilePicture': null,
         'address': cleanAddress,
+        'district': district,
         'language': language ?? 'English',
         'farmingCategory': farmingCategory ??
             (role == UserRole.farmer ? 'General Farming' : null),

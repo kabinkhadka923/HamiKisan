@@ -7,6 +7,7 @@ class CommunityProvider with ChangeNotifier {
 
   // Current state
   List<CommunityGroup> _userGroups = [];
+  List<CommunityGroup> _districtGroups = [];
   CommunityGroup? _selectedGroup;
   List<CommunityNotice> _notices = [];
   List<CommunityMarketPrice> _marketPrices = [];
@@ -19,6 +20,7 @@ class CommunityProvider with ChangeNotifier {
 
   // Getters
   List<CommunityGroup> get userGroups => _userGroups;
+  List<CommunityGroup> get districtGroups => _districtGroups;
   CommunityGroup? get selectedGroup => _selectedGroup;
   List<CommunityNotice> get notices => _notices;
   List<CommunityNotice> get pinnedNotices =>
@@ -34,16 +36,64 @@ class CommunityProvider with ChangeNotifier {
 
   // ==================== INITIALIZATION ====================
 
-  Future<void> initialize(String userId) async {
+  Future<void> initialize() async {
     _setLoading(true);
     try {
-      _userGroups = await _communityService.getUserGroups(userId);
+      _districtGroups = await _communityService.getDistrictGroups();
+      _userGroups = _districtGroups.where((group) => group.isMember).toList();
       if (_userGroups.isNotEmpty) {
-        await selectGroup(_userGroups.first.id);
+        _selectedGroup = _userGroups.first;
+        await _loadGroupData(_selectedGroup!.id);
+      } else {
+        _selectedGroup = null;
       }
       _clearError();
     } catch (e) {
-      _setError('Failed to load groups: $e');
+      _setError('Failed to load district communities: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> joinDistrict(String district) async {
+    _setLoading(true);
+    try {
+      await _communityService.joinDistrictGroup(district);
+      _districtGroups = await _communityService.getDistrictGroups();
+      _userGroups = _districtGroups.where((group) => group.isMember).toList();
+      final joinedGroupId =
+          _districtGroups.firstWhere((group) => group.location == district).id;
+      _selectedGroup = _userGroups.firstWhere(
+        (group) => group.id == joinedGroupId,
+      );
+      await _loadGroupData(joinedGroupId);
+      _clearError();
+    } catch (e) {
+      _setError('Could not join $district community: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> leaveDistrict(String groupId) async {
+    _setLoading(true);
+    try {
+      await _communityService.leaveDistrictGroup(groupId);
+      _districtGroups = await _communityService.getDistrictGroups();
+      _userGroups = _districtGroups.where((group) => group.isMember).toList();
+      if (_selectedGroup?.id == groupId) {
+        _selectedGroup = _userGroups.isEmpty ? null : _userGroups.first;
+        if (_selectedGroup != null) {
+          await _loadGroupData(_selectedGroup!.id);
+        } else {
+          _clearGroupData();
+        }
+      }
+      _clearError();
+    } catch (e) {
+      _setError('Could not leave community: $e');
+      rethrow;
     } finally {
       _setLoading(false);
     }
@@ -56,12 +106,7 @@ class CommunityProvider with ChangeNotifier {
     try {
       _selectedGroup = await _communityService.getGroupById(groupId);
       if (_selectedGroup != null) {
-        await Future.wait([
-          loadNotices(groupId),
-          loadMarketPrices(groupId),
-          loadMessages(groupId),
-          loadGroupStats(groupId),
-        ]);
+        await _loadGroupData(groupId);
       }
       _clearError();
     } catch (e) {
@@ -69,6 +114,23 @@ class CommunityProvider with ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<void> _loadGroupData(String groupId) async {
+    await Future.wait([
+      loadNotices(groupId),
+      loadMarketPrices(groupId),
+      loadMessages(groupId),
+      loadGroupStats(groupId),
+    ]);
+  }
+
+  void _clearGroupData() {
+    _notices = [];
+    _marketPrices = [];
+    _feedback = [];
+    _messages = [];
+    _groupStats = {};
   }
 
   Future<bool> isGroupLeader(String userId, String groupId) async {

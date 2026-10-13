@@ -13,6 +13,7 @@ import '../../screens/post_detail_screen.dart';
 import '../../screens/profile_screen.dart';
 import '../consultation_contacts_screen.dart';
 import '../../screens/create_post_screen.dart';
+import '../../screens/farming_calendar_screen.dart';
 import '../../screens/marketplace/sell_product_screen.dart';
 import '../../widgets/incoming_call_listener.dart';
 
@@ -185,153 +186,9 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
   }
 
   void _showFarmingCalendar(BuildContext context) {
-    final homeState = context.findAncestorStateOfType<_HomeContentState>();
-    final forecast = homeState?._forecast ?? [];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFF4CAF50),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today,
-                          color: Colors.white, size: 24),
-                      const SizedBox(width: 12),
-                      const Text('Farming Calendar',
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white)),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  if (forecast.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 80,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: forecast.length,
-                        itemBuilder: (context, index) {
-                          final day = forecast[index];
-                          final dayName = [
-                            'Mon',
-                            'Tue',
-                            'Wed',
-                            'Thu',
-                            'Fri',
-                            'Sat',
-                            'Sun'
-                          ][index % 7];
-                          return Container(
-                            width: 60,
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(dayName,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        fontSize: 11)),
-                                const SizedBox(height: 4),
-                                Icon(_getWeatherIcon(day.weatherType),
-                                    size: 20, color: Colors.white),
-                                const SizedBox(height: 4),
-                                Text('${day.temperature.toStringAsFixed(0)}°C',
-                                    style: const TextStyle(
-                                        fontSize: 10, color: Colors.white)),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.all(20),
-                children: [
-                  _buildCalendarTask(Icons.water_drop, 'Water tomatoes',
-                      'Today, 6:00 AM', Colors.blue),
-                  _buildCalendarTask(Icons.science, 'Apply fertilizer',
-                      'Tomorrow', Colors.green),
-                  _buildCalendarTask(
-                      Icons.cut, 'Harvest wheat', 'In 3 days', Colors.orange),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _getWeatherIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'sunny':
-        return Icons.wb_sunny;
-      case 'rainy':
-        return Icons.water_drop;
-      case 'cloudy':
-        return Icons.cloud;
-      case 'partly cloudy':
-        return Icons.wb_cloudy;
-      default:
-        return Icons.wb_cloudy;
-    }
-  }
-
-  Widget _buildCalendarTask(
-      IconData icon, String task, String time, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(task, style: const TextStyle(fontWeight: FontWeight.w500)),
-                Text(time,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-              ],
-            ),
-          ),
-          Checkbox(value: false, onChanged: (v) {}),
-        ],
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const FarmingCalendarScreen(),
       ),
     );
   }
@@ -421,7 +278,6 @@ class _HomeContentState extends State<_HomeContent>
   final _weatherService = WeatherService();
   final _marketService = MarketService();
   WeatherData? _weather;
-  List<WeatherData> _forecast = [];
   List<MarketPrice> _marketPrices = [];
   bool _loading = true;
   late AnimationController _animationController;
@@ -452,8 +308,6 @@ class _HomeContentState extends State<_HomeContent>
     final location = await LocationService().getCurrentLocation();
     final weather =
         await _weatherService.getCurrentWeather(location.$1, location.$2);
-    final forecast =
-        await _weatherService.getWeeklyForecast(location.$1, location.$2);
     final prices = await _marketService.getDailyMarketPrices();
 
     if (mounted) {
@@ -462,7 +316,6 @@ class _HomeContentState extends State<_HomeContent>
 
     setState(() {
       _weather = weather;
-      _forecast = forecast;
       _marketPrices = prices;
       _loading = false;
     });

@@ -1,5 +1,11 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
+import '../data/nepal_districts.dart';
 import '../models/community_models.dart';
+import 'auth_service.dart';
+import 'backend_config.dart';
 import 'database.dart';
 
 class CommunityService {
@@ -11,11 +17,14 @@ class CommunityService {
   Future<List<CommunityGroup>> getUserGroups(String userId) async {
     final db = await _db.database;
     final results = await db.rawQuery('''
-      SELECT g.*, u.name as leader_name, u.profile_picture as leader_profile_picture
+      SELECT g.*, u.name as leader_name, u.profile_picture as leader_profile_picture,
+        (SELECT COUNT(*) FROM community_members active_members
+         WHERE active_members.group_id = g.id AND active_members.is_active = 1)
+         AS member_count
       FROM community_groups g
       LEFT JOIN users u ON g.leader_id = u.id
       WHERE g.id IN (
-        SELECT group_id FROM community_members WHERE user_id = ?
+        SELECT group_id FROM community_members WHERE user_id = ? AND is_active = 1
       )
       AND g.is_active = 1
       ORDER BY 
@@ -28,6 +37,111 @@ class CommunityService {
     ''', [userId]);
 
     return results.map((json) => CommunityGroup.fromJson(json)).toList();
+  }
+
+  /// Fetches canonical districts and this user's membership from the backend.
+  Future<List<CommunityGroup>> getDistrictGroups() async {
+    final response = await http
+        .get(
+          BackendConfig.uri('/api/community/districts'),
+          headers: await _authorizedHeaders(),
+        )
+        .timeout(const Duration(seconds: 15));
+    if (response.statusCode != 200) {
+      throw Exception(_responseError(response, 'Could not load communities'));
+    }
+    final body = json.decode(response.body) as Map<String, dynamic>;
+    final rawDistricts = body['districts'];
+    if (rawDistricts is! List) {
+      throw const FormatException('Community API returned an invalid district list');
+    }
+    final groups = rawDistricts
+        .whereType<Map<String, dynamic>>()
+        .map(CommunityGroup.fromJson)
+        .toList();
+    await _cacheDistrictGroups(groups);
+    return groups;
+  }
+
+  Future<void> joinDistrictGroup(String district) async {
+    final normalizedDistrict = findNepalDistrict(district);
+    if (normalizedDistrict == null) {
+      throw ArgumentError.value(district, 'district', 'Unknown Nepal district');
+    }
+
+    final response = await http
+        .post(
+          BackendConfig.uri(
+            '/api/community/districts/${districtGroupId(normalizedDistrict)}/membership',
+          ),
+          headers: await _authorizedHeaders(),
+        )
+        .timeout(const Duration(seconds: 15));
+    if (response.statusCode != 200) {
+      throw Exception(_responseError(response, 'Could not join community'));
+    }
+  }
+
+  Future<void> leaveDistrictGroup(String groupId) async {
+    if (!groupId.startsWith('district_')) {
+      throw ArgumentError.value(groupId, 'groupId', 'Not a district community');
+    }
+    final response = await http
+        .delete(
+          BackendConfig.uri(
+            '/api/community/districts/$groupId/membership',
+          ),
+          headers: await _authorizedHeaders(),
+        )
+        .timeout(const Duration(seconds: 15));
+    if (response.statusCode != 200) {
+      throw Exception(_responseError(response, 'Could not leave community'));
+    }
+  }
+
+  Future<Map<String, String>> _authorizedHeaders() async {
+    final token = await AuthService.getAuthToken();
+    if (token == null || token.isEmpty) {
+      throw StateError('Sign in to manage district communities.');
+    }
+    return {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+  String _responseError(http.Response response, String fallback) {
+    try {
+      final body = json.decode(response.body) as Map<String, dynamic>;
+      final message = body['error']?.toString();
+      if (message != null && message.isNotEmpty) return message;
+    } on FormatException {
+      // Use the status-based message when the server response is not JSON.
+    }
+    return '$fallback (HTTP ${response.statusCode})';
+  }
+
+  Future<void> _cacheDistrictGroups(List<CommunityGroup> groups) async {
+    final db = await _db.database;
+    final batch = db.batch();
+    for (final group in groups) {
+      batch.insert(
+        'community_groups',
+        {
+          'id': group.id,
+          'name': group.name,
+          'type': 'district',
+          'location': group.location,
+          'leader_id': 'user_superadmin',
+          'member_count': group.memberCount,
+          'created_at': group.createdAt.millisecondsSinceEpoch,
+          'is_active': group.isActive ? 1 : 0,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
   }
 
   /// Get group by ID

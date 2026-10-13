@@ -4,6 +4,7 @@ import '../providers/community_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/localized_text.dart';
 import '../models/community_models.dart';
+import '../data/nepal_districts.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -24,13 +25,15 @@ class _CommunityScreenState extends State<CommunityScreen>
     _initializeCommunity();
   }
 
-  Future<void> _initializeCommunity() async {
+  Future<void> _initializeCommunity({bool force = false}) async {
     final authProvider = context.read<AuthProvider>();
     final communityProvider = context.read<CommunityProvider>();
+    final user = authProvider.currentUser;
 
-    if (authProvider.currentUser != null && !_isInitialized) {
-      await communityProvider.initialize(authProvider.currentUser!.id);
-      setState(() => _isInitialized = true);
+    if (user != null && (force || !_isInitialized)) {
+      if (force && mounted) setState(() => _isInitialized = false);
+      await communityProvider.initialize();
+      if (mounted) setState(() => _isInitialized = true);
     }
   }
 
@@ -46,6 +49,14 @@ class _CommunityScreenState extends State<CommunityScreen>
       appBar: AppBar(
         title: const LocalizedText('community'),
         backgroundColor: const Color(0xFF4CAF50),
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: 'Join or leave district communities',
+            onPressed: () => _showDistrictCommunities(context),
+            icon: const Icon(Icons.group_add_outlined),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -73,7 +84,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   Text(provider.error!),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: _initializeCommunity,
+                    onPressed: () => _initializeCommunity(force: true),
                     child: const Text('Retry'),
                   ),
                 ],
@@ -81,25 +92,8 @@ class _CommunityScreenState extends State<CommunityScreen>
             );
           }
 
-          if (provider.userGroups.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.group_off, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'No community groups found',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Please contact your local administrator',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
-              ),
-            );
+          if (provider.userGroups.isEmpty || provider.selectedGroup == null) {
+            return _buildNoCommunities(context, provider);
           }
 
           return Column(
@@ -119,6 +113,39 @@ class _CommunityScreenState extends State<CommunityScreen>
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildNoCommunities(BuildContext context, CommunityProvider provider) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.location_city, size: 64, color: Color(0xFF4CAF50)),
+            const SizedBox(height: 16),
+            const Text(
+              'Join your district community',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Your registered district community is added automatically. '
+              'You can also join or leave any district community at any time.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: () => _showDistrictCommunities(context),
+              icon: const Icon(Icons.groups_outlined),
+              label:
+                  Text('Browse ${nepalDistricts.length} district communities'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -170,9 +197,185 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ))
                   .toList(),
             ),
+          IconButton(
+            tooltip: 'Join or leave district communities',
+            onPressed: () => _showDistrictCommunities(context),
+            icon: const Icon(Icons.add_circle_outline),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _showDistrictCommunities(BuildContext context) async {
+    final user = context.read<AuthProvider>().currentUser;
+    if (user == null) return;
+    final provider = context.read<CommunityProvider>();
+    final searchController = TextEditingController();
+    String? busyGroupId;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) {
+          final query = searchController.text.trim().toLowerCase();
+          final groups = provider.districtGroups.where((group) {
+            return query.isEmpty ||
+                group.location.toLowerCase().contains(query);
+          }).toList();
+          final joinedIds =
+              provider.userGroups.map((group) => group.id).toSet();
+          final registeredDistrict =
+              findNepalDistrict(user.district ?? user.address);
+
+          return SafeArea(
+            child: SizedBox(
+              height: MediaQuery.sizeOf(sheetContext).height * 0.8,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'District communities',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          registeredDistrict == null
+                              ? 'Join and leave communities whenever you like.'
+                              : 'Your registered district is $registeredDistrict.',
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Search districts',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: searchController.text.isEmpty
+                                ? null
+                                : IconButton(
+                                    onPressed: () {
+                                      searchController.clear();
+                                      setSheetState(() {});
+                                    },
+                                    icon: const Icon(Icons.clear),
+                                  ),
+                            border: const OutlineInputBorder(),
+                          ),
+                          onChanged: (_) => setSheetState(() {}),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: groups.length,
+                      itemBuilder: (context, index) {
+                        final group = groups[index];
+                        final isJoined = joinedIds.contains(group.id);
+                        final isRegisteredDistrict =
+                            group.location == registeredDistrict;
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor:
+                                const Color(0xFF4CAF50).withValues(alpha: 0.12),
+                            child: const Icon(
+                              Icons.location_on_outlined,
+                              color: Color(0xFF2E7D32),
+                            ),
+                          ),
+                          title: Text(group.location),
+                          subtitle: Text(
+                            '${group.memberCount} members'
+                            '${isRegisteredDistrict ? ' • Your registered district' : ''}',
+                          ),
+                          trailing: isJoined
+                              ? TextButton(
+                                  onPressed: provider.isLoading ||
+                                          busyGroupId == group.id
+                                      ? null
+                                      : () async {
+                                          setSheetState(
+                                              () => busyGroupId = group.id);
+                                          try {
+                                            await provider.leaveDistrict(
+                                              group.id,
+                                            );
+                                            if (sheetContext.mounted) {
+                                              setSheetState(() {});
+                                            }
+                                          } catch (error) {
+                                            if (!sheetContext.mounted) return;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Could not leave community: $error',
+                                                ),
+                                              ),
+                                            );
+                                          } finally {
+                                            if (sheetContext.mounted) {
+                                              setSheetState(
+                                                  () => busyGroupId = null);
+                                            }
+                                          }
+                                        },
+                                  child: const Text('Leave'),
+                                )
+                              : FilledButton.tonal(
+                                  onPressed: provider.isLoading ||
+                                          busyGroupId == group.id
+                                      ? null
+                                      : () async {
+                                          setSheetState(
+                                              () => busyGroupId = group.id);
+                                          try {
+                                            await provider.joinDistrict(
+                                              group.location,
+                                            );
+                                            if (sheetContext.mounted) {
+                                              setSheetState(() {});
+                                            }
+                                          } catch (error) {
+                                            if (!sheetContext.mounted) return;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Could not join community: $error',
+                                                ),
+                                              ),
+                                            );
+                                          } finally {
+                                            if (sheetContext.mounted) {
+                                              setSheetState(
+                                                  () => busyGroupId = null);
+                                            }
+                                          }
+                                        },
+                                  child: const Text('Join'),
+                                ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    searchController.dispose();
   }
 
   Widget _buildNoticesTab(CommunityProvider provider) {
@@ -269,7 +472,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                     Chip(
                       label: Text(price.category),
-                      backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                      backgroundColor:
+                          const Color(0xFF4CAF50).withValues(alpha: 0.2),
                     ),
                   ],
                 ),

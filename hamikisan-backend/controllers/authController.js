@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { signToken } = require('../utils/jwt');
+const { districtId, normalizeDistrict } = require('../constants/nepalDistricts');
 
 const DB_ROLES = new Set(['farmer', 'doctor', 'admin']);
 
@@ -26,6 +27,8 @@ const sanitizeUser = (user) => ({
   email: user.email,
   username: user.username || null,
   phoneNumber: user.phone || null,
+  address: user.location || null,
+  district: user.district || null,
   role: mapDbRoleToAppRole(user.role),
   status: user.status || 'approved',
   permissions: user.permissions || null,
@@ -45,6 +48,8 @@ const register = async (req, res) => {
     username,
     phoneNumber,
     phone_number: phoneNumberSnake,
+    location,
+    district,
   } = req.body;
 
   if (!name || !email || !password) {
@@ -58,6 +63,11 @@ const register = async (req, res) => {
   const dbRole = normalizeRole(role);
   if (!dbRole || !DB_ROLES.has(dbRole)) {
     return res.status(400).json({ error: 'Invalid role.' });
+  }
+
+  const normalizedDistrict = normalizeDistrict(district);
+  if (!normalizedDistrict) {
+    return res.status(400).json({ error: 'A valid Nepal district is required.' });
   }
 
   const normalizedEmail = email.toLowerCase().trim();
@@ -86,14 +96,38 @@ const register = async (req, res) => {
     dbRole === 'admin' ? ['manage_users', 'manage_content', 'manage_products', 'manage_orders'] : null;
 
   const result = await db.query(
-    `INSERT INTO users (name, email, password_hash, role, username, phone, status, permissions)
-     VALUES ($1, $2, $3, $4, $5, $6, 'approved', $7)
-     RETURNING id, name, email, role, username, phone, status, permissions,
+    `INSERT INTO users
+       (name, email, password_hash, role, username, phone, location, district, status, permissions)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'approved', $9)
+     RETURNING id, name, email, role, username, phone, location, district, status, permissions,
                is_verified, has_selected_language, last_login_at, created_at`,
-    [name.trim(), normalizedEmail, passwordHash, dbRole, normalizedUsername, normalizedPhone, permissions],
+    [
+      name.trim(),
+      normalizedEmail,
+      passwordHash,
+      dbRole,
+      normalizedUsername,
+      normalizedPhone,
+      typeof location === 'string' ? location.trim() || null : null,
+      normalizedDistrict,
+      permissions,
+    ],
   );
 
   const user = result.rows[0];
+  const communityId = districtId(normalizedDistrict);
+  await db.query(
+    `INSERT INTO community_districts (id, district, name)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (id) DO NOTHING`,
+    [communityId, normalizedDistrict, `${normalizedDistrict} District Community`],
+  );
+  await db.query(
+    `INSERT INTO community_memberships (district_id, user_id)
+     VALUES ($1, $2)
+     ON CONFLICT (district_id, user_id) DO NOTHING`,
+    [communityId, user.id],
+  );
   const token = signToken(user);
   return res.status(201).json({ user: sanitizeUser(user), token });
 };
@@ -123,7 +157,7 @@ const login = async (req, res) => {
   }
 
   const result = await db.query(
-    `SELECT id, name, email, role, username, phone, status, permissions,
+    `SELECT id, name, email, role, username, phone, location, district, status, permissions,
             is_verified, has_selected_language, last_login_at, created_at, password_hash
      FROM users
      WHERE phone = ANY($1::text[])

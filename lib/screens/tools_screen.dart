@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'farming_calendar_screen.dart';
+
 class ToolsScreen extends StatefulWidget {
   const ToolsScreen({super.key});
 
@@ -10,7 +12,8 @@ class ToolsScreen extends StatefulWidget {
 class _ToolsScreenState extends State<ToolsScreen> {
   final TextEditingController _landAreaController = TextEditingController();
   final TextEditingController _cropTypeController = TextEditingController();
-  final TextEditingController _groundWaterLevelController = TextEditingController();
+  final TextEditingController _groundWaterLevelController =
+      TextEditingController();
 
   String _selectedCalcType = 'fertilizer';
   String _selectedSoilType = 'loam';
@@ -130,9 +133,9 @@ class _ToolsScreenState extends State<ToolsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildToolHeader('Fertilizer Calculator', Icons.calculate, Colors.green),
+          _buildToolHeader(
+              'Fertilizer Calculator', Icons.calculate, Colors.green),
           const SizedBox(height: 20),
-
           TextField(
             controller: _landAreaController,
             keyboardType: TextInputType.number,
@@ -143,7 +146,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
           DropdownButtonFormField<String>(
             initialValue: _selectedCropType,
             decoration: const InputDecoration(
@@ -159,7 +161,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
             onChanged: (value) => setState(() => _selectedCropType = value!),
           ),
           const SizedBox(height: 16),
-
           DropdownButtonFormField<String>(
             initialValue: _selectedSoilType,
             decoration: const InputDecoration(
@@ -175,7 +176,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
             onChanged: (value) => setState(() => _selectedSoilType = value!),
           ),
           const SizedBox(height: 24),
-
           ElevatedButton.icon(
             onPressed: _calculateFertilizer,
             icon: const Icon(Icons.calculate),
@@ -185,7 +185,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
               minimumSize: const Size(double.infinity, 50),
             ),
           ),
-
           if (_calcResult.isNotEmpty) ...[
             const SizedBox(height: 24),
             _buildResultsCard(),
@@ -201,9 +200,9 @@ class _ToolsScreenState extends State<ToolsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildToolHeader('Irrigation Calculator', Icons.water_drop, Colors.blue),
+          _buildToolHeader(
+              'Irrigation Calculator', Icons.water_drop, Colors.blue),
           const SizedBox(height: 20),
-
           TextField(
             controller: _landAreaController,
             keyboardType: TextInputType.number,
@@ -214,7 +213,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
           TextField(
             controller: _groundWaterLevelController,
             keyboardType: TextInputType.number,
@@ -225,7 +223,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
           DropdownButtonFormField<String>(
             initialValue: _irrigationType,
             decoration: const InputDecoration(
@@ -246,7 +243,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
             onChanged: (value) => setState(() => _irrigationType = value!),
           ),
           const SizedBox(height: 24),
-
           ElevatedButton.icon(
             onPressed: _calculateIrrigation,
             icon: const Icon(Icons.water_drop),
@@ -256,7 +252,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
               minimumSize: const Size(double.infinity, 50),
             ),
           ),
-
           if (_calcResult.isNotEmpty) ...[
             const SizedBox(height: 24),
             _buildResultsCard(),
@@ -317,50 +312,72 @@ class _ToolsScreenState extends State<ToolsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildToolHeader('Crop Calendar', Icons.calendar_today, Colors.orange),
+          _buildToolHeader(
+              'Crop Calendar', Icons.calendar_today, Colors.orange),
           const SizedBox(height: 20),
-          ...cropCalendar.entries.map((entry) => Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry.key,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ...entry.value.entries.map((detail) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 120,
-                          child: Text(
-                            detail.key,
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          detail.value,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
-                ],
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.edit_calendar, color: Colors.green),
+              title: const Text('Manage my farm work'),
+              subtitle: const Text(
+                'Create, reschedule, and track your farming tasks.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const FarmingCalendarScreen(),
+                ),
               ),
             ),
-          )),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Seasonal crop reference',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          ...cropCalendar.entries.map((entry) => Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        entry.key,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...entry.value.entries.map((detail) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 120,
+                                  child: Text(
+                                    detail.key,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  detail.value,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+              )),
         ],
       ),
     );
@@ -395,10 +412,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
         children: [
           _buildToolHeader('Soil Testing Guide', Icons.terrain, Colors.brown),
           const SizedBox(height: 20),
-
           _buildSoilTestInfo(),
           const SizedBox(height: 24),
-
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -418,7 +433,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 24),
           _buildRecommendedLabTests(),
         ],
@@ -471,7 +485,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
         final tool = _tools[index];
         return Card(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: InkWell(
             onTap: () => setState(() => _selectedCalcType = tool['type']),
             borderRadius: BorderRadius.circular(12),
@@ -608,21 +623,45 @@ class _ToolsScreenState extends State<ToolsScreen> {
     final soilParams = [
       ['Parameter', 'Low', 'Optimal', 'High', 'Action Required'],
       ['pH', '< 5.5', '6.0-7.0', '> 7.5', 'Lime/Acid additions'],
-      ['Nitrogen', '< 10 ppm', '20-30 ppm', '> 40 ppm', 'Fertilizer adjustment'],
-      ['Phosphorus', '< 5 ppm', '10-15 ppm', '> 20 ppm', 'Fertilizer adjustment'],
-      ['Potassium', '< 50 ppm', '100-150 ppm', '> 200 ppm', 'Fertilizer adjustment'],
+      [
+        'Nitrogen',
+        '< 10 ppm',
+        '20-30 ppm',
+        '> 40 ppm',
+        'Fertilizer adjustment'
+      ],
+      [
+        'Phosphorus',
+        '< 5 ppm',
+        '10-15 ppm',
+        '> 20 ppm',
+        'Fertilizer adjustment'
+      ],
+      [
+        'Potassium',
+        '< 50 ppm',
+        '100-150 ppm',
+        '> 200 ppm',
+        'Fertilizer adjustment'
+      ],
       ['Organic Matter', '< 1%', '2-3%', '> 4%', 'Compost/Manure addition'],
     ];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        columns: soilParams[0].map((header) => DataColumn(
-          label: Text(header, style: const TextStyle(fontWeight: FontWeight.bold)),
-        )).toList(),
-        rows: soilParams.skip(1).map((row) => DataRow(
-          cells: row.map((cell) => DataCell(Text(cell))).toList(),
-        )).toList(),
+        columns: soilParams[0]
+            .map((header) => DataColumn(
+                  label: Text(header,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                ))
+            .toList(),
+        rows: soilParams
+            .skip(1)
+            .map((row) => DataRow(
+                  cells: row.map((cell) => DataCell(Text(cell))).toList(),
+                ))
+            .toList(),
       ),
     );
   }
@@ -647,9 +686,12 @@ class _ToolsScreenState extends State<ToolsScreen> {
               style: TextStyle(color: Colors.red),
             ),
             const SizedBox(height: 16),
-            _buildLabInfo('National Soil Fertility Research Center', 'Rampur, Chitwan'),
-            _buildLabInfo('Regional Agricultural Research Station', 'Tarahara, Sunsari'),
-            _buildLabInfo('District Agriculture Offices', 'Your local district'),
+            _buildLabInfo(
+                'National Soil Fertility Research Center', 'Rampur, Chitwan'),
+            _buildLabInfo(
+                'Regional Agricultural Research Station', 'Tarahara, Sunsari'),
+            _buildLabInfo(
+                'District Agriculture Offices', 'Your local district'),
           ],
         ),
       ),
@@ -668,7 +710,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
-                Text(location, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(location,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ),
@@ -718,14 +761,17 @@ class _ToolsScreenState extends State<ToolsScreen> {
         'Crop Type': _selectedCropType.toUpperCase(),
         'Soil Type': _selectedSoilType.toUpperCase(),
         'NPK Recommendations': '',
-        ...adjustedRec.asMap().map((i, rec) => MapEntry('Nutrient ${i + 1}', rec)),
+        ...adjustedRec
+            .asMap()
+            .map((i, rec) => MapEntry('Nutrient ${i + 1}', rec)),
       };
     });
   }
 
   void _calculateIrrigation() {
     final area = double.tryParse(_landAreaController.text) ?? 0;
-    final groundwaterLevel = double.tryParse(_groundWaterLevelController.text) ?? 0;
+    final groundwaterLevel =
+        double.tryParse(_groundWaterLevelController.text) ?? 0;
 
     if (area <= 0) {
       _showMessage('Please enter valid land area');
@@ -759,13 +805,16 @@ class _ToolsScreenState extends State<ToolsScreen> {
     if (groundwaterLevel > 10) {
       groundwaterAdvice = 'High groundwater table - monitor for salinity';
     } else if (groundwaterLevel < 5) {
-      groundwaterAdvice = 'Low groundwater - conserve water, avoid deep tubewells';
+      groundwaterAdvice =
+          'Low groundwater - conserve water, avoid deep tubewells';
     } else {
-      groundwaterAdvice = 'Normal groundwater levels - sustainable use possible';
+      groundwaterAdvice =
+          'Normal groundwater levels - sustainable use possible';
     }
 
     final litersNeeded = (waterRequirementM3 * 1000).round();
-    final hoursNeeded = (litersNeeded / 1000).round(); // Assuming 1000 liters per hour pump
+    final hoursNeeded =
+        (litersNeeded / 1000).round(); // Assuming 1000 liters per hour pump
 
     setState(() {
       _calcResult = {

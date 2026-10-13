@@ -1,4 +1,3 @@
-
 /// Represents a community group based on geographic location
 class CommunityGroup {
   final String id;
@@ -11,6 +10,7 @@ class CommunityGroup {
   final int memberCount;
   final DateTime createdAt;
   final bool isActive;
+  final bool isMember;
 
   CommunityGroup({
     required this.id,
@@ -23,23 +23,33 @@ class CommunityGroup {
     required this.memberCount,
     required this.createdAt,
     this.isActive = true,
+    this.isMember = false,
   });
 
   factory CommunityGroup.fromJson(Map<String, dynamic> json) {
+    final createdAtValue = json['created_at'];
+    final createdAt = createdAtValue is int
+        ? DateTime.fromMillisecondsSinceEpoch(createdAtValue)
+        : DateTime.tryParse(createdAtValue?.toString() ?? '') ?? DateTime.now();
+    final activeValue = json['is_active'];
     return CommunityGroup(
-      id: json['id'] as String,
-      name: json['name'] as String,
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
       type: CommunityGroupType.values.firstWhere(
-        (e) => e.toString() == 'CommunityGroupType.${json['type']}',
+        (e) => e.name == json['type']?.toString(),
         orElse: () => CommunityGroupType.ward,
       ),
-      location: json['location'] as String,
-      leaderId: json['leader_id'] as String,
-      leaderName: json['leader_name'] as String,
-      leaderProfilePicture: json['leader_profile_picture'] as String?,
-      memberCount: json['member_count'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      isActive: json['is_active'] as bool? ?? true,
+      location: json['location']?.toString() ?? '',
+      leaderId: json['leader_id']?.toString() ?? '',
+      leaderName: json['leader_name']?.toString() ?? 'HamiKisan Admin',
+      leaderProfilePicture: json['leader_profile_picture']?.toString(),
+      memberCount: int.tryParse(json['member_count']?.toString() ?? '') ?? 0,
+      createdAt: createdAt,
+      isActive: activeValue == null ||
+          activeValue == true ||
+          activeValue == 1 ||
+          activeValue == '1',
+      isMember: json['is_member'] == true || json['isMember'] == true,
     );
   }
 
@@ -55,6 +65,7 @@ class CommunityGroup {
       'member_count': memberCount,
       'created_at': createdAt.toIso8601String(),
       'is_active': isActive,
+      'is_member': isMember,
     };
   }
 }

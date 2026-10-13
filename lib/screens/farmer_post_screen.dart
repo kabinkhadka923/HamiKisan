@@ -25,8 +25,8 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
   final PostService _postService = PostService();
   final MediaService _mediaService = MediaService();
 
-  late StreamSubscription<Post>? _postSub;
-  late List<Post> _posts = [];
+  StreamSubscription<Post>? _postSub;
+  List<Post> _posts = [];
 
   // State for creating post
   late TextEditingController _titleController;
@@ -40,8 +40,10 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
+    _titleController = TextEditingController();
+    _contentController = TextEditingController();
     _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
   }
 
   @override
@@ -63,8 +65,13 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
     _postSub = _postService.postStream.listen((post) {
       if (!mounted) return;
       setState(() {
-        _posts.insert(0, post);
-        if (_posts.length > 20) _posts = _posts.sublist(0, 20);
+        final index = _posts.indexWhere((item) => item.id == post.id);
+        if (index >= 0) {
+          _posts[index] = post;
+        } else {
+          _posts.insert(0, post);
+          if (_posts.length > 20) _posts = _posts.sublist(0, 20);
+        }
       });
       _scrollToBottom();
     });
@@ -72,39 +79,43 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
 
   Future<void> _loadPosts() async {
     setState(() => _isLoading = true);
-    final posts = await _postService.getAllPosts();
-    setState(() {
-      _posts = posts.reversed.toList(); // Newest first
-      _isLoading = false;
-    });
-    _scrollController.animateTo(
-      _scrollController.position.minScrollExtent,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.decelerate,
-    );
+    try {
+      final posts = await _postService.getAllPosts();
+      if (!mounted) return;
+      setState(() {
+        _posts = posts;
+        _isLoading = false;
+      });
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load posts: $e')),
+      );
+    }
   }
 
   Widget _buildPostTypeSelector() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: PostType.values
-            .map((type) => Expanded(
-                  child: FilterChip(
-                    label: Text(_typeLabel(type)),
-                    selected: _selectedType == type,
-                    onSelected: (selected) {
-                      setState(() => _selectedType = type);
-                    },
-                    backgroundColor: Colors.grey[200],
-                    selectedColor: Theme.of(context).colorScheme.primary,
-                    labelStyle: TextStyle(
-                      color:
-                          _selectedType == type ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                ))
-            .toList(),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: PostType.values.map((type) {
+          return FilterChip(
+            label: Text(_typeLabel(type)),
+            selected: _selectedType == type,
+            onSelected: (_) => setState(() => _selectedType = type),
+            backgroundColor: Colors.grey[200],
+            selectedColor: Theme.of(context).colorScheme.primary,
+            labelStyle: TextStyle(
+              color: _selectedType == type ? Colors.white : Colors.black87,
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -167,14 +178,24 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
                 onPressed: _pickMedia,
                 tooltip: 'Attach photo',
               ),
-              if (_mediaPath != null)
-                Text(
-                  'Attached',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 12,
+              if (_mediaPath != null) ...[
+                Expanded(
+                  child: Text(
+                    'Selected image (upload not configured)',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
+                IconButton(
+                  tooltip: 'Remove selected image',
+                  icon: const Icon(Icons.close, size: 18),
+                  onPressed: () => setState(() => _mediaPath = null),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 8.0),
@@ -325,16 +346,6 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
               title: const Text('Photo'),
               onTap: () => Navigator.of(context).pop('image'),
             ),
-            ListTile(
-              leading: const Icon(Icons.mic),
-              title: const Text('Voice Message'),
-              onTap: () => Navigator.of(context).pop('voice'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.location_on),
-              title: const Text('Location'),
-              onTap: () => Navigator.of(context).pop('location'),
-            ),
           ],
         ),
         actions: [
@@ -354,6 +365,22 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
         !(_selectedType == PostType.resource_share &&
             _quickResource.trim().isNotEmpty) &&
         !(_selectedType == PostType.availability && _quickQuantity > 0)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Add a title or message before sharing.')),
+        );
+      }
+      return;
+    }
+    if (_mediaPath != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Image uploads are not configured yet. Remove the image to share text only.',
+          ),
+        ),
+      );
       return;
     }
 
@@ -376,17 +403,6 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
                 'Quantity available: ${_quickQuantity.toString()}',
               ].where((value) => value.isNotEmpty).join('\n')
             : _contentController.text.trim(),
-        mediaUrl: _mediaPath != null
-            ? 'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg'
-            : null,
-        imageUrl: _mediaPath != null
-            ? 'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg'
-            : null,
-        imageUrls: _mediaPath != null
-            ? [
-                'https://hamikisan.s3.amazonaws.com/media/${DateTime.now().millisecondsSinceEpoch}.jpg'
-              ]
-            : [],
         price: _selectedType == PostType.price_alert ? _quickPrice : null,
         unit: _selectedType == PostType.price_alert ? _quickUnit : null,
         cropName: _selectedType == PostType.availability ? _quickCrop : null,
@@ -421,7 +437,7 @@ class _FarmerPostScreenState extends State<FarmerPostScreen>
     Future.delayed(const Duration(milliseconds: 300), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          _scrollController.position.minScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
