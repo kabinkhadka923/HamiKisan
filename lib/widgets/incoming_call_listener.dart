@@ -87,11 +87,10 @@ class _IncomingCallListenerState extends State<IncomingCallListener> {
   Future<void> _showIncomingCallSheet(SignalCall call) async {
     final navigator = Navigator.of(context);
     final authProvider = context.read<AuthProvider>();
-    unawaited(_audioService.playIncomingCall(vibrate: true));
 
     final accepted = await _showRingingDialog(call);
 
-    _audioService.stopCallSound();
+    await _audioService.stopCallSound();
     _isShowingCall = false;
     if (!mounted) return;
     setState(() {});

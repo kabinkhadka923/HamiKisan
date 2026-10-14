@@ -87,8 +87,10 @@ class _ConsultationChatScreenState extends State<ConsultationChatScreen> {
       setState(() {
         if (_chatMode == ChatMode.oneOnOne) {
           if (!isGroupMsg &&
-              (message.senderId == _peerId ||
-                  message.receiverId == _myUserId)) {
+              ((message.senderId == _myUserId &&
+                      message.receiverId == _peerId) ||
+                  (message.senderId == _peerId &&
+                      message.receiverId == _myUserId))) {
             final index = _messages.indexWhere((m) => m.id == message.id);
             if (index >= 0) {
               _messages[index] = message;

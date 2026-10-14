@@ -5,6 +5,7 @@ enum CallState {
   idle,
   ringingIncoming,
   ringingOutgoing,
+  connecting,
   connected,
   ending,
   error
@@ -77,10 +78,6 @@ class KisanVideoCallService {
       _currentCallId = callId;
       _callState = CallState.ringingIncoming;
       _callStateController.add(_callState);
-
-      _audioService.playIncomingCall(
-        vibrate: true,
-      );
 
       // Set ring timeout
       _ringTimeoutTimer?.cancel();
@@ -166,9 +163,6 @@ class KisanVideoCallService {
     _currentCallId = callId ?? recipientId;
     _callState = CallState.ringingOutgoing;
     _callStateController.add(_callState);
-
-    // Play outgoing call sound
-    await _audioService.playOutgoingCall();
 
     // Emit socket.io call_invite to signaling server
     _socket?.emit('call_invite', {

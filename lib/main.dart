@@ -8,6 +8,7 @@ import 'providers/marketplace_provider.dart';
 import 'providers/post_provider.dart';
 import 'providers/admin_provider.dart';
 import 'providers/localization_provider.dart';
+import 'providers/appearance_provider.dart';
 import 'providers/community_provider.dart';
 import 'providers/kisan_doctor_provider.dart';
 import 'screens/login_screen.dart';
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LocalizationProvider()),
+        ChangeNotifierProvider(create: (_) => AppearanceProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => WeatherMarketProvider()),
         ChangeNotifierProvider(create: (_) => MarketplaceProvider()),
@@ -79,16 +81,20 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CommunityProvider()),
         ChangeNotifierProvider(create: (_) => KisanDoctorProvider()),
       ],
-      child: MaterialApp(
-        title: AppConstants.appName,
-        theme: AppTheme.lightTheme,
-        home: const AppInitializer(),
-        debugShowCheckedModeBanner: true,
-        routes: {
-          '/kisan-admin': (context) => const AdminLoginScreen(),
-          '/HamiSuperAdmin': (context) => const AdminLoginScreen(),
-          '/language-selection': (context) => const LanguageSelectionScreen(),
-        },
+      child: Consumer<AppearanceProvider>(
+        builder: (context, appearance, _) => MaterialApp(
+          title: AppConstants.appName,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: appearance.themeMode,
+          home: const AppInitializer(),
+          debugShowCheckedModeBanner: true,
+          routes: {
+            '/kisan-admin': (context) => const AdminLoginScreen(),
+            '/HamiSuperAdmin': (context) => const AdminLoginScreen(),
+            '/language-selection': (context) => const LanguageSelectionScreen(),
+          },
+        ),
       ),
     );
   }
@@ -112,6 +118,7 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _initializeApp() async {
     final localizationProvider = context.read<LocalizationProvider>();
+    final appearanceProvider = context.read<AppearanceProvider>();
     final authProvider = context.read<AuthProvider>();
     final weatherProvider = context.read<WeatherMarketProvider>();
     final marketplaceProvider = context.read<MarketplaceProvider>();
@@ -122,6 +129,7 @@ class _AppInitializerState extends State<AppInitializer> {
     await Future.wait(
       [
         localizationProvider.initialize(),
+        appearanceProvider.initialize(),
         authProvider.initialize(),
       ],
     ).timeout(startupDeadline, onTimeout: () {

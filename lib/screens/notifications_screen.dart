@@ -21,8 +21,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   NotificationFilter _currentFilter = NotificationFilter.all;
   bool _isLoading = true;
   String? _loadError;
-  bool _enableVibration = true;
-  bool _enableSound = true;
   String? _userId;
   Set<NotificationType> _enabledTypes = NotificationType.values.toSet();
 
@@ -62,9 +60,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         _notifications
           ..clear()
           ..addAll(notifications);
-        _enableVibration =
-            prefs.getBool('notifications_vibration_${user.id}') ?? true;
-        _enableSound = prefs.getBool('notifications_sound_${user.id}') ?? true;
         _enabledTypes = configuredTypes == null
             ? NotificationType.values.toSet()
             : NotificationType.values
@@ -657,31 +652,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: const Text('Notification Settings'),
+            title: const Text('Visible Notification Categories'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SwitchListTile(
-                  title: const Text('Enable Vibrations'),
-                  subtitle: const Text('Vibrate when new notification arrives'),
-                  value: _enableVibration,
-                  onChanged: (value) {
-                    setState(() => _enableVibration = value);
-                  },
-                  activeThumbColor: Colors.green,
-                ),
-                SwitchListTile(
-                  title: const Text('Enable Sounds'),
-                  subtitle: const Text('Play sound for new notifications'),
-                  value: _enableSound,
-                  onChanged: (value) {
-                    setState(() => _enableSound = value);
-                  },
-                  activeThumbColor: Colors.green,
-                ),
-                const Divider(),
                 const Text(
-                  'Visible Categories',
+                  'Choose which categories are shown in your notification list.',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
@@ -720,16 +696,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   final userId = _userId;
                   if (userId != null) {
                     final prefs = await SharedPreferences.getInstance();
-                    await Future.wait([
-                      prefs.setBool(
-                          'notifications_vibration_$userId', _enableVibration),
-                      prefs.setBool(
-                          'notifications_sound_$userId', _enableSound),
-                      prefs.setStringList(
-                        'notifications_types_$userId',
-                        _enabledTypes.map((type) => type.name).toList(),
-                      ),
-                    ]);
+                    await prefs.setStringList(
+                      'notifications_types_$userId',
+                      _enabledTypes.map((type) => type.name).toList(),
+                    );
                   }
                   if (!mounted || !context.mounted) return;
                   this.setState(() {});

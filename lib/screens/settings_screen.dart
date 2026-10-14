@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/user.dart';
+import '../providers/appearance_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/kisan_doctor_provider.dart';
 import '../providers/localization_provider.dart';
@@ -48,9 +49,18 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () => _showLanguageDialog(context),
               ),
               _SettingsTile(
+                icon: Icons.dark_mode_outlined,
+                title: context.tr('appearance'),
+                subtitle: _themeModeLabel(
+                  context,
+                  context.watch<AppearanceProvider>().themeMode,
+                ),
+                onTap: () => _showAppearanceDialog(context),
+              ),
+              _SettingsTile(
                 icon: Icons.notifications_outlined,
                 title: context.tr('notifications'),
-                subtitle: 'Manage notification categories and preferences',
+                subtitle: context.tr('manage_notifications'),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const NotificationsScreen(),
@@ -119,7 +129,7 @@ class SettingsScreen extends StatelessWidget {
     switch (user.role) {
       case UserRole.farmer:
         return _section(
-          'Farmer',
+          context.tr('farmer_settings'),
           [
             _SettingsTile(
               icon: Icons.edit_outlined,
@@ -141,45 +151,54 @@ class SettingsScreen extends StatelessWidget {
         );
       case UserRole.kisanDoctor:
         return _section(
-          'Doctor',
+          context.tr('doctor_settings'),
           [
             _SettingsTile(
+              icon: Icons.edit_outlined,
+              title: context.tr('edit_profile'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const EditProfileScreen(),
+                ),
+              ),
+            ),
+            _SettingsTile(
               icon: Icons.event_available_outlined,
-              title: 'Appointments',
-              subtitle: 'View and manage consultation requests',
+              title: context.tr('appointments'),
+              subtitle: context.tr('manage_appointments'),
               onTap: () => _openAppointments(context, user),
             ),
           ],
         );
       case UserRole.kisanAdmin:
         return _section(
-          'Administrator',
-          const [
+          context.tr('administrator_settings'),
+          [
             ListTile(
-              leading: Icon(Icons.admin_panel_settings_outlined),
-              title: Text('Administrator access'),
+              leading: const Icon(Icons.admin_panel_settings_outlined),
+              title: Text(context.tr('administrator_settings')),
               subtitle: Text(
-                'Administrative actions are available from the admin dashboard.',
+                context.tr('admin_dashboard_hint'),
               ),
             ),
           ],
         );
       case UserRole.superAdmin:
         return _section(
-          'Super Admin',
+          context.tr('super_admin_settings'),
           [
             _SettingsTile(
               icon: Icons.api_outlined,
-              title: 'API configuration',
-              subtitle: 'Configure external service keys and URLs',
+              title: context.tr('api_configuration'),
+              subtitle: context.tr('api_configuration_hint'),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ApiSettingsScreen()),
               ),
             ),
             _SettingsTile(
               icon: Icons.monitor_heart_outlined,
-              title: 'System health',
-              subtitle: 'Check configured service status',
+              title: context.tr('system_health'),
+              subtitle: context.tr('system_health_hint'),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SystemHealthScreen()),
               ),
@@ -268,6 +287,77 @@ class SettingsScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not save language preference: $error')),
       );
+    }
+
+    Future<void> showAppearanceDialog(BuildContext context) async {
+      final appearance = context.read<AppearanceProvider>();
+      final selectedMode = await showDialog<ThemeMode>(
+        context: context,
+        builder: (dialogContext) => SimpleDialog(
+          title: Text(context.tr('appearance')),
+          children: [
+            themeModeOption(
+              dialogContext,
+              ThemeMode.system,
+              context.tr('theme_system'),
+              appearance.themeMode,
+            ),
+            themeModeOption(
+              dialogContext,
+              ThemeMode.light,
+              context.tr('theme_light'),
+              appearance.themeMode,
+            ),
+            themeModeOption(
+              dialogContext,
+              ThemeMode.dark,
+              context.tr('theme_dark'),
+              appearance.themeMode,
+            ),
+          ],
+        ),
+      );
+
+      if (selectedMode == null || !context.mounted) return;
+      try {
+        await appearance.setThemeMode(selectedMode);
+      } catch (error) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save appearance setting: $error')),
+        );
+      }
+    }
+
+    Widget themeModeOption(
+      BuildContext context,
+      ThemeMode mode,
+      String label,
+      ThemeMode currentMode,
+    ) {
+      return SimpleDialogOption(
+        onPressed: () => Navigator.pop(context, mode),
+        child: Row(
+          children: [
+            Icon(
+              currentMode == mode
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_off,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            Text(label),
+          ],
+        ),
+      );
+    }
+
+    String themeModeLabel(BuildContext context, ThemeMode mode) {
+      return switch (mode) {
+        ThemeMode.system => context.tr('theme_system'),
+        ThemeMode.light => context.tr('theme_light'),
+        ThemeMode.dark => context.tr('theme_dark'),
+      };
     }
   }
 
@@ -417,15 +507,8 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(context.tr('privacy_policy')),
-        content: const SingleChildScrollView(
-          child: Text(
-            'HamiKisan uses your account information to provide the features '
-            'available for your role. Language and notification preferences '
-            'are stored on this device. Posts and notification records may be '
-            'stored locally and synchronized when the configured service is '
-            'available. Do not share your password or verification codes. '
-            'For account data requests, contact the HamiKisan administrator.',
-          ),
+        content: SingleChildScrollView(
+          child: Text(context.tr('account_privacy_message')),
         ),
         actions: [
           TextButton(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/localization_provider.dart';
 import '../models/user.dart';
 import '../widgets/localized_text.dart';
 import 'edit_profile_screen.dart';
@@ -75,12 +74,6 @@ class ProfileScreen extends StatelessWidget {
               builder: (context) => const EditProfileScreen(),
             ));
           },
-        ),
-        _buildProfileOption(
-          context,
-          icon: Icons.language,
-          title: context.tr('select_language'),
-          onTap: () => _showLanguageDialog(context),
         ),
         _buildProfileOption(
           context,
@@ -200,48 +193,4 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLanguageDialog(BuildContext context) {
-    final localizationProvider =
-        Provider.of<LocalizationProvider>(context, listen: false);
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(context.tr('choose_language')),
-          content: RadioGroup<String>(
-            groupValue: localizationProvider.currentLanguage,
-            onChanged: (value) async {
-              if (value == null) return;
-              await localizationProvider.setLanguage(value);
-              await authProvider.updateLanguage(value);
-              if (context.mounted) Navigator.of(context).pop();
-            },
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RadioListTile<String>(
-                  title: Text('English'),
-                  value: 'English',
-                  activeColor: Color(0xFF4CAF50),
-                ),
-                RadioListTile<String>(
-                  title: Text('नेपाली (Nepali)'),
-                  value: 'Nepali',
-                  activeColor: Color(0xFF4CAF50),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(context.tr('cancel')),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

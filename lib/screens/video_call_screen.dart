@@ -54,14 +54,19 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   StreamSubscription<void>? _endedSub;
   Timer? _offerRetryTimer;
   Timer? _ringTimeoutTimer;
+  dynamic _signalingSocket;
+  final Map<String, Function> _signalingHandlers = {};
   bool _isHandlingOffer = false;
   bool _hasReceivedAnswer = false;
+  bool _isEnding = false;
 
   // WebRTC
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   RTCPeerConnection? _peerConnection;
   MediaStream? _localStream;
+  final List<RTCIceCandidate> _pendingIceCandidates = [];
+  bool _hasRemoteDescription = false;
   bool _isMuted = false;
   bool _isVideoEnabled = true;
   bool _isFrontCamera = true;
@@ -85,6 +90,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     _endedSub?.cancel();
     _offerRetryTimer?.cancel();
     _ringTimeoutTimer?.cancel();
+    for (final entry in _signalingHandlers.entries) {
+      _signalingSocket?.off(entry.key, entry.value);
+    }
+    _signalingHandlers.clear();
     _localRenderer.dispose();
     _remoteRenderer.dispose();
     _localStream?.dispose();
@@ -101,8 +110,6 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     if (!mounted) return;
 
     _callService.setSocket(authProvider.socket);
-
-    await _callService.init(socket: authProvider.socket);
 
     _stateSub = _callService.onStateChanged.listen((state) {
       if (!mounted) return;
@@ -135,13 +142,17 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       callerName: authProvider.currentUser?.name ?? 'HamiKisan user',
       callType: widget.callType == CallType.voice ? 'voice' : 'video',
     );
-    if (!mounted || callId == null) {
+    if (callId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Unable to start the call. Please try again.')),
         );
       }
+      return false;
+    }
+    if (!mounted) {
+      await CallSignalingService().endCall(callId: callId);
       return false;
     }
     _activeCallId = callId;
@@ -165,48 +176,60 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   void _setupSignaling() {
     final socket = _callService.socket;
     if (socket == null) return;
+    _signalingSocket = socket;
 
-    socket.on('call:offer', (data) async {
-      if (!mounted) return;
+    _listenToCallEvent('call:offer', (data) async {
+      if (!mounted ||
+          data is! Map<String, dynamic> ||
+          data['callId']?.toString() != _activeCallId) {
+        return;
+      }
       await _handleIncomingOffer(data);
     });
 
-    socket.on('call:answer', (data) async {
-      if (!mounted) return;
+    _listenToCallEvent('call:answer', (data) async {
+      if (!mounted ||
+          data is! Map<String, dynamic> ||
+          data['callId']?.toString() != _activeCallId) {
+        return;
+      }
       await _handleAnswer(data);
     });
 
-    socket.on('call:accepted', (data) async {
+    _listenToCallEvent('call:accepted', (data) async {
       if (!mounted || data['callId']?.toString() != _activeCallId) return;
       await Future<void>.delayed(const Duration(milliseconds: 800));
       if (!mounted) return;
       await _makeCall();
     });
 
-    socket.on('call:declined', (data) {
+    _listenToCallEvent('call:declined', (data) {
       if (!mounted || data['callId']?.toString() != _activeCallId) return;
       _handleCallDeclined();
     });
 
-    socket.on('call:ended', (data) {
+    _listenToCallEvent('call:ended', (data) {
       if (!mounted || data['callId']?.toString() != _activeCallId) return;
       _handleCallEnded();
     });
 
-    socket.on('call:ice', (data) async {
-      if (!mounted) return;
+    _listenToCallEvent('call:ice', (data) async {
+      if (!mounted ||
+          data is! Map<String, dynamic> ||
+          data['callId']?.toString() != _activeCallId) {
+        return;
+      }
       await _handleIceCandidate(data);
     });
 
-    socket.on('call:decline', (data) {
-      if (!mounted) return;
-      _handleCallDeclined();
-    });
+  }
 
-    socket.on('call:end', (data) {
-      if (!mounted) return;
-      _handleCallEnded();
-    });
+  void _listenToCallEvent(
+    String event,
+    void Function(dynamic) handler,
+  ) {
+    _signalingHandlers[event] = handler;
+    _signalingSocket.on(event, handler);
   }
 
   void _handleCallStateChange(CallState state) {
@@ -226,11 +249,12 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       case CallState.error:
         unawaited(_audioService.stopCallSound());
         break;
+      case CallState.connecting:
       case CallState.ringingIncoming:
-        unawaited(_audioService.playIncomingCall(vibrate: true));
+        unawaited(_audioService.stopCallSound());
         break;
       case CallState.ringingOutgoing:
-        unawaited(_audioService.playOutgoingCall());
+        unawaited(_audioService.stopCallSound());
         break;
     }
   }
@@ -260,6 +284,12 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
       _localStream =
           await navigator.mediaDevices.getUserMedia(mediaConstraints);
+      for (final track in _localStream!.getAudioTracks()) {
+        track.enabled = !_isMuted;
+      }
+      for (final track in _localStream!.getVideoTracks()) {
+        track.enabled = _isVideoEnabled;
+      }
       _localRenderer.srcObject = _localStream;
 
       if (mounted) setState(() {});
@@ -291,6 +321,32 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     };
 
     _peerConnection = await createPeerConnection(configuration);
+    _peerConnection!.onConnectionState = (state) {
+      if (!mounted) return;
+      switch (state) {
+        case RTCPeerConnectionState.RTCPeerConnectionStateConnected:
+          _callService.updateCallState(CallState.connected);
+          break;
+        case RTCPeerConnectionState.RTCPeerConnectionStateConnecting:
+        case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:
+          if (_callService.callState != CallState.ending) {
+            _callService.updateCallState(CallState.connecting);
+          }
+          break;
+        case RTCPeerConnectionState.RTCPeerConnectionStateFailed:
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('The call connection failed. Please try again.'),
+            ),
+          );
+          _callService.updateCallState(CallState.error);
+          unawaited(_endCall());
+          break;
+        case RTCPeerConnectionState.RTCPeerConnectionStateClosed:
+        case RTCPeerConnectionState.RTCPeerConnectionStateNew:
+          break;
+      }
+    };
 
     if (_localStream != null) {
       _localStream!.getTracks().forEach((track) {
@@ -311,7 +367,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   Future<void> _makeCall() async {
-    _callService.updateCallState(CallState.ringingOutgoing);
+    _callService.updateCallState(CallState.connecting);
     try {
       if (!await _startLocalStream()) {
         _callService.updateCallState(CallState.error);
@@ -371,10 +427,12 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       );
 
       await _peerConnection!.setRemoteDescription(offer);
+      _hasRemoteDescription = true;
+      await _applyPendingIceCandidates();
 
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
-      _callService.updateCallState(CallState.connected);
+      _callService.updateCallState(CallState.connecting);
 
       _callService.socket?.emit('call:answer', {
         'callId': _activeCallId,
@@ -402,9 +460,11 @@ class _VideoCallScreenState extends State<VideoCallScreen>
           data['answer']['type'],
         );
         await _peerConnection!.setRemoteDescription(answer);
+        _hasRemoteDescription = true;
+        await _applyPendingIceCandidates();
         _hasReceivedAnswer = true;
         _offerRetryTimer?.cancel();
-        _callService.updateCallState(CallState.connected);
+        _callService.updateCallState(CallState.connecting);
       } catch (error) {
         Logger.error('Could not apply call answer',
             tag: 'VideoCall', error: error);
@@ -414,15 +474,32 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   Future<void> _handleIceCandidate(Map<String, dynamic> data) async {
+    final rawCandidate = data['candidate'];
+    if (rawCandidate is! Map<String, dynamic>) return;
+
     final candidate = RTCIceCandidate(
-      data['candidate']['candidate'],
-      data['candidate']['sdpMid'],
-      data['candidate']['sdpMLineIndex'],
+      rawCandidate['candidate']?.toString(),
+      rawCandidate['sdpMid']?.toString(),
+      rawCandidate['sdpMLineIndex'] is int
+          ? rawCandidate['sdpMLineIndex'] as int
+          : int.tryParse(rawCandidate['sdpMLineIndex']?.toString() ?? ''),
     );
 
-    if (_peerConnection != null) {
+    if (_peerConnection != null && _hasRemoteDescription) {
       await _peerConnection!.addCandidate(candidate);
+    } else {
+      _pendingIceCandidates.add(candidate);
     }
+  }
+
+  Future<void> _applyPendingIceCandidates() async {
+    final peerConnection = _peerConnection;
+    if (peerConnection == null) return;
+
+    for (final candidate in _pendingIceCandidates) {
+      await peerConnection.addCandidate(candidate);
+    }
+    _pendingIceCandidates.clear();
   }
 
   void _sendIceCandidate(RTCIceCandidate candidate) {
@@ -435,6 +512,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   }
 
   Future<void> _endCall() async {
+    if (_isEnding) return;
+    _isEnding = true;
     _offerRetryTimer?.cancel();
     _ringTimeoutTimer?.cancel();
     await _cleanupCall();
@@ -514,37 +593,55 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
     final videoTracks = _localStream!.getVideoTracks();
     if (videoTracks.isEmpty) return;
-
-    videoTracks[0].stop();
-
-    _isFrontCamera = !_isFrontCamera;
+    final currentTrack = videoTracks.first;
+    MediaStream? replacementStream;
 
     try {
-      final newStream = await navigator.mediaDevices.getUserMedia({
+      replacementStream = await navigator.mediaDevices.getUserMedia({
         'video': {
-          'facingMode': _isFrontCamera ? 'user' : 'environment',
+          'facingMode': _isFrontCamera ? 'environment' : 'user',
           'width': {'ideal': 1280},
           'height': {'ideal': 720},
         },
         'audio': false,
       });
 
-      final newVideoTrack = newStream.getVideoTracks()[0];
-      _localStream!.removeTrack(_localStream!.getVideoTracks()[0]);
-      _localStream!.addTrack(newVideoTrack);
+      final newVideoTracks = replacementStream.getVideoTracks();
+      if (newVideoTracks.isEmpty) {
+        throw StateError('No video track returned when switching cameras.');
+      }
+      final newVideoTrack = newVideoTracks.first;
 
       if (_peerConnection != null) {
         final senders = await _peerConnection!.getSenders();
-        final sender = senders.firstWhere(
-          (s) => s.track != null && s.track!.kind == 'video',
-        );
+        RTCRtpSender? sender;
+        for (final candidate in senders) {
+          if (candidate.track?.kind == 'video') {
+            sender = candidate;
+            break;
+          }
+        }
+        if (sender == null) {
+          throw StateError('Video sender is not available.');
+        }
         await sender.replaceTrack(newVideoTrack);
       }
 
+      _localStream!.removeTrack(currentTrack);
+      _localStream!.addTrack(newVideoTrack);
+      await currentTrack.stop();
       _localRenderer.srcObject = _localStream;
-      setState(() => _isFrontCamera = !_isFrontCamera);
+      if (mounted) setState(() => _isFrontCamera = !_isFrontCamera);
     } catch (e) {
+      for (final track in replacementStream?.getTracks() ?? <MediaStreamTrack>[]) {
+        await track.stop();
+      }
       Logger.error('Could not switch camera', tag: 'VideoCall', error: e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not switch camera.')),
+        );
+      }
     }
   }
 
@@ -626,6 +723,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       case CallState.ringingOutgoing:
         color = Colors.orange;
         text = 'Ringing...';
+        break;
+      case CallState.connecting:
+        color = Colors.orange;
+        text = 'Connecting...';
         break;
       case CallState.connected:
         color = Colors.green;
